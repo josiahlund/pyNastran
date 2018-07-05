@@ -409,6 +409,12 @@ class AELINK(BaseCard):
                 len(self.independent_labels), len(self.Cis),
                 self.independent_labels, self.Cis, str(self))
             raise RuntimeError(msg)
+        if len(self.independent_labels) == 0:
+            msg = 'nlabels=%s nci=%s\nindependent_labels=%s Cis=%s\n%s' % (
+                len(self.independent_labels), len(self.Cis),
+                self.independent_labels, self.Cis, str(self))
+            raise RuntimeError(msg)
+
 
     @classmethod
     def add_card(cls, card, comment=''):
@@ -1218,7 +1224,7 @@ class CAERO1(BaseCard):
     pid : int, PAERO1
         int : PAERO1 ID
         PAERO1 : PAERO1 object (xref)
-    igid : int
+    igroup : int
         Group number
     p1 : (1, 3) ndarray float
         xyz location of point 1 (leading edge; inboard)
@@ -1252,7 +1258,7 @@ class CAERO1(BaseCard):
     type = 'CAERO1'
     _field_map = {
         1: 'sid', 2:'pid', 3:'cp', 4:'nspan', 5:'nchord',
-        6:'lspan', 7:'lchord', 8:'igid', 12:'x12', 16:'x43',
+        6:'lspan', 7:'lchord', 8:'igroup', 12:'x12', 16:'x43',
     }
     def _get_field_helper(self, n):
         """
@@ -1777,6 +1783,11 @@ class CAERO1(BaseCard):
         msg = '%i not in range of aero box ids\nRange: %i to %i' % (box_id, self.box_ids[0, 0],
                                                                     self.box_ids[-1, -1])
         raise IndexError(msg)
+
+    @property
+    def npanels(self):
+        nchord, nspan = self.shape
+        return nchord * nspan
 
     @property
     def shape(self):
@@ -4077,7 +4088,6 @@ class PAERO2(BaseCard):
             self.lrib = None
         self.lrsb_ref = None
         self.lrib_ref = None
-
 
     def validate(self):
         assert self.orient in ['Z', 'Y', 'ZY'], 'PAERO2: orient=%r' % self.orient

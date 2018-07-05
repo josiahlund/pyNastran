@@ -76,6 +76,7 @@ class OES(OP2Common):
         """
         reads OES1 subtable 3
         """
+        self._analysis_code_fmt = b'i'
         self._data_factor = 1
         self.words = [
             'aCode', 'tCode', 'element_type', 'isubcase',
@@ -175,12 +176,7 @@ class OES(OP2Common):
         self.fix_format_code()
         self.get_oes_prefix_postfix()
         self._parse_thermal_code()
-        try:
-            self.element_name = self.element_mapper[self.element_type]
-        except KeyError:
-            self.log.error(self.code_information())
-            raise
-        self.data_code['element_name'] = self.element_name
+        self._set_element_name()
         if self.is_debug_file:
             self.binary_debug.write('  element_name   = %r\n' % self.element_name)
             self.binary_debug.write('  approach_code  = %r\n' % self.approach_code)
@@ -204,6 +200,14 @@ class OES(OP2Common):
         assert isinstance(self.format_code, int), self.format_code
         #print('self.nonlinear_factor =', self.nonlinear_factor)
         #assert self.num_wide != 146, self.code_information()
+
+    def _set_element_name(self):
+        try:
+            self.element_name = self.element_mapper[self.element_type]
+        except KeyError:
+            self.log.error(self.code_information())
+            raise
+        self.data_code['element_name'] = self.element_name
 
     def _parse_stress_code_to_stress_bits(self):
         """
@@ -3772,7 +3776,6 @@ class OES(OP2Common):
                     #sss
                     obj.element[ielement:ielement2] = eids  # 150
                      #print(obj.element_node[:10, :])
-                    #aaa
 
                 floats = frombuffer(data, dtype=self.fdtype).reshape(nelements, 25)[:, 1:]
 
@@ -3823,15 +3826,15 @@ class OES(OP2Common):
             obj_vector_real = RealCompositePlateStressArray
             #obj_vector_complex = ComplexCompositePlateStressArray
             if self.element_type == 95: # CQUAD4
-                result_name = 'cquad4_composite_stress'
+                result_name = prefix + 'cquad4_composite_stress' + postfix
             elif self.element_type == 96:  # CQUAD8
-                result_name = 'cquad8_composite_stress'
+                result_name = prefix + 'cquad8_composite_stress' + postfix
             elif self.element_type == 97:  # CTRIA3
-                result_name = 'ctria3_composite_stress'
+                result_name = prefix + 'ctria3_composite_stress' + postfix
             elif self.element_type == 98:  # CTRIA6
-                result_name = 'ctria6_composite_stress'
+                result_name = prefix + 'ctria6_composite_stress' + postfix
             #elif self.element_type == ???:  # CTRIA6
-                #result_name = 'ctriar_composite_stress'
+                #result_name = prefix + 'ctriar_composite_stress' + postfix
             #elif self.element_type == 10:  # CTRIA6
             else:
                 raise RuntimeError(self.code_information())
@@ -3839,15 +3842,15 @@ class OES(OP2Common):
             obj_vector_real = RealCompositePlateStrainArray
             #obj_vector_complex = ComplexCompositePlateStrainArray
             if self.element_type == 95: # CQUAD4
-                result_name = 'cquad4_composite_strain'
+                result_name = prefix + 'cquad4_composite_strain' + postfix
             elif self.element_type == 96:  # CQUAD8
-                result_name = 'cquad8_composite_strain'
+                result_name = prefix + 'cquad8_composite_strain' + postfix
             elif self.element_type == 97:  # CTRIA3
-                result_name = 'ctria3_composite_strain'
+                result_name = prefix + 'ctria3_composite_strain' + postfix
             elif self.element_type == 98:  # CTRIA6
-                result_name = 'ctria6_composite_strain'
+                result_name = prefix + 'ctria6_composite_strain' + postfix
             #elif self.element_type == ???:  # CTRIA6
-                #result_name = 'ctriar_composite_strain'
+                #result_name = prefix + 'ctriar_composite_strain' + postfix
             else:
                 raise RuntimeError(self.code_information())
 
@@ -3963,9 +3966,12 @@ class OES(OP2Common):
             result_name = prefix + 'ctriax_stress' + postfix
         else:
             result_name = prefix + 'ctriax_strain' + postfix
-        self._results._found_result(result_name)
-        slot = getattr(self, result_name)
 
+        if self._results.is_not_saved(result_name):
+            return ndata, None, None
+        self._results._found_result(result_name)
+
+        slot = getattr(self, result_name)
         if self.format_code == 1 and self.num_wide == 33: # real
             if self.is_stress:
                 obj_vector_real = RealTriaxStressArray
@@ -4154,9 +4160,12 @@ class OES(OP2Common):
             result_name = prefix + 'cbush_stress' + postfix
         else:
             result_name = prefix + 'cbush_strain' + postfix
-        self._results._found_result(result_name)
-        slot = getattr(self, result_name)
 
+        if self._results.is_not_saved(result_name):
+            return ndata, None, None
+        self._results._found_result(result_name)
+
+        slot = getattr(self, result_name)
         if self.format_code == 1 and self.num_wide == 7:  # real
             if self.is_stress:
                 obj_vector_real = RealBushStressArray
@@ -4281,9 +4290,11 @@ class OES(OP2Common):
             result_name = prefix + 'cbush1d_stress_strain' + postfix
         else:
             result_name = prefix + 'cbush1d_stress_strain' + postfix
+
+        if self._results.is_not_saved(result_name):
+            return ndata, None, None
         self._results._found_result(result_name)
         slot = getattr(self, result_name)
-
         if self.format_code == 1 and self.num_wide == 8:  # real
             if self.is_stress:
                 obj_vector_real = RealBush1DStressArray
@@ -4432,9 +4443,11 @@ class OES(OP2Common):
                 name = 'CONRODNL-92'
             else:
                 raise RuntimeError(self.code_information())
+
+        if self._results.is_not_saved(result_name):
+            return ndata, None, None
         self._results._found_result(result_name)
         slot = getattr(self, result_name)
-
         if self.format_code == 1 and self.num_wide == 7:  # real
             ntotal = 28  #  7*4 = 28
             nelements = ndata // ntotal
@@ -4500,9 +4513,12 @@ class OES(OP2Common):
                 result_name = prefix + 'celas3_stress' + postfix # nonlinear_
         else:
             raise NotImplementedError('NonlinearSpringStrain')
-        slot = getattr(self, result_name)
 
+        if self._results.is_not_saved(result_name):
+            return ndata, None, None
         self._results._found_result(result_name)
+
+        slot = getattr(self, result_name)
         if self.num_wide == numwide_real:
             assert self.num_wide == 3, "num_wide=%s not 3" % self.num_wide
             ntotal = 12  # 4*3
@@ -4561,7 +4577,11 @@ class OES(OP2Common):
             result_name = prefix + 'cgap_stress' + postfix # nonlinear_
         else:
             result_name = prefix + 'cgap_strain' + postfix # nonlinear_
+
+        if self._results.is_not_saved(result_name):
+            return ndata, None, None
         self._results._found_result(result_name)
+
         slot = getattr(self, result_name)
         if self.format_code == 1 and self.num_wide == 11:  # real?
             if self.is_stress:
@@ -4622,9 +4642,12 @@ class OES(OP2Common):
             result_name = prefix + 'cbeam_stress' + postfix
         else:
             result_name = prefix + 'cbeam_strain' + postfix
-        self._results._found_result(result_name)
-        slot = getattr(self, result_name)
 
+        if self._results.is_not_saved(result_name):
+            return ndata, None, None
+        self._results._found_result(result_name)
+
+        slot = getattr(self, result_name)
         if self.format_code == 1 and self.num_wide == numwide_real:
             msg = result_name
             if self.is_stress:
@@ -4705,8 +4728,8 @@ class OES(OP2Common):
         if self._results.is_not_saved(result_name):
             return ndata, None, None
         self._results._found_result(result_name)
-        slot = getattr(self, result_name)
 
+        slot = getattr(self, result_name)
         if self.format_code == 1 and self.num_wide == 10:  # real
             if self.is_stress:
                 obj_vector_real = RealBar10NodesStressArray

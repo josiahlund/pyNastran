@@ -62,6 +62,7 @@ from vtk import (vtkTriangle, vtkQuad, vtkTetra, vtkWedge, vtkHexahedron,
 
 #from pyNastran import is_release
 from pyNastran.utils import integer_types
+from pyNastran.utils.log import properties as log_properties
 from pyNastran.utils.numpy_utils import isfinite_and_nonzero, isfinite_and_greater_than, isfinite
 from pyNastran.bdf.bdf import (BDF,
                                CAERO1, CAERO2, CAERO3, CAERO4, CAERO5, CAERO7, BODY7,
@@ -5209,3 +5210,21 @@ def check_for_missing_control_surface_boxes(name, cs_box_ids,
             msg += 'boxes_to_show=%s\n' % boxes_to_show
         log.error(msg.rstrip())
     return boxes_to_show
+
+def store_error(log, store_msg, msg):
+    out_msg = ''
+    if store_msg:
+        n, filename = log_properties(nframe=2)
+        out_msg = 'ERROR: %s:%s %s\n' % (filename, n, msg)
+    else:
+        log.warning(msg)
+    return out_msg
+
+def store_warning(log, store_msg, msg):
+    out_msg = ''
+    if store_msg:
+        n, filename = log_properties(nframe=2)
+        out_msg = 'WARNING: %s:%s %s\n' % (filename, n, msg)
+    else:
+        log.warning(msg)
+    return out_msg

@@ -1062,6 +1062,8 @@ class Op2Codes(object):
             table_name = self.table_name_str
             if table_name in SORT1_TABLES:
                 is_sort1_table = True
+            elif table_name in SORT2_TABLES:
+                is_sort1_table = False
             else:
                 try:
                     is_sort1_table = int(table_name[-1]) == 1
@@ -1213,7 +1215,7 @@ def determine_sort_bits_meaning(table_code, sort_code, sort_bits):
     2     SORT2     Real        No
     3     SORT2     Complex     No
     4     SORT1     Real        Yes
-    5     ???       ???         ???
+    5     SORT2     ???         Yes
     6     SORT2     Real        Yes
 
     table_code%1000 = function3()

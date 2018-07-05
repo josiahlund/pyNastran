@@ -1,3 +1,7 @@
+"""
+defines:
+ - QElementEdit
+"""
 from __future__ import print_function
 
 from qtpy import QtCore

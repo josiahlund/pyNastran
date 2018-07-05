@@ -260,6 +260,38 @@ class Subcase(object):
             options.append('PSDF')
             self.add('FORCE', 'ALL', options, 'STRESS-type')
 
+        elif table_name in ['OESATO1', 'OESATO2']:
+            options.append('PSDF')
+            self.add('STRESS', 'ALL', options, 'STRESS-type')
+        elif table_name in ['OESCRM1', 'OESCRM2']:
+            options.append('CRM')
+            self.add('STRESS', 'ALL', options, 'STRESS-type')
+        elif table_name in ['OESRMS1', 'OESRMS2', 'OESXRMS1']:
+            options.append('RMS')
+            self.add('STRESS', 'ALL', options, 'STRESS-type')
+        elif table_name in ['OESNO1', 'OESNO2']:
+            options.append('NO')
+            self.add('STRESS', 'ALL', options, 'STRESS-type')
+        elif table_name in ['OESPSD1', 'OESPSD2']:
+            options.append('PSDF')
+            self.add('STRESS', 'ALL', options, 'STRESS-type')
+
+        elif table_name in ['OSTRATO1', 'OSTRATO2']:
+            options.append('PSDF')
+            self.add('STRAIN', 'ALL', options, 'STRESS-type')
+        elif table_name in ['OSTRCRM1', 'OSTRCRM2']:
+            options.append('CRM')
+            self.add('STRAIN', 'ALL', options, 'STRESS-type')
+        elif table_name in ['OSTRRMS1', 'OSTRRMS2']:
+            options.append('RMS')
+            self.add('STRAIN', 'ALL', options, 'STRESS-type')
+        elif table_name in ['OSTRNO1', 'OSTRNO2']:
+            options.append('NO')
+            self.add('STRAIN', 'ALL', options, 'STRESS-type')
+        elif table_name in ['OSTRPSD1', 'OSTRPSD2']:
+            options.append('PSDF')
+            self.add('STRAIN', 'ALL', options, 'STRESS-type')
+
         elif table_name in ['OEFIT']:
             if table_code in [25]:
                 self.add('FORCE', 'ALL', options, 'STRESS-type')
@@ -281,10 +313,18 @@ class Subcase(object):
                             'OESNLXD', 'OESNLXR', 'OESNLBR', 'OESTRCP',
                             'OESVM1', 'OESVM1C', 'OESNL1X']:
             #assert data_code['is_stress_flag'] == True, data_code
+            options.append('SORT1')
             if table_code == 5:
                 self.add('STRESS', 'ALL', options, 'STRESS-type')
             else:
                 self._write_op2_error_msg(log, self.log, msg, data_code)
+        elif table_name in ['OES2']:
+            options.append('SORT2')
+            if table_code == 5:
+                self.add('STRESS', 'ALL', options, 'STRESS-type')
+            else:
+                self._write_op2_error_msg(log, self.log, msg, data_code)
+
         elif table_name in ['OESRT']:
             #assert data_code['is_stress_flag'] == True, data_code
             if table_code == 25:

@@ -249,14 +249,14 @@ TABLE_OBJ_MAP = {
     'chexa_strain' : (RealSolidStrainArray, ComplexSolidStrainArray),
     'grid_point_forces' : (RealGridPointForcesArray, ComplexGridPointForcesArray),
 
-    'ctria3_force' : (RealPlateForceArray, ComplexPlateForceArray),
-    'cquad4_force' : (RealPlateForceArray, RealPlateBilinearForceArray,
-                      ComplexPlateForceArray, ComplexPlate2ForceArray),
     'cquad8_force' : (RealPlateBilinearForceArray, ComplexPlate2ForceArray),
     'cquadr_force' : (RealPlateBilinearForceArray, ComplexPlate2ForceArray),
     'ctria6_force' : (RealPlateBilinearForceArray, ComplexPlate2ForceArray),
     'ctriar_force' : (RealPlateBilinearForceArray, ComplexPlate2ForceArray),
 
+    'ctria3_force' : (RealPlateForceArray, ComplexPlateForceArray),
+    'cquad4_force' : (RealPlateForceArray, RealPlateBilinearForceArray,
+                      ComplexPlateForceArray, ComplexPlate2ForceArray),
     'cgap_force' : (RealCGapForceArray, None),
 
     'cbend_force' : (RealBendForceArray, ComplexCBendForceArray),
@@ -487,13 +487,20 @@ def _get_obj_class(objs, class_name, result_name, unused_is_real, log):
 
     # does what the two previous lines should do...
     obj_map = {str(obj).split("'")[1].split('.')[-1] : obj for obj in objs if obj is not None}
-
     try:
         obj_class = obj_map[class_name]
     except KeyError:
         keysi = list(obj_map.keys())
         print(objs)
-        print(obj_map)
+
+        print('obj_map:')
+        for key, value in iteritems(obj_map):
+            print('  %s : %s' % (key, value))
+
+        # if the obj_map is wrong, you probably have an issue in:
+        # - get_oes_prefix_postfix
+        # - get_oef_prefix_postfix
+        # or other similar function
         log.warning('skipping result_name=%r class_name=%r keys=%s' % (
             result_name, class_name, keysi))
         #raise RuntimeError('result_name=%r class_name=%r keys=%s' % (
@@ -626,7 +633,7 @@ def load_op2_from_hdf5_file(model, h5_file, log, debug=False):
                            superelement_adaptivity_index, pval_step)
                     slot = getattr(model, result_name)
                     slot[key] = obj
-                    log.debug('  loaded %r' % result_name)
+                    #log.debug('  loaded %r' % result_name)
                 else:
                     log.warning('  unhandled %r...' % result_name)
                     #raise NotImplementedError('  unhandled %r...' % result_name)

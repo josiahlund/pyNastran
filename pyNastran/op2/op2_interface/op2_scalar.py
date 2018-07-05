@@ -840,7 +840,7 @@ class OP2_Scalar(LAMA, ONR, OGPF,
             b'OEFIT' : [self._read_oef1_3, self._read_oef1_4],  # failure indices
             b'OEF1X' : [self._read_oef1_3, self._read_oef1_4],  # element forces at intermediate stations
             b'OEF1'  : [self._read_oef1_3, self._read_oef1_4],  # element forces or heat flux
-            b'HOEF1':  [self._read_oef1_3, self._read_oef1_4], # element heat flux
+            b'HOEF1' : [self._read_oef1_3, self._read_oef1_4],  # element heat flux
             b'DOEF1' : [self._read_oef1_3, self._read_oef1_4],  # scaled response spectra - forces
 
             # off force
@@ -1224,6 +1224,8 @@ class OP2_Scalar(LAMA, ONR, OGPF,
         """auto-table skipper"""
         if self.is_debug_file:
             self.binary_debug.write('  skipping table = %s\n' % self.table_name)
+        if self.table_name not in GEOM_TABLES and self.isubtable > -4:
+            self.log.warning('    skipping table: %s' % self.table_name_str)
         return ndata
 
     def _validate_op2_filename(self, op2_filename):

@@ -511,7 +511,7 @@ class FortranFormat(object):
             if self.table_name in oes_nl and hasattr(self, 'num_wide') and self.num_wide == 146:
                 data_code_old = deepcopy(self.data_code)
 
-            self.data_code = {}
+            self.data_code = {'_encoding' : self._encoding}
             self.obj = None
             data, ndata = self._read_record_ndata()
             if not passer:
@@ -568,7 +568,7 @@ class FortranFormat(object):
         if self.read_mode == 2:
             self.ntotal = 0
 
-            if is_streaming:
+            if is_streaming:  # pragma: no cover
                 # we stream the record because we get it in partial blocks
                 for data in self._stream_record():
                     data = datai + data
@@ -588,7 +588,7 @@ class FortranFormat(object):
 
             #n = self._skip_record()
             #n = table4_parser(datai, 300000)
-            if is_streaming:
+            if is_streaming:  # pragma: no cover
                 self.ntotal = 0
                 #n = self.n
                 n = 0

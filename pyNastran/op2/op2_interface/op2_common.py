@@ -1102,7 +1102,7 @@ class OP2Common(Op2Codes, F06Writer):
             flag = self.data_code['analysis_method']
             structi = Struct(self._endian + self._analysis_code_fmt + b'i6f')
 
-            psds = ('CRM2', 'NO2', 'PSD2', 'RMS2')
+            #psds = ('CRM2', 'NO2', 'PSD2', 'RMS2')
             #print('sort_method=%s' % self.sort_method)
             #if self.table_name_str.endswith(psds):
             for inode in range(nnodes):
@@ -1381,7 +1381,7 @@ class OP2Common(Op2Codes, F06Writer):
                         msg = 'The object is flipping from a static (e.g. preload)\n'
                         msg += 'result to a transient/frequency based results\n'
                         msg += '%s -> %s\n' % (self.obj.nonlinear_factor, self.nonlinear_factor)
-                        msg += 'code = (subcase=%s, analysis_code=%s, sort=%s, count=%s, subtitle=%s)\n' % tuple(code)
+                        msg += 'code = (subcase=%s, analysis_code=%s, sort=%s, count=%s, ogs=%s, superelement_adaptivity_index=%r pval_step=%r)\n' % tuple(code)
                         msg += '%s\n' % str(self.obj)
                         msg += '\nIf this isnt correct, check if the data code was applied on the object'
                         raise MultipleSolutionNotImplementedError(msg)

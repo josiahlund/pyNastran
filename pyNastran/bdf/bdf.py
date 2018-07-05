@@ -625,10 +625,13 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMesh, UnXrefMesh):
         self.special_cards = ['DEQATN', '/']
         self._make_card_parser()
 
-        if self.is_msc:
+        self._nastran_format = mode
+        if mode == 'msc':
             self.set_as_msc()
-        elif self.is_nx:
+        elif mode == 'nx':
             self.set_as_nx()
+        elif mode == 'zona':
+            self.set_as_zona()
         else:
             msg = 'mode=%r is not supported; modes=[msc, nx]' % self._nastran_format
             raise NotImplementedError(msg)
