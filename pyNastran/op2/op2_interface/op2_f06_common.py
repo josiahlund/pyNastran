@@ -81,6 +81,11 @@ class OP2_F06_Common(object):
         self.modal_contribution_celas2_stress = {}
         self.modal_contribution_celas3_stress = {}
         self.modal_contribution_celas4_stress = {}
+        self.modal_contribution_cquad4_composite_stress = {}
+        self.modal_contribution_ctria3_composite_stress = {}
+
+        self.modal_contribution_cquad4_composite_strain = {}
+        self.modal_contribution_ctria3_composite_strain = {}
 
         self.celas1_strain = {}
         self.celas2_strain = {}
@@ -1060,6 +1065,12 @@ class OP2_F06_Common(object):
             'ctria3_composite_stress',
             'ctria6_composite_stress',
             'ctriar_composite_stress',
+
+            'modal_contribution_cquad4_composite_stress',
+            'modal_contribution_ctria3_composite_stress',
+
+            'modal_contribution_cquad4_composite_strain',
+            'modal_contribution_ctria3_composite_strain',
 
             'cquad4_composite_strain',
             'cquad8_composite_strain',

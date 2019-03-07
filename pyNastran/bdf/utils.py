@@ -22,7 +22,7 @@ from numpy import unique, cross, dot, array  # type: ignore
 import pyNastran
 from pyNastran.bdf.errors import CardParseSyntaxError
 from pyNastran.bdf.cards.collpase_card import collapse_colon_packs
-from pyNastran.utils.numpy_utils import integer_types
+from pyNastran.utils import integer_types
 
 
 _REMOVED_LINES = [
