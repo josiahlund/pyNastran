@@ -79,7 +79,7 @@ def make_log():
         'machine', 'platform', 'processor', 'architecture', 'python_branch',
         'python_revision', 'win32_ver', 'version', 'uname', 'system',
         'python_build', 'python_compiler', 'python_implementation', 'system',
-        'mac_ver', 'linux_distribution', 'libc_ver'
+        'mac_ver', 'libc_ver', #'linux_distribution',
     ]
 
     fmt = '%-{0}s = %s\n'.format(max(map(len, pmsg + [j[0] for j in smsg])))
@@ -135,7 +135,7 @@ class SimpleLogger(object):
         Parameters
         ----------
         typ : str
-            messeage type - ['DEBUG', 'INFO', 'WARNING', 'ERROR']
+            message type - ['DEBUG', 'INFO', 'WARNING', 'ERROR']
         msg : str
             message to be displayed
 
@@ -227,7 +227,7 @@ class SimpleLogger(object):
         msg : str
             message to be logged
         """
-        if self.level in ('critical', ):
+        if self.level in ('error', 'critical', ):
             return
         assert msg is not None, msg
         self.msg_typ('ERROR', msg)

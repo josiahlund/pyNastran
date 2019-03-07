@@ -85,14 +85,15 @@ def write_imag_floats_13e(vals, is_mag_phase):
 
 
 def write_floats_8p4f(vals):
+    """writes an 8.4F formatted number"""
     vals2 = []
-    for v in vals:
-        if v >= 1000.0 or v <= -100.0:
-            raise RuntimeError(v)
-        v2 = '%8.4f' % v
-        if v2 in ('  0.0000', ' -0.0000'):
-            v2 = '  0.0   '
-        vals2.append(v2)
+    for val in vals:
+        if val >= 1000.0 or val <= -100.0:
+            raise RuntimeError(val)
+        val2 = '%8.4f' % val
+        if val2 in ('  0.0000', ' -0.0000'):
+            val2 = '  0.0   '
+        vals2.append(val2)
     return vals2
 
 

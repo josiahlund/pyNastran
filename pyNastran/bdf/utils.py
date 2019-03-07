@@ -22,6 +22,7 @@ from numpy import unique, cross, dot, array  # type: ignore
 import pyNastran
 from pyNastran.bdf.errors import CardParseSyntaxError
 from pyNastran.bdf.cards.collpase_card import collapse_colon_packs
+from pyNastran.utils.numpy_utils import integer_types
 
 
 _REMOVED_LINES = [
@@ -67,111 +68,6 @@ def _to_fields_mntpnt1(card_lines):
     ]
     return fields
 
-#def to_fields_long(card_lines, card_name):
-    ## type: (List[str], str) -> List[str]
-    #"""
-    #Converts a series of lines in a card into string versions of the field.
-    #Handles large, small, and CSV formatted cards.
-
-    #Doesn't consider Nastran's rule about 72 character width fields,
-    #which is nice when you have poorly formatted BDFs.
-
-    #Parameters
-    #----------
-    #lines : List[str]
-        #the lines of the BDF card object
-    #card_name : str
-        #the card_name -> 'GRID'
-
-    #Returns
-    #-------
-    #fields : List[str]
-        #the string formatted fields of the card
-
-    #.. warning:: this function is used by the reader and isn't intended
-                 #to be called by a separate process
-
-    #.. code-block:: python
-
-      #>>> card_lines = ['GRID,1,,1.0,2.0,3.0']
-      #>>> card_name = 'GRID'
-      #>>> fields = to_fields_long(lines, card_name)
-      #>>> fields
-      #['GRID', '1', '', '1.0', '2.0', '3.0']
-    #"""
-    #fields = []  # type: List[str]
-
-    #if card_name == 'MONPNT1':
-        #return _to_fields_mntpnt1(card_lines)
-
-    ## first line
-    #line = card_lines.pop(0)
-    #if '=' in line:
-        #msg = 'card_name=%r\nequal signs are not supported...line=%r' % (card_name, line)
-        #raise CardParseSyntaxError(msg)
-
-    #if '\t' in line:
-        #line = line.expandtabs()
-        #if ',' in line:
-            #msg = 'tabs and commas in the same line are not supported...line=%r' % line
-            #raise CardParseSyntaxError(msg)
-
-    #if '*' in line:  # large field
-        #if ',' in line:  # csv
-            #new_fields = line.split(',')[:5]
-            #for i in range(5 - len(new_fields)):
-                #new_fields.append('')
-        #else:  # standard
-            #new_fields = [line[0:8], line[8:24], line[24:40], line[40:56],
-                          #line[56:72]]
-        #fields += new_fields
-        #assert len(fields) == 5, fields
-    #else:  # small field
-        #if ',' in line:  # csv
-            #new_fields = line.split(',')[:9]
-            #for i in range(9 - len(new_fields)):
-                #new_fields.append('')
-        #else:  # standard
-            #new_fields = [line[0:8], line[8:16], line[16:24], line[24:32],
-                          #line[32:40], line[40:48], line[48:56], line[56:64],
-                          #line[64:72]]
-        #fields += new_fields
-        #assert len(fields) == 9, fields
-
-    #for j, line in enumerate(card_lines): # continuation lines
-        #if '=' in line and card_name != 'EIGRL':
-            #msg = 'card_name=%r\nequal signs are not supported...line=%r' % (card_name, line)
-            #raise CardParseSyntaxError(msg)
-        #if '\t' in line:
-            #line = line.expandtabs()
-            #if ',' in line:
-                #msg = 'tabs and commas in the same line are not supported...line=%r' % line
-                #raise CardParseSyntaxError(msg)
-
-        #if '*' in line:  # large field
-            #if ',' in line:  # csv
-                #new_fields = line.split(',')[1:5]
-                #for i in range(4 - len(new_fields)):
-                    #new_fields.append('')
-            #else:  # standard
-                #new_fields = [line[8:24], line[24:40], line[40:56], line[56:72]]
-            #assert len(new_fields) == 4, new_fields
-        #else:  # small field
-            #if ',' in line:  # csv
-                #new_fields = line.split(',')[1:9]
-                #for i in range(8 - len(new_fields)):
-                    #new_fields.append('')
-            #else:  # standard
-                #new_fields = [line[8:16], line[16:24], line[24:32],
-                              #line[32:40], line[40:48], line[48:56],
-                              #line[56:64], line[64:72]]
-            #if len(new_fields) != 8:
-                #nfields = len(new_fields)
-                #msg = 'nFields=%s new_fields=%s' % (nfields, new_fields)
-                #raise RuntimeError(msg)
-
-        #fields += new_fields
-    #return fields #[field.strip() for field in fields]
 
 def to_fields(card_lines, card_name):
     # type: (List[str], str) -> List[str]
@@ -473,7 +369,7 @@ def parse_patran_syntax(node_sets, pound=None):
     """
     assert isinstance(node_sets, string_types), type(node_sets)
     if pound is not None:
-        assert isinstance(pound, (string_types, int)), type(pound)
+        assert isinstance(pound, (string_types, integer_types)), type(pound)
         node_sets = node_sets.replace('#', str(pound).strip())
     if len(node_sets) == 0:
         return array([], dtype='int32')
@@ -881,7 +777,7 @@ def PositionWRT(xyz, cid, cid_new, model, is_cid_int=True):
         cp_ref = cid
         coord_to_ref = cid_new
 
-    if 0:
+    if 0:  # pragma: no cover
         # pGlobal = pLocal1 * beta1 + porigin1
         # pGlobal = pLocal2 * beta2 + porigin2
         # pLocal1 * beta1 + porigin1 = pLocal2 * beta2 + porigin2
@@ -990,8 +886,8 @@ def split_eids_along_nids(model, eids, nids):
 
     Implicitly returns model with additional nodes.
 
-    Note
-    ----
+    Notes
+    -----
     xref should be set to False for this function.
 
     """

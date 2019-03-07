@@ -31,15 +31,15 @@ is_dev = (
 is_travis = 'TRAVIS' in os.environ
 is_rtd = 'READTHEDOCS' in os.environ
 
-if sys.version_info <= (3,) or not is_dev:
+if not is_dev:
     try:
         import vtk
         vtk_version = '.'.join(vtk.VTK_VERSION.split('.'))
-        if vtk_version < '5.10.1':
-            print("vtk.VTK_VERSION = %r < '5.10.1'" % vtk.VTK_VERSION)
-            py2_packages.append('vtk >= 5.10.1')
+        if vtk_version < '7.0.0':
+            print("vtk.VTK_VERSION = %r < '7.0.0'" % vtk.VTK_VERSION)
+            py2_packages.append('vtk >= 7.0.0')
     except ImportError:
-        py2_packages.append('vtk >= 5.10.1')  # 8.x used
+        py2_packages.append('vtk >= 7.0.0')  # 8.x used
 
     py2_packages += [
         ##'dill'
@@ -191,8 +191,7 @@ setup(
     name='pyNastran',
     version=pyNastran.__version__,
     description=pyNastran.__desc__,
-    long_description="""\
-""",
+    long_description=pyNastran.__longdesc__,
     classifiers=[
         'Natural Language :: English',
         'Intended Audience :: Science/Research',
@@ -225,7 +224,6 @@ setup(
             'test_bdf  = pyNastran.bdf.test.test_bdf:main',
             'test_op2  = pyNastran.op2.test.test_op2:main',
             'test_op4  = pyNastran.op4.test.test_op4:main',
-            #'test_abaqus = pyNastran.converters.abaqus.test_abaqus:main',
             'test_pynastrangui = pyNastran.gui.test.test_gui:main',
 
             'format_converter = pyNastran.converters.type_converter:main',

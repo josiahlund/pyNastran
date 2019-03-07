@@ -1179,8 +1179,11 @@ class RectangularCoord(object):
         return p
 
 
+
 class CylindricalCoord(object):
     r"""
+    defines common methods for cylindrical coordinate systems
+
     .. math:: r      = \sqrt(x^2+y^2)
     .. math:: \theta = tan^{-1}\left(\frac{y}{x}\right)
     .. math:: z      = z
@@ -1308,6 +1311,8 @@ class CylindricalCoord(object):
 
 class SphericalCoord(object):
     r"""
+    defines common methods for spherical coordinate systems
+
     .. math:: r = \rho = \sqrt(x^2+y^2+z^2)
 
     .. math:: \theta   = \cos^{-1}\left(\frac{z}{r}\right)
@@ -2050,9 +2055,11 @@ class Cord1x(Coord):
 
 
 class GMCORD(BaseCard):
+    """defines the GMCOORD class"""
     type = 'GMCORD'
 
     def __init__(self, cid, entity, gm_ids, comment=''):
+        """Creates a GMCOORD"""
         if comment:
             self.comment = comment
         self.cid = cid
@@ -2603,8 +2610,8 @@ def create_coords_along_line(model, p1, p2, percents, cid=0, axis=1):
            the coord id
         inids : (nnodes_in_cid)
 
-    Warning
-    -------
+    Warnings
+    --------
      - requires at least 1 node
     """
     cid = max(list(model.coords.keys())) + 1

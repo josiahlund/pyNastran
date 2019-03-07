@@ -21,6 +21,7 @@ Defines:
 """
 import re
 from copy import deepcopy
+from six import string_types
 
 class ResultSet(object):
     """
@@ -40,6 +41,7 @@ class ResultSet(object):
         self.saved = deepcopy(self.allowed)
 
     def is_saved(self, result):
+        """checks to see if a result is saved"""
         if result not in self.allowed:
             #print(self.allowed)
             raise RuntimeError("result=%r is invalid; the name changed or it's a typo" % result)
@@ -48,15 +50,21 @@ class ResultSet(object):
         return False
 
     def is_not_saved(self, result):
+        """checks to see if a result is saved"""
         return not self.is_saved(result)
 
     def clear(self):
+        """clears all the results"""
         self.saved.clear()
 
     def add(self, result):
+        """addds a list/str of results"""
         self.saved.add(result)
 
     def remove(self, results):
+        """removes a list/str of results"""
+        if isinstance(results, string_types):
+            results = [results]
         all_matched_results = []
         for result in results:
             resulti = '\w' + result if result.startswith('*') else result
@@ -91,6 +99,7 @@ class ResultSet(object):
         #pass
 
     def __repr__(self):
+        """defines the repr"""
         msg = 'ResultSet:\n'
         msg += ' results:\n'
         for result in sorted(self.allowed):

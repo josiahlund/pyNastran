@@ -596,7 +596,7 @@ class XrefMesh(BDFAttributes):
         for unused_key, dvprel in iteritems(self.dvprels):
             dvprel.cross_reference(self)
 
-    def geom_check(self, geom_check, xref):
+    def geom_check(self, geom_check, xref):  # pragma: no cover
         # type: (bool, bool) -> None
         """
         what about xref?

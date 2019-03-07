@@ -32,6 +32,7 @@ FORMAT_TO_EXTENSION = {
     #'abaqus' : ['.inp'],
 }
 
+
 def determine_format(input_filename, allowed_formats=None):
     """
     Tries to map the input filename to an extension.

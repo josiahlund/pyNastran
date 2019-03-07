@@ -15,6 +15,7 @@ import vtk
 from qtpy import QtGui
 from qtpy.QtWidgets import QMainWindow
 
+import pyNastran
 from pyNastran.gui.gui_objects.settings import Settings
 
 from pyNastran.gui.qt_files.tool_actions import ToolActions
@@ -37,7 +38,7 @@ from pyNastran.gui.utils.vtk.vtk_utils import (
 from pyNastran.bdf.cards.base_card import deprecated
 from pyNastran.utils import print_bad_path
 IS_TESTING = 'test' in sys.argv[0]
-
+IS_OFFICIAL_RELEASE = 'dev' not in pyNastran.__version__
 
 class GuiAttributes(object):
     """All methods in this class must not require VTK"""
@@ -84,6 +85,8 @@ class GuiAttributes(object):
             self.is_testing_flag = inputs['test']
         else:
             self.is_testing_flag = False
+
+        # just initializing the variable
         self.is_groups = False
         self._logo = None
         self._script_path = None
@@ -343,7 +346,6 @@ class GuiAttributes(object):
 
         nnodes = nodes.shape[0]
         nquads = elements.shape[0]
-        #print(nodes)
         if nnodes == 0:
             return
         if nquads == 0:
@@ -742,7 +744,7 @@ class GuiAttributes(object):
 
         Parameters
         ----------
-        coord_id : float
+        coord_id : int
             the coordinate system id
         dim_max : float
             the max model dimension; 10% of the max will be used for the coord length
@@ -822,7 +824,6 @@ class GuiAttributes(object):
 
     def build_fmts(self, fmt_order, stop_on_failure=False):
         """populates the formats that will be supported"""
-        stop_on_failure = True
         fmts = []
         for fmt in fmt_order:
             geom_results_funcs = 'get_%s_wildcard_geometry_results_functions' % fmt
@@ -836,7 +837,11 @@ class GuiAttributes(object):
                 msg = 'get_%s_wildcard_geometry_results_functions does not exist' % fmt
                 if stop_on_failure:
                     raise RuntimeError(msg)
-                self.log_error(msg)
+                if not IS_OFFICIAL_RELEASE:
+                    if self.log is None:
+                        print('***', msg)
+                    else:
+                        self.log_error(msg)
             self._add_fmt(fmts, fmt, geom_results_funcs, data)
 
         if len(fmts) == 0:
@@ -994,7 +999,7 @@ class GuiAttributes(object):
         if input_filenames is not None:
             for input_filename in input_filenames:
                 if not os.path.exists(input_filename):
-                    msg = '%s does not exist\n%s' % (
+                    msg = 'input filename: %s does not exist\n%s' % (
                         input_filename, print_bad_path(input_filename))
                     self.log.error(msg)
                     if self.html_logging:

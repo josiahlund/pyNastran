@@ -43,6 +43,7 @@ class CaseControlDeck(object):
     """
     CaseControlDeck parsing and extraction class
     """
+    type = 'CaseControlDeck'
 
     def __getstate__(self):
         # Copy the object's state from self.__dict__ which contains
@@ -524,7 +525,7 @@ class CaseControlDeck(object):
         for letter in line:
             if letter == '=':
                 equals_count += 1
-        line_upper = line.upper()
+        line_upper = line.upper().expandtabs()
 
         #print("line_upper = %r" % line)
         #print('  equals_count = %s' % equals_count)
@@ -702,6 +703,9 @@ class CaseControlDeck(object):
             else:
                 key = 'TEMPERATURE(BOTH)'
                 options = []
+                param_type = 'STRESS-type'
+            value = int(value)
+
         elif line_upper.startswith('RIGID'):
             if '=' in line:
                 (key, value) = line_upper.strip().split('=')
@@ -791,7 +795,6 @@ class CaseControlDeck(object):
                 options = str_options.split(',')
             param_type = 'STRESS-type'
             key = key.upper()
-            #print('options =', options)
 
         elif line_upper.startswith('BEGIN'):  # begin bulk
             try:

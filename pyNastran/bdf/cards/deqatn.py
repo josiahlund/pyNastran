@@ -48,6 +48,25 @@ def db(p, pref):
     return 20. * log(p / pref)
 
 def atan2h(x, y):
+    """
+    Hyperbolic arctangent
+    >>> arctanh(z) = 1/2 Log((1+z)/(1-z))
+
+    real:
+        the following must be true: |x1| > |x2| and x2 ≠ 0.
+
+    complex:
+        x1 = a + bi
+        x2 = b + di
+        a = b = 0 and (sign of c) = (sign of d):
+             the result is 0.
+        a = b = 0 and (sign of c) ≠ (sign of d):
+             the result is π.
+        c = d = 0 and (sign of a) = (sign of b):
+             the result is π/2.
+        c = d = 0 and (sign of a) ≠ (sign of b):
+             the result is −π/2
+    """
     raise NotImplementedError()
 
 def invdb(dbi, pref):

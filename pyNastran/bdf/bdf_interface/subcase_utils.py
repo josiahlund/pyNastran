@@ -5,8 +5,8 @@ defines:
  - write_stress_type(key, options, value, spaces='')
 """
 from __future__ import print_function
-from six import string_types
 from typing import List
+from six import string_types
 from pyNastran.utils import integer_types
 from pyNastran.bdf.cards.collpase_card import collapse_thru_packs
 from pyNastran.bdf.bdf_interface.assign_type import interpret_value

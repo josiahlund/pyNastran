@@ -1494,9 +1494,9 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMesh, UnXrefMesh):
 
             elif comment:
                 backup_comment += comment + '\n'
-                #print('add backup=%r' % backup_comment)
             #elif comment:
                 #backup_comment += '$' + comment + '\n'
+
 
         if card_lines:
             if self.echo and not self.force_echo_off:
@@ -1746,6 +1746,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMesh, UnXrefMesh):
             the card_name -> 'GRID'
 
         """
+        assert '=' not in card_name, card_name
         if card_name.startswith('='):
             return False
         elif card_name in self.cards_to_read:
@@ -2507,7 +2508,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMesh, UnXrefMesh):
                 self._dmig_temp[name].append((card_obj, comment))
 
     def _prepare_dmix(self, class_obj, add_method, card_obj, comment=''):
-        """adds a DMIx"""
+        """adds a DMI, DMIJ, DMIJI, or DMIK"""
         #elif card_name in ['DMI', 'DMIJ', 'DMIJI', 'DMIK']:
         field2 = integer(card_obj, 2, 'flag')
         if field2 == 0:
@@ -3252,8 +3253,9 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMesh, UnXrefMesh):
             raise ValueError(msg)
 
         i = 0
-        xyz_cp = np.zeros((nnodes + nspoints + nepoints, 3), dtype=fdtype)
-        nid_cp_cd = np.zeros((nnodes + nspoints + nepoints, 3), dtype=idtype)
+        nxyz = nnodes + nspoints + nepoints
+        xyz_cp = np.zeros((nxyz, 3), dtype=fdtype)
+        nid_cp_cd = np.zeros((nxyz, 3), dtype=idtype)
         for nid, node in sorted(iteritems(self.nodes)):
             cd = node.Cd()
             cp = node.Cp()
@@ -3326,9 +3328,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMesh, UnXrefMesh):
             ``self.point_ids`` that their input (`CP`) in that
             coordinate system.
 
-        TODO
-        ----
-        how are SPOINTs/EPOINTs identified?
+        .. todo:: how are SPOINTs/EPOINTs identified?
         """
         icd_transform, icp_transform, xyz_cp, nid_cp_cd = self.get_displacement_index_xyz_cp_cd(
             fdtype=fdtype, idtype=idtype, sort_ids=True)
@@ -4245,9 +4245,9 @@ class BDF(BDF_):
         ----------
         debug : bool/None; default=True
             used to set the logger if no logger is passed in
-                True:  logs debug/info/error messages
-                False: logs info/error messages
-                None:  logs error messages
+                True:  logs debug/info/warning/error messages
+                False: logs info/warning/error messages
+                None:  logs warning/error messages
         log : logging module object / None
             if log is set, debug is ignored and uses the
             settings the logging object has
@@ -4276,8 +4276,8 @@ class BDF(BDF_):
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
-        for k, v in self.__dict__.items():
-            setattr(result, k, deepcopy(v, memo))
+        for key, value in self.__dict__.items():
+            setattr(result, key, deepcopy(value, memo))
         return result
 
     def __copy__(self):

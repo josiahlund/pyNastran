@@ -214,7 +214,7 @@ def validate_dvprel(prop_type, pname_fid, validate):
         #assert pname_fid in ['X1', 'X2', 'X3', 'W1A', 'W2A', 'W3A', 'W1B', 'W2B', 'W3B'], msg
     elif prop_type == 'PBEAM':
         options = [
-            'I1', 'I2', 'A', 'J',
+            'I1', 'I2', 'A', 'I12', 'J',
             'I1(A)', 'I1(B)', 'I2(B)',
             'C1', 'C2', 'D1', 'D2', 'E1', 'E2', 'F1', 'F2',
             #-8, -9, -10, -14, -15, -16, -17, -18, -19, -20, -21,

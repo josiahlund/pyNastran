@@ -216,13 +216,13 @@ class LegendObject(object):
 
         Parameters
         ----------
-        use_fringe_internal : bool; default=Falsee
+        use_fringe_internal : bool; default=False
             True : use the internal fringe parameters
             False : use the values that were passed in
-        use_disp_internal : bool; default=Falsee
+        use_disp_internal : bool; default=False
             True : use the internal of scale and phase
             False : use the values that were passed in
-        use_vector_internal : bool; default=Falsee
+        use_vector_internal : bool; default=False
             True : use the internal of arrow_scale
             False : use the values that were passed in
         external_call : bool; default=True

@@ -140,8 +140,7 @@ class OP4(object):
 
         if file_is_binary(op4_filename):
             return self.read_op4_binary(op4_filename, matrix_names, precision)
-        else:
-            return self.read_op4_ascii(op4_filename, matrix_names, precision)
+        return self.read_op4_ascii(op4_filename, matrix_names, precision)
 
 #--------------------------------------------------------------------------
     def read_op4_ascii(self, op4_filename, matrix_names=None, precision='default'):
@@ -255,7 +254,7 @@ class OP4(object):
 
                 run_loop = False
                 #iword = 0
-                is_done_reading_row = False
+                #is_done_reading_row = False
                 while nwords:
                     n = 0
                     line = op4.readline().rstrip()
@@ -265,7 +264,7 @@ class OP4(object):
                         was_broken = True
                         break
 
-                    for i in range(nwords_in_line):
+                    for unused_i in range(nwords_in_line):
                         word = line[n:n + line_size]
                         rows.append(irow)
                         cols.append(icol)
@@ -293,7 +292,8 @@ class OP4(object):
         #A = A.todense()
         return A, iline
 
-    def _read_real_sparse_ascii_new(self, op4, iline, nrows, ncols, line_size, line, dtype, is_big_mat):
+    def _read_real_sparse_ascii_new(self, op4, iline, nrows, ncols, line_size, line,
+                                    dtype, is_big_mat):
         """reads a sparse real ASCII matrix"""
         self.log.debug('_read_real_sparse_ascii')
         rows = []
@@ -336,7 +336,7 @@ class OP4(object):
                     irow, iline = self._get_irow_small_ascii(op4, iline, line, sline, irow)
 
                 run_loop = False
-                is_done_reading_row = False
+                #is_done_reading_row = False
                 while nwords:
                     line = op4.readline().rstrip()
                     iline += 1
@@ -347,7 +347,7 @@ class OP4(object):
 
                     irows = list(range(irow, irow + nwords_in_line))
                     n = 0
-                    for i in range(nwords_in_line):
+                    for unused_i in range(nwords_in_line):
                         word = line[n:n + line_size]
                         entries.append(word)
                         n += line_size
@@ -416,7 +416,7 @@ class OP4(object):
                 run_loop = False
                 #i = 0
                 #iword = 0
-                is_done_reading_row = False
+                #is_done_reading_row = False
                 while nwords:
                     n = 0
                     line = op4.readline().rstrip()
@@ -426,7 +426,7 @@ class OP4(object):
                         was_broken = True
                         break
 
-                    for i in range(nwords_in_line):
+                    for unused_i in range(nwords_in_line):
                         word = line[n:n + line_size]
                         A[irow - 1, icol - 1] = word
                         n += line_size
@@ -489,7 +489,7 @@ class OP4(object):
 
                 #i = 0
                 is_real = True
-                is_done_reading_row = False
+                #is_done_reading_row = False
                 while nwords:
                     n = 0
                     line = op4.readline().rstrip()
@@ -499,7 +499,7 @@ class OP4(object):
                         was_broken = True
                         break
 
-                    for i in range(nwords_in_line):
+                    for unused_i in range(nwords_in_line):
                         value = float(line[n:n + line_size])
 
                         if is_real:
@@ -564,7 +564,7 @@ class OP4(object):
                 run_loop = False
 
                 iword = 0
-                is_done_reading_row = False
+                #unused_is_done_reading_row = False
                 while nwords:
                     n = 0
                     line = op4.readline().rstrip()
@@ -574,7 +574,7 @@ class OP4(object):
                         was_broken = True
                         break
 
-                    for i in range(nwords_in_line):
+                    for unused_i in range(nwords_in_line):
                         value = float(line[n:n + line_size])
 
                         if iword % 2 == 0:
@@ -808,6 +808,7 @@ class OP4(object):
         elif Type in [3, 4]:  # complex
             A = self._read_complex_binary(op4, nrows, ncols, Type, is_sparse, is_big_mat)
         else:
+            self.log.error('is_sparse=%s data_format=%s dtype=%s' % (is_sparse, data_format, dtype))
             raise TypeError("Type=%s" % Type)
 
         #try:
@@ -1346,7 +1347,7 @@ class OP4(object):
 
     def get_markers_sparse(self, op4, is_big_mat):
         if is_big_mat:
-            (a, icol, irow, nwords) = self.read_start_marker(op4)
+            (unused_a, icol, irow, nwords) = self.read_start_marker(op4)
             #irow = self._get_irow_big(op4)
             nwords -= 2
             #if nwords > 1:
@@ -1355,9 +1356,9 @@ class OP4(object):
                #print("nwords0 = %s" % nwords)
                #nwords = 0
         else:
-            a, icol, irow, nwords = self.read_start_marker(op4)
-            if irow != 0:
-                assert nwords == 1, 'nwords=%s' % nwords
+            unused_a, icol, irow, nwords = self.read_start_marker(op4)
+            #if irow != 0:
+                #assert nwords == 1, 'nwords=%s' % nwords
 
             #irow = self._get_irow_small(f)
             nwords -= 1
@@ -1393,13 +1394,14 @@ class OP4(object):
             Overwrite the default precision ('single', 'double', 'default')
             Applies to all matrices
 
-        Method 1:
-        ---------
+        Examples
+        --------
+        # simple
         >>> write_op4(op4_filename, name_order=['A', 'B', 'C'],
                       precision='default', is_binary=True)
-        Method 2:
-        ---------
-        matrices = {
+
+        # another method
+        >>> matrices = {
             'A' : (formA, matrixA),
             'B' : (formB, matrixB),
         }
@@ -1557,7 +1559,7 @@ class OP4(object):
         op4.write(msg)
 
         for icol in range(ncols):
-            (istart, iend) = self._get_start_end_row(A[:, icol], nrows)
+            (istart, iend) = _get_start_end_row(A[:, icol], nrows)
 
             # write the column
             if istart is not None and iend is not None:
@@ -1588,20 +1590,6 @@ class OP4(object):
             msg = pack(self._endian + '4id', 24, ncols + 1, 1, 1, 1.0)
         op4.write(msg)
 
-    def _get_start_end_row(self, A, nrows):
-        """find the starting and ending points of the matrix"""
-        istart = None
-        for irow in range(nrows):
-            if abs(A[irow]) > 0.0:
-                istart = irow
-                break
-        iend = None
-        for irow in reversed(range(nrows)):
-            if abs(A[irow]) > 0.0:
-                iend = irow
-                break
-        return (istart, iend)
-
     def _write_dense_matrix_ascii(self, op4, name, A, form=2, precision='default'):
         """writes a dense ASCII matrx"""
         if self.debug:
@@ -1615,7 +1603,7 @@ class OP4(object):
         if matrix_type in [1, 2]: # real
             for icol in range(ncols):
                 value_str = ''
-                (istart, iend) = self._get_start_end_row(A[:, icol], nrows)
+                (istart, iend) = _get_start_end_row(A[:, icol], nrows)
 
                 # write the column
                 if istart is not None and iend is not None:  # not a null column
@@ -1633,7 +1621,7 @@ class OP4(object):
         else: # complex
             for icol in range(ncols):
                 value_str = ''
-                (istart, iend) = self._get_start_end_row(A[:, icol], nrows)
+                (istart, iend) = _get_start_end_row(A[:, icol], nrows)
 
                 # write the column
                 if istart is not None and iend is not None:  # not a null column
@@ -1665,13 +1653,12 @@ class OP4(object):
     def _determine_endian(self, op4):
         """get the endian"""
         data = op4.read(8)
-        (record_length_big, dum_a) = unpack('>ii', data)
-        (record_length_little, dum_b) = unpack('<ii', data)
+        (record_length_big, unused_dum_a) = unpack('>ii', data)
+        (record_length_little, unused_dum_b) = unpack('<ii', data)
 
+        # 64-bit
         record_length_big2, = unpack('>Q', data)
         record_length_little2, = unpack('<Q', data)
-        self.log.info('rc2=%s, %s' % (record_length_big2, record_length_little2))
-
         if record_length_big == 24:
             endian = '>'
             self.large = False
@@ -1685,6 +1672,8 @@ class OP4(object):
             endian = '<'
             self.large = True
         else:
+            self.log.info('rc2 big=%s, little=%s' % (record_length_big2, record_length_little2))
+
             msg = 'a 24 could not be found as the first word...endian error\n'
             msg += "record_length_big=%s record_length_little=%s" % (
                 record_length_big, record_length_little)
@@ -1693,6 +1682,21 @@ class OP4(object):
             raise RuntimeError(msg)
         op4.seek(0)
         return endian
+
+
+def _get_start_end_row(A, nrows):
+    """find the starting and ending points of the matrix"""
+    istart = None
+    for irow in range(nrows):
+        if abs(A[irow]) > 0.0:
+            istart = irow
+            break
+    iend = None
+    for irow in reversed(range(nrows)):
+        if abs(A[irow]) > 0.0:
+            iend = irow
+            break
+    return (istart, iend)
 
 def _write_sparse_matrix_ascii(op4, name, A, form=2, is_big_mat=False,
                                precision='default'):

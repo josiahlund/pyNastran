@@ -177,10 +177,12 @@ class GuiCommon2(QMainWindow, GuiCommon):
 
     @property
     def scalarBar(self):
+        """gets the scalar bar actor"""
         return self.scalar_bar.scalar_bar
 
     @property
     def color_function(self):
+        """gets the scalar bar's color function"""
         return self.scalar_bar.color_function
 
     #def get_color_function(self):
@@ -361,6 +363,7 @@ class GuiCommon2(QMainWindow, GuiCommon):
 
                 ('website', 'Open pyNastran Website...', '', None, 'Open the pyNastran website', self.open_website),
                 ('docs', 'Open pyNastran Docs Website...', '', None, 'Open the pyNastran documentation website', self.open_docs),
+                ('report_issue', 'Report a Bug/Feature Request...', '', None, 'Open the pyNastran issue tracker', self.open_issue),
                 ('discussion_forum', 'Discussion Forum Website...', '', None, 'Open the discussion forum to ask questions', self.open_discussion_forum),
                 ('about', 'About pyNastran GUI...', 'tabout.png', 'CTRL+H', 'About pyNastran GUI and help on shortcuts', self.about_dialog),
 
@@ -458,6 +461,7 @@ class GuiCommon2(QMainWindow, GuiCommon):
         if self.is_groups:
             menu_view += ['modify_groups', 'create_groups_by_property_id',
                           'create_groups_by_visible_result']
+
         menu_view += [
             '', 'clipping', #'axis',
             'edges', 'edges_black',]
@@ -492,7 +496,7 @@ class GuiCommon2(QMainWindow, GuiCommon):
             menu_items['file'] = (self.menu_file, menu_file)
             menu_items['view'] = (self.menu_view, menu_view)
             menu_items['main'] = (self.menu_window, menu_window)
-            menu_items['help'] = (self.menu_help, ('website', 'docs', 'discussion_forum', 'about',))
+            menu_items['help'] = (self.menu_help, ('website', 'docs', 'report_issue', 'discussion_forum', 'about',))
             menu_items['scripts'] = (self.menu_scripts, scripts)
             menu_items['toolbar'] = (self.toolbar, toolbar_tools)
             menu_items['hidden'] = (self.menu_hidden, hidden_tools)
@@ -1646,6 +1650,8 @@ class GuiCommon2(QMainWindow, GuiCommon):
         ..todo :: support cids
         ..todo :: fix the coords
         """
+        if cids is None:
+            cids = self.axes.keys()
         for axis in itervalues(self.axes):
             axis.VisibilityOff()
         self.corner_axis.EnabledOff()
@@ -1655,6 +1661,8 @@ class GuiCommon2(QMainWindow, GuiCommon):
         ..todo :: support cids
         ..todo :: fix the coords
         """
+        if cids is None:
+            cids = self.axes.keys()
         for axis in itervalues(self.axes):
             axis.VisibilityOn()
         self.corner_axis.EnabledOn()
@@ -1792,7 +1800,9 @@ class GuiCommon2(QMainWindow, GuiCommon):
             self.log_error(str(error))
             self.stop_animation()
             return is_failed
-        phases, icases_fringe, icases_disp, icases_vector, isteps, scales, analysis_time, onesided, endpoint = out
+        (phases, icases_fringe, icases_disp, icases_vector,
+         isteps, scales,
+         analysis_time, onesided, unused_endpoint) = out
 
         if animate_time:
             icase_msg = '         icase_start=%s, icase_end=%s, icase_delta=%s,\n' % (
@@ -1915,7 +1925,7 @@ class GuiCommon2(QMainWindow, GuiCommon):
                          min_value, max_value):
         """applies the animation update callback"""
         #print('icase_fringe=%r icase_fringe0=%r' % (icase_fringe, icase_fringe0))
-        arrow_scale = None # self.glyph_scale_factor * scale
+        arrow_scale = None  # self.glyph_scale_factor * scale
         icase_vector = None
         is_legend_shown = self.scalar_bar.is_shown
         if icase_disp != icase_disp0:
@@ -1939,7 +1949,8 @@ class GuiCommon2(QMainWindow, GuiCommon):
                 self.log_error('Invalid Fringe Case %i' % icase_fringe)
                 return False
 
-        is_valid = self.animation_update_fringe(icase_fringe, animate_fringe, normalized_frings_scale)
+        is_valid = self.animation_update_fringe(
+            icase_fringe, animate_fringe, normalized_frings_scale)
         if not is_valid:
             return is_valid
 

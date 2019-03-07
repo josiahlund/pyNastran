@@ -1,12 +1,12 @@
 """defines various methods to access low level BDF data"""
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
+from itertools import chain
 import numpy as np
 
 from pyNastran.bdf.bdf_interface.attributes import BDFAttributes
 #from pyNastran.bdf.cards.nodes import SPOINT, EPOINT
-from pyNastran.utils import integer_types, ChainMap
-
+from pyNastran.utils import integer_types
 
 class GetMethods(BDFAttributes):
     """defines various methods to access low level BDF data"""
@@ -225,7 +225,7 @@ class GetMethods(BDFAttributes):
 
     def get_material_ids(self):
         """gets the material ids"""
-        keys = ChainMap(
+        keys = chain(
             self.materials.keys(),
             self.thermal_materials.keys(),
             self.hyperelastic_materials.keys(),
@@ -721,10 +721,10 @@ class GetMethods(BDFAttributes):
     def CMethod(self, sid, msg=''):
         """gets a METHOD (EIGC)"""
         try:
-            return self.cmethods[sid]
+            return self.cMethods[sid]
         except KeyError:
             raise KeyError('sid=%s not found%s.  Allowed CMETHODs=%s'
-                           % (sid, msg, np.unique(list(self.cmethods.keys()))))
+                           % (sid, msg, np.unique(list(self.cMethods.keys()))))
 
     #--------------------
     # TABLE CARDS
@@ -783,10 +783,10 @@ class GetMethods(BDFAttributes):
     def DMIG(self, dname, msg=''):
         """gets a DMIG"""
         try:
-            return self.dmig[dname]
+            return self.dmigs[dname]
         except KeyError:
             raise KeyError('dname=%s not found%s.  Allowed DMIGs=%s'
-                           % (dname, msg, np.unique(list(self.dmig.keys()))))
+                           % (dname, msg, np.unique(list(self.dmigs.keys()))))
 
     def DEQATN(self, equation_id, msg=''):
         """gets a DEQATN"""

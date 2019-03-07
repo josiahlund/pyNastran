@@ -205,6 +205,12 @@ class MainWindow(GuiCommon2, NastranIO):
         url = pyNastran.__docs__
         webbrowser.open(url)
 
+    def open_issue(self):
+        """loads the pyNastran issue tracker"""
+        import webbrowser
+        url = pyNastran.__issue__
+        webbrowser.open(url)
+
     def open_discussion_forum(self):
         """loads the pyNastran discussion forum website"""
         import webbrowser

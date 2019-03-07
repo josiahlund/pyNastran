@@ -1455,7 +1455,20 @@ class GetCard(GetMethods):
         return dloads, scale_factors
 
     def _reduce_dload_case(self, dload_case, scale=1., unallowed_dload_ids=None, msg=''):
-        """reduces a dload case"""
+        """
+        Reduces a dload case
+
+        Parameters
+        ----------
+        dload_case : List[???]
+            a series of DLOAD cards
+        scale : float; default=1.0
+            additional scale factor on top of the existing LOADs
+        unallowed_dload_ids : List[int]; default=None
+            helper to prevent recursion
+        msg : str
+            debug message
+        """
         scale_factors_out = []
         dloads_out = []
         if unallowed_dload_ids is None:
@@ -1903,7 +1916,7 @@ class GetCard(GetMethods):
                     except TypeError:
                         #print(elem)
                         #print('nidsi =', nidsi)
-                        nidsi2 = [nid  if nid is not None else 0
+                        nidsi2 = [nid if nid is not None else 0
                                   for nid in nidsi]
                         try:
                             nids[i, :] = nidsi2
@@ -1912,7 +1925,6 @@ class GetCard(GetMethods):
                             print(nidsi)
                             print(nidsi2)
                             raise
-                pids[i] = pid
                 output[etype] = [eids, pids, nids]
             else:
                 # SOLID elements can be variable length
@@ -1926,6 +1938,7 @@ class GetCard(GetMethods):
                     elem = self.elements[eid]
                     pid = elem.Pid()
                     assert pid is not None, elem
+                    pids[i] = pid
                     nidsi = elem.node_ids
                     nnodesi = len(nidsi)
                     if nnodesi == nnodes_max:
@@ -1944,7 +1957,6 @@ class GetCard(GetMethods):
                             nids[i, :] = nidsi2
                         except:
                             raise
-                pids[i] = pid
                 if len(ieids_max):
                     etype_max = elem.type + str(nnodes_max)
                     ieids_max = np.array(ieids_max, dtype=dtype)
@@ -2620,6 +2632,6 @@ class GetCard(GetMethods):
             mklist += mkaero.mklist()
         if mklist:
             mkarray = np.hstack([mklist])
-            new_array = [tuple(row) for row in mkarray]
+            #new_array = [tuple(row) for row in mkarray]
             #unique_pairs = np.lib.arraysetops.unique(new_array, axis=0).tolist()
         return mkarray

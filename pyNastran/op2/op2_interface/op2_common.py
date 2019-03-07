@@ -811,7 +811,7 @@ class OP2Common(Op2Codes, F06Writer):
         elif self._function_code == 3:
             out = value % 1000
         elif self._function_code == 4:
-            out =value // 10
+            out = value // 10
         elif self._function_code == 5:
             out = value % 10
         #elif self._function_code == 6:
@@ -1399,6 +1399,13 @@ class OP2Common(Op2Codes, F06Writer):
                 storage_obj[code] = self.obj
 
     def _get_code(self):
+        """
+        The code is a the way you access something like self.displacements.
+        Ideally, it's just the subcase id, but for things like optimization, it
+        gets more complicated.  So we make it in the complicated way and simplify
+        it later if we can.
+
+        """
         code = self.isubcase
         ogs = 0
         if hasattr(self, 'ogs'):
