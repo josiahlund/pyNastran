@@ -45,6 +45,7 @@ from pyNastran.op2.tables.geom.geom4 import _read_spcadd_mpcadd
 
 PKG_PATH = pyNastran.__path__[0]
 MODEL_PATH = os.path.abspath(os.path.join(PKG_PATH, '..', 'models'))
+OP2_TEST_PATH = os.path.abspath(os.path.join(PKG_PATH, 'op2', 'test', 'examples'))
 
 
 class TestOP2(Tester):
