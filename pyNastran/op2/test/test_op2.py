@@ -1,6 +1,4 @@
-"""
-Defines the command line tool `test_op2`
-"""
+"""Defines the command line tool `test_op2`"""
 from __future__ import print_function
 import os
 import sys
@@ -29,92 +27,10 @@ except ImportError:
 #warnings.filterwarnings('error', category=UnicodeWarning)
 
 import pyNastran
-from pyNastran import is_release
 from pyNastran.op2.op2 import OP2, FatalError, read_op2
 #SortCodeError, DeviceCodeError, FortranMarkerError
 
 from pyNastran.op2.op2_geom import OP2Geom, DuplicateIDsError
-
-
-# we need to check the memory usage
-is_linux = None
-is_memory = True
-try:  # pragma: no cover
-    if os.name == 'nt':  # windows
-        windows_flag = True
-        is_linux = False
-        import wmi
-        comp = wmi.WMI()
-
-        """Functions for getting memory usage of Windows processes."""
-        __all__ = ['get_current_process', 'get_memory_info', 'get_memory_usage']
-
-        import ctypes
-        from ctypes import wintypes
-
-        GetCurrentProcess = ctypes.windll.kernel32.GetCurrentProcess
-        GetCurrentProcess.argtypes = []
-        GetCurrentProcess.restype = wintypes.HANDLE
-
-        SIZE_T = ctypes.c_size_t
-
-        class PROCESS_MEMORY_COUNTERS_EX(ctypes.Structure):
-            """
-            Windows memory tool that has the same interface as
-            `resource` on Linux/Mac.
-            """
-            _fields_ = [
-                ('cb', wintypes.DWORD),
-                ('PageFaultCount', wintypes.DWORD),
-                ('PeakWorkingSetSize', SIZE_T),
-                ('WorkingSetSize', SIZE_T),
-                ('QuotaPeakPagedPoolUsage', SIZE_T),
-                ('QuotaPagedPoolUsage', SIZE_T),
-                ('QuotaPeakNonPagedPoolUsage', SIZE_T),
-                ('QuotaNonPagedPoolUsage', SIZE_T),
-                ('PagefileUsage', SIZE_T),
-                ('PeakPagefileUsage', SIZE_T),
-                ('PrivateUsage', SIZE_T),
-            ]
-
-        GetProcessMemoryInfo = ctypes.windll.psapi.GetProcessMemoryInfo
-        GetProcessMemoryInfo.argtypes = [
-            wintypes.HANDLE,
-            ctypes.POINTER(PROCESS_MEMORY_COUNTERS_EX),
-            wintypes.DWORD,
-        ]
-        GetProcessMemoryInfo.restype = wintypes.BOOL
-
-        def get_current_process():
-            """Return handle to current process."""
-            return GetCurrentProcess()
-
-        def get_memory_info(process=None):
-            """Return Win32 process memory counters structure as a dict."""
-            if process is None:
-                process = get_current_process()
-            counters = PROCESS_MEMORY_COUNTERS_EX()
-            ret = GetProcessMemoryInfo(process, ctypes.byref(counters),
-                                       ctypes.sizeof(counters))
-            if not ret:
-                raise ctypes.WinError()
-            info = dict((name, getattr(counters, name))
-                        for name, _ in counters._fields_)
-            return info
-
-        def get_memory_usage(process=None):
-            """Return this process's memory usage in bytes."""
-            info = get_memory_info(process=process)
-            return info['PrivateUsage']
-
-    elif os.name in ['posix', 'mac']:  # linux/mac
-        import resource
-        windows_flag = False
-        is_linux = True
-    else:
-        raise NotImplementedError('os.name=%r and must be nt, posix, mac' % os.name)
-except:
-    is_memory = False
 
 
 def parse_table_names_from_f06(f06_filename):
@@ -262,6 +178,7 @@ def run_op2(op2_filename, make_geom=False, write_bdf=False, read_bdf=None,
         the op2 object
     is_passed : bool
         did the test pass
+
     """
     assert build_pandas in [True, False]
 
@@ -355,17 +272,6 @@ def run_op2(op2_filename, make_geom=False, write_bdf=False, read_bdf=None,
     op2.remove_results(exclude)
     op2_nv.remove_results(exclude)
 
-    if check_memory:
-        if is_memory:  # pragma: no cover
-            if is_linux: # linux
-                kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-            else: # windows
-                kb = get_memory_usage() / 1024
-            mb = kb / 1024.
-            print("Memory usage start: %s (KB); %.2f (MB)" % (kb, mb))
-        else:
-            raise RuntimeError('wmi (for Windows) or resource (for Linux/Mac) cannot be found')
-
     try:
         #op2.read_bdf(op2.bdf_filename, includeDir=None, xref=False)
         if compare:
@@ -390,14 +296,6 @@ def run_op2(op2_filename, make_geom=False, write_bdf=False, read_bdf=None,
         if compare:
             assert op2 == op2_nv
 
-        if is_memory and check_memory:  # pragma: no cover
-            if is_linux: # linux
-                kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-            else: # windows
-                kb = get_memory_usage() / 1024
-            mb = kb / 1024.
-            print("Memory usage     end: %s (KB); %.2f (MB)" % (kb, mb))
-
         if IS_HDF5 and write_hdf5:
             from pyNastran.op2.op2_interface.hdf5_interface import load_op2_from_hdf5_filename
             h5_filename = model + '.test_op2.h5'
@@ -419,17 +317,6 @@ def run_op2(op2_filename, make_geom=False, write_bdf=False, read_bdf=None,
             op2.build_dataframe()
         #if compare:
             #op2_nv.build_dataframe()
-
-
-        if is_memory and check_memory:
-            op2 = None
-            del op2_nv
-            if is_linux: # linux
-                kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-            else: # windows
-                kb = get_memory_usage() / 1024
-            mb = kb / 1024.
-            print("Memory usage cleanup: %s (KB); %.2f (MB)" % (kb, mb))
 
 
         #table_names_f06 = parse_table_names_from_F06(op2.f06FileName)
@@ -553,10 +440,10 @@ def get_test_op2_data(argv):
     """defines the docopt interface"""
     from docopt import docopt
     ver = str(pyNastran.__version__)
+    is_release = 'dev' not in ver
 
     msg = "Usage:\n"
-    #is_release = True
-    options = '[-p] [-d] [-z] [-w] [-t] [-s <sub>] [-x <arg>]... [--nx] [--safe] [--post POST] [--load_hdf5] [--memory]'
+    options = '[-p] [-d] [-z] [-w] [-t] [-s <sub>] [-x <arg>]... [--nx] [--safe] [--post POST] [--load_hdf5]'
     if is_release:
         line1 = "test_op2 [-q] [-b] [-c] [-g] [-n] [-f] %s OP2_FILENAME\n" % options
     else:
@@ -601,7 +488,6 @@ def get_test_op2_data(argv):
         msg += "Developer:\n"
         msg += "  -o, --write_op2   Writes the op2 to fem.test_op2.op2\n"
         msg += '  --profile         Profiles the code (default=False)\n'
-        msg += '  --memory          Run the memory profiler (default=False)\n'
 
     msg += "\n"
     msg += "Info:\n"
@@ -665,7 +551,6 @@ def main(argv=None):
             is_nx=data['--nx'],
             safe=data['--safe'],
             post=data['--post'],
-            check_memory=data['--memory'],
         )
         prof.dump_stats('op2.profile')
 
@@ -696,7 +581,6 @@ def main(argv=None):
             is_nx=data['--nx'],
             xref_safe=data['--safe'],
             post=data['--post'],
-            check_memory=data['--memory'],
         )
     print("dt = %f" % (time.time() - time0))
 

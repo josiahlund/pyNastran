@@ -277,7 +277,7 @@ class Subcase(object):
         if data_code['label']:
             self.add('LABEL', data_code['label'], options, 'STRING-type')
 
-        if table_name in ['OUGV1', 'BOUGV1', 'OUGV2', 'OUG1']:
+        if table_name in ['OUGV1', 'BOUGV1', 'OUGV2', 'OUG1', 'OUGV1PAT']:
             if table_code == 1:
                 thermal = data_code['thermal']
                 if thermal == 0:

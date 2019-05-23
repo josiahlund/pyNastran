@@ -1099,30 +1099,30 @@ class OP2(OP2_Scalar):
             superelement_adaptivity_indexs.add(superelement_adaptivity_index)
             pval_steps.add(pval_step)
 
-        isubcases = list(isubcases)
-        analysis_codes = list(analysis_codes)
-        sort_methods = list(sort_methods)
-        counts = list(counts)
-        ogss = list(ogss)
-        superelement_adaptivity_indexs = list(superelement_adaptivity_indexs)
-        pval_steps = list(pval_steps)
+        isubcase_list = list(isubcases)
+        analysis_code_list = list(analysis_codes)
+        sort_method_list = list(sort_methods)
+        count_list = list(counts)
+        ogs_list = list(ogss)
+        superelement_adaptivity_index_list = list(superelement_adaptivity_indexs)
+        pval_step_list = list(pval_steps)
 
-        isubcases.sort()
-        analysis_codes.sort()
-        sort_methods.sort()
-        counts.sort()
-        ogss.sort()
-        superelement_adaptivity_indexs.sort()
-        pval_steps.sort()
+        isubcase_list.sort()
+        analysis_code_list.sort()
+        sort_method_list.sort()
+        count_list.sort()
+        ogs_list.sort()
+        superelement_adaptivity_index_list.sort()
+        pval_step_list.sort()
 
         keys3 = []
-        for isubcase in isubcases:
-            for count in counts:
-                for analysis_code in analysis_codes:
-                    for superelement_adaptivity_index in superelement_adaptivity_indexs:
-                        for pval_step in pval_steps:
-                            for sort_method in sort_methods:
-                                for ogs in ogss:
+        for isubcase in isubcase_list:
+            for count in count_list:
+                for analysis_code in analysis_code_list:
+                    for superelement_adaptivity_index in superelement_adaptivity_index_list:
+                        for pval_step in pval_step_list:
+                            for sort_method in sort_method_list:
+                                for ogs in ogs_list:
                                     key = (isubcase, analysis_code, sort_method,
                                            count, ogs, superelement_adaptivity_index, pval_step)
                                     if key not in keys3:
@@ -1288,8 +1288,7 @@ def main():  # pragma: no cover
     _op2_filename = os.path.join(pkg_path, '..', 'models',
                                  'sol_101_elements', 'solid_shell_bar.op2')
 
-    model = OP2()
-    model.read_op2(_op2_filename)
+    model = read_op2(_op2_filename)
     isubcase = 1
 
     # ============displacement================
@@ -1304,8 +1303,8 @@ def main():  # pragma: no cover
 
     # get all the nodes for element 1
     inode1 = data.getNodeIndex([1])    # [itransient, node, t1/t2]
-    datai = data[0, inode1, :]
-    grid_typei = grid_type[inode1]
+    unused_datai = data[0, inode1, :]
+    unused_grid_typei = grid_type[inode1]
 
     # ============solid stress=================
     # same for solid strain
@@ -1318,7 +1317,7 @@ def main():  # pragma: no cover
 
     # get the indexs for cid, element 1
     ielem1 = solid_stress.getElementPropertiesIndex([1])  # element-specific properties
-    datai = cid[ielem1]
+    unused_datai = cid[ielem1]
 
     # get all the nodes for element 1
     ielem1 = solid_stress.getElementIndex([1])
