@@ -48,6 +48,7 @@ def build_pruned_tree(tree, cases):
             ),],
         ],
     ]
+
     """
     tree_final = []
     is_results, tree_final = _build_pruned_tree(tree, cases, tree_final)
@@ -121,6 +122,7 @@ def get_cases_from_tree(tree):
     cases = get_cases_from_tree(form)
     >>> cases
     [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
     """
     cases = []
     if isinstance(tree[0], string_types):
