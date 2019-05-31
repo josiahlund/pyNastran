@@ -12,7 +12,7 @@ from pyNastran.utils.numpy_utils import integer_types
 from pyNastran.bdf.field_writer import print_card
 from pyNastran.bdf.field_writer_8 import is_same
 from pyNastran.bdf.bdf_interface.utils import deprecated
-from pyNastran.bdf.cards.expand_card import  expand_thru, expand_thru_by, expand_thru_exclude
+from pyNastran.bdf.cards.expand_card import  expand_thru, expand_thru_by
 
 
 if PY2:
@@ -88,7 +88,7 @@ class BaseCard(object):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
-        my_keys_to_skip = []
+        my_keys_to_skip = []  # type: List[str]
         return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
 
     def object_methods(self, mode='public', keys_to_skip=None):
@@ -96,7 +96,7 @@ class BaseCard(object):
         """.. seealso:: `pyNastran.utils.object_methods(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
-        my_keys_to_skip = []
+        my_keys_to_skip = []  # type: List[str]
         return object_methods(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
 
     @property

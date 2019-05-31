@@ -154,38 +154,3 @@ def expand_thru_by(fields, set_fields=True, sort_fields=True,
     if sort_fields:
         out.sort()
     return out
-
-
-def expand_thru_exclude(fields):
-    # type: (List[str]) -> List[int]
-    """
-    Expands a list of values of the form [1,5,THRU,11,EXCEPT,7,8,13]
-    to be [1,5,6,9,10,11,13]
-
-    .. warning:: hasn't been tested
-
-    """
-    # ..todo:  should this be removed...is the field capitalized when read in?
-    isfields = [interpret_value(field.upper())
-                if isinstance(field, string_types) else field
-                for field in fields]  # type: List[Union[str,int]]
-
-    fields_out = []  # type: List[int]
-    nfields = len(isfields)
-    for i in range(nfields):
-        #print('fields[%i] = %r' % (i, isfields[i]))
-        if isfields[i] == 'THRU':
-            sorted_list = []
-            for j in range(isfields[i - 1], isfields[i + 1]):
-                sorted_list.append(isfields[j])
-
-        elif isfields[i] == 'EXCLUDE':
-            stored_set = set(sorted_list)
-            while isfields[i] < max(sorted_list):
-                stored_set.remove(isfields[i])
-            sorted_list = list(stored_set)
-        else:
-            if sorted_list:
-                fields_out += sorted_list
-            fields_out.append(isfields[i])
-    return fields_out

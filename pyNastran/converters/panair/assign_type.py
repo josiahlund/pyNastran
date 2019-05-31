@@ -6,8 +6,8 @@ defines methods for reading panair values:
  - double_or_blank(value, name, default=None)
 
 defines methods for writing panair values:
-
  - fortran_value(value)
+
 """
 from __future__ import  print_function
 from typing import List, Union, Optional

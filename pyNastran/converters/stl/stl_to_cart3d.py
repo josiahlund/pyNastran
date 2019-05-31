@@ -32,6 +32,7 @@ def stl_to_cart3d(stl_filename, cart3d_filename=None, log=None, debug=False,
     -------
     stl : STL()
         an STL object
+
     """
     if isinstance(stl_filename, string_types):
         stl = read_stl(stl_filename, log=log, debug=debug)

@@ -14,9 +14,7 @@ TEST_PATH = os.path.join(PKG_PATH, 'bdf', 'cards', 'test')
 class TestDMIG(unittest.TestCase):
 
     def test_dmig_1(self):
-        """
-        Tests DMIG reading
-        """
+        """Tests DMIG reading"""
         model = BDF(debug=False)
         bdf_name = os.path.join(TEST_PATH, 'dmig.bdf')
         model.read_bdf(bdf_name, xref=False, punch=True)

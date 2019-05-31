@@ -24,6 +24,7 @@ class Panel(object):
         translates the patch
     scale : float
         scales the patch
+
     """
     def __init__(self, key, header, lines, log):
         #print("key=%s \nheader=|%s|" % (key, header))   # ,iSymG
@@ -83,6 +84,7 @@ class Panel(object):
         """
         Form the rotation matrix used for geometrical transformations
         Taken from NASA TM 85767 defining LaWGS.
+
         """
         # rotation angles, degrees
         #r = radians([self.phi,self.theta,self.psi])
@@ -198,6 +200,7 @@ class LaWGS(object):
         log : logging module object / None
             if log is set, debug is ignored and uses the
             settings the logging object has
+
         """
         self.log = get_logger2(log=log, debug=debug)
         self.panels = {}

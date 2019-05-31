@@ -2,6 +2,7 @@
 Creates safe cross referencing
 
 Safe cross-referencing skips failed xref's
+
 """
 from __future__ import print_function
 from collections import defaultdict
@@ -19,9 +20,7 @@ class SafeXrefMesh(XrefMesh):
     """
     def __init__(self):
         # type: () -> None
-        """
-        The main BDF class defines all the parameters that are used.
-        """
+        """The main BDF class defines all the parameters that are used."""
         XrefMesh.__init__(self)
 
     # def geom_check(self):

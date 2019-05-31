@@ -35,9 +35,7 @@ class Method(BaseCard):
 
 
 class EIGB(Method):
-    """
-    Defines data needed to perform buckling analysis
-    """
+    """Defines data needed to perform buckling analysis"""
     type = 'EIGB'
 
     @classmethod

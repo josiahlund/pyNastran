@@ -1,6 +1,4 @@
-"""
-Unlinks up the various cards in the BDF.
-"""
+"""Unlinks up the various cards in the BDF."""
 from __future__ import print_function
 from typing import List, Dict, Any
 from six import itervalues

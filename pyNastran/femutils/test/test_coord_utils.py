@@ -29,6 +29,7 @@ class TestShapeFunction(unittest.TestCase):
         tests:
          - shape4
          - shape4_to_xyz
+
         """
         shape = [0.0, 0.0]
         p1 = [0., 0., 0.]

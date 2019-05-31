@@ -1,6 +1,4 @@
-"""
-Defines the GUI IO file for S/HABP.
-"""
+"""Defines the GUI IO file for S/HABP."""
 from __future__ import print_function
 from collections import OrderedDict, defaultdict
 

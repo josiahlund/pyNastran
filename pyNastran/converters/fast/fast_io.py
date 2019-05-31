@@ -1,6 +1,4 @@
-"""
-Defines the GUI IO file for Fast.
-"""
+"""Defines the GUI IO file for Fast."""
 from __future__ import print_function
 import os
 from collections import OrderedDict

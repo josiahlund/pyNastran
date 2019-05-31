@@ -1,6 +1,4 @@
-"""
-Defines the GUI IO file for STL.
-"""
+"""Defines the GUI IO file for STL."""
 from __future__ import print_function
 from collections import OrderedDict
 from numpy import arange

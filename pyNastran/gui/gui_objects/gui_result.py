@@ -2,6 +2,7 @@
 defines:
  - GuiResultCommon
  - GuiResult
+
 """
 from __future__ import print_function
 from typing import Any, Optional

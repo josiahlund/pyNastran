@@ -5,6 +5,7 @@ defines the LAMA class to read:
  - BucklingEigenvalues
 
 from the OP2
+
 """
 from __future__ import print_function
 from struct import Struct

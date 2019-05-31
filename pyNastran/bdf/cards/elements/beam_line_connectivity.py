@@ -33,6 +33,7 @@ The following shapes aren't supported:
  - BOX1  (will be a shear center issue)
  - HAT1  (will be a shear center issue)
  - DBOX  (will be a shear center issue)
+
 """
 from __future__ import print_function
 import numpy as np

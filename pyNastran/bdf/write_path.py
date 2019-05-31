@@ -1,6 +1,7 @@
 """
 Defines following useful methods:
   - write_include(filename, is_windows=True)
+
 """
 from __future__ import print_function
 import sys
@@ -41,6 +42,7 @@ def write_include(filename, is_windows=None):
 
       INCLUDE /opt/NASA/test1/test2/test3/test4/formats/pynastran_v0.6/
               pyNastran/bdf/model.inc
+
     """
     is_windows = is_windows if is_windows is not None else sys.platform in ['win32']
 
@@ -84,6 +86,7 @@ def _split_path(abspath, is_windows):
     Takes a path and splits it into the various components.
 
     This is a helper method for ``write_include``
+
     """
     if is_windows:
         parts = PureWindowsPath(abspath).parts

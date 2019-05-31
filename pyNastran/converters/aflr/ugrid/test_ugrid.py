@@ -1,6 +1,4 @@
-"""
-Defines TestUGrid
-"""
+"""Defines TestUGrid"""
 from __future__ import print_function
 import os
 import unittest

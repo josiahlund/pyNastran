@@ -4,6 +4,7 @@
 Defines:
   - mass_poperties
       get the mass & moment of inertia of the model
+
 """
 from __future__ import print_function, unicode_literals
 from itertools import count

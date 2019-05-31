@@ -17,6 +17,7 @@ def get_ugrid_model(ugrid_filename, log=None, debug=False):
     -------
     ugrid_model : UGRID()
         the UGRID object
+
     """
     if isinstance(ugrid_filename, str):
         #assert os.path.exists(ugrid_filename), '%r doesnt exist' % ugrid_filename

@@ -40,6 +40,7 @@ class BDFMethods(BDFAttributes):
             include_grav=False, xyz_cid0=None)
         sum_forces_moments(p0, loadcase_id, include_grav=False,
             xyz_cid0=None)
+
     """
 
     def __init__(self):
@@ -71,6 +72,7 @@ class BDFMethods(BDFAttributes):
             sum the areas for CBAR/CBEAM/CROD/CONROD/CTUBE elements
             True : get the area of the model by property id
             False : only get the cross sectional properties
+
         """
         return get_area_breakdown(self, property_ids=property_ids,
                                   stop_if_no_area=stop_if_no_area, sum_bar_area=sum_bar_area)

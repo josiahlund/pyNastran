@@ -1,6 +1,4 @@
-"""
-Defines how the GUI reads Abaqus files
-"""
+"""Defines how the GUI reads Abaqus files"""
 from __future__ import print_function
 from collections import OrderedDict
 

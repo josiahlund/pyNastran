@@ -480,7 +480,6 @@ def element_quality(model, nids=None, xyz_cid0=None, nid_map=None):
         max_thetai = np.nan
         #max_thetai = np.nan
         max_skew = np.nan
-        #max_warp = np.nan
         max_warp = np.nan
         aspect_ratio = np.nan
         #areai = np.nan

@@ -1095,6 +1095,7 @@ class SPC1(Constraint):
             GRID/SPOINT ids
         comment : str; default=''
             a comment for the card
+
         """
         Constraint.__init__(self)
         if comment:

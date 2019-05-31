@@ -1,6 +1,4 @@
-"""
-defines the GridPointWeight class
-"""
+"""defines the GridPointWeight class"""
 from __future__ import print_function
 from six import StringIO
 

@@ -7,6 +7,7 @@ This includes:
  - C = dot_n33_n33(A, B)
  - Tt = transpose3d(T)
  - C = triple(A, T, tranpose=False)
+
 """
 # pylint: disable=C0103
 from __future__ import print_function

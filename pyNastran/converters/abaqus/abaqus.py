@@ -1,6 +1,4 @@
-"""
-Defines the Abaqus class
-"""
+"""Defines the Abaqus class"""
 from __future__ import print_function
 import numpy as np
 from cpylog import get_logger2

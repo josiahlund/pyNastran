@@ -1,6 +1,7 @@
 """
 defines:
  - ClippingObject
+
 """
 from __future__ import print_function
 from pyNastran.gui.menus.clipping.clipping import ClippingPropertiesWindow

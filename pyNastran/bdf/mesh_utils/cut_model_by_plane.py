@@ -7,13 +7,13 @@ defines:
         bdf_filename, coord, tol,
         nodal_result, plane_atol=1e-5)
  - slice_edges(xyz_cid0, xyz_cid, edges, nodal_result, plane_atol=1e-5)
+
 """
 from __future__ import print_function
 import  os
 import warnings
 from itertools import count
 
-#from six import iterkeys
 import numpy as np
 #from pyNastran.bdf.cards.coordinate_systems import CORD2R
 from pyNastran.bdf.field_writer_8 import print_card_8

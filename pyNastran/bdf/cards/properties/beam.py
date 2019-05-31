@@ -9,6 +9,7 @@ All beam properties are defined in this file.  This includes:
 
 All beams are LineProperty objects.
 Multi-segment beams are IntegratedLineProperty objects.
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
@@ -165,7 +166,7 @@ class PBEAM(IntegratedLineProperty):
         mid = 1
         xxb = [0.]
         so = ['YES']
-        area  = [0.]
+        area = [0.]
         i1 = [0.]
         i2 = [0.]
         i12 = [0.]

@@ -1,6 +1,4 @@
-"""
-Defines the GUI IO file for Tetegen.
-"""
+"""Defines the GUI IO file for Tetegen."""
 from __future__ import print_function
 import os
 from collections import OrderedDict

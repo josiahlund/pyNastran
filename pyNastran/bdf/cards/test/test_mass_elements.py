@@ -13,7 +13,9 @@ from pyNastran.bdf.cards.test.utils import save_load_deck
 class TestMassElements(unittest.TestCase):
     """
     The cards tested are:
-     * CMASS1
+     * PMASS, CMASS1, CMASS3, CMASS4
+     * CONM1, CONM2
+
     """
     def test_conm1(self):
         """tests a CONM1"""

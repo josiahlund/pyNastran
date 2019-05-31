@@ -843,6 +843,7 @@ class CHBDYP(ThermalElement):
         -----------
         size : int; default=8
             the size of the card (8/16)
+
         """
         card = self.repr_fields()
         if size == 8:

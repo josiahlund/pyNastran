@@ -6,6 +6,7 @@ All mass properties are defined in this file.  This includes:
  * PMASS
 
 All mass properties are PointProperty and Property objects.
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)

@@ -52,6 +52,7 @@ class AltGeometry(object):
             can you pick a node/cell on this actor
         label_actors : List[annotation]; None -> []
             stores annotations (e.g., for a control surface)
+
         """
         representation_map = {
             'main' : None,
@@ -124,6 +125,7 @@ class AltGeometry(object):
         """
         0 -> transparent
         1 -> solid
+
         """
         assert 0.0 <= self._opacity <= 1.0, self._opacity
         return self._opacity
@@ -138,6 +140,7 @@ class AltGeometry(object):
         """
         0 -> solid
         1 -> transparent
+
         """
         assert 0.0 <= self._opacity <= 1.0, self._opacity
         return 1.0 - self._opacity
@@ -190,6 +193,7 @@ class AltGeometry(object):
         * bar - this can use bar scale
         * wire+point - point (vertex) and wireframe allowed
         * wire+surf - the user can switch between surface and wireframe as a selection
+
         """
         return self._representation
 

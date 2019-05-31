@@ -15,6 +15,7 @@ defines:
  - pids_to_mass, pids_to_mass_nonstructural, mass_type_to_mass = get_mass_breakdown(
        model, property_ids=None,
        stop_if_no_mass=True, detailed=True)
+
 """
 from __future__ import print_function
 
@@ -188,6 +189,7 @@ def get_volume_breakdown(model, property_ids=None, stop_if_no_volume=True):
     #'PBEAM3',
     #'PBEND',
     #'PIHEX',
+
     """
     pid_eids = model.get_element_ids_dict_with_pids(
         property_ids, stop_if_no_eids=stop_if_no_volume,
@@ -200,6 +202,10 @@ def get_volume_breakdown(model, property_ids=None, stop_if_no_volume=True):
         'PFAST', 'PGAP', 'PRAC2D', 'PRAC3D', 'PCONEAX',
         'PVISC', 'PBCOMP', 'PBEND',
     ]
+    bar_properties = [
+        'PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE', # 'PBEAM3'
+    ]
+
     pids_to_volume = {}
     skipped_eid_pid = set()
     for pid, eids in pid_eids.items():
@@ -224,7 +230,7 @@ def get_volume_breakdown(model, property_ids=None, stop_if_no_volume=True):
             thickness = prop.Thickness()
             volumesi = [area * thickness for area in areas]
             volumes.extend(volumesi)
-        elif prop.type in ['PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE']:
+        elif prop.type in bar_properties:
             # TODO: Do I need to consider the offset on length effects for a CBEAM?
             lengths = []
             for eid in eids:
@@ -301,6 +307,7 @@ def get_mass_breakdown(model, property_ids=None, stop_if_no_mass=True, detailed=
     #'PBEND',
     #'PIHEX',
     #'PCOMPS',
+
     """
     pid_eids = model.get_element_ids_dict_with_pids(
         property_ids, stop_if_no_eids=False,
@@ -322,6 +329,7 @@ def get_mass_breakdown(model, property_ids=None, stop_if_no_mass=True, detailed=
         'PELAST', 'PDAMPT', 'PBUSHT', 'PDAMP5',
         'PFAST', 'PGAP', 'PRAC2D', 'PRAC3D', 'PCONEAX',
         'PVISC', 'PBCOMP', 'PBEND', ]
+    bar_properties = ['PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE']
     for pid, eids in pid_eids.items():
         prop = model.properties[pid]
         masses = []
@@ -353,7 +361,7 @@ def get_mass_breakdown(model, property_ids=None, stop_if_no_mass=True, detailed=
                 else:
                     masses.append(elem.Mass())
 
-        elif prop.type in ['PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE']:
+        elif prop.type in bar_properties:
             nsm = prop.nsm # per unit length
             try:
                 rho = prop.Rho()

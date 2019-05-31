@@ -1,7 +1,5 @@
 # pylint: disable=E1101,C1801,C0103
-"""
-Defines the GUI IO file for Nastran.
-"""
+"""Defines the GUI IO file for Nastran."""
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
 import os
@@ -201,9 +199,7 @@ class NastranIO(NastranGuiResults, NastranGeometryHelper):
 
 
     def get_nastran_wildcard_geometry_results_functions(self):
-        """
-        gets the Nastran wildcard loader used in the file load menu
-        """
+        """gets the Nastran wildcard loader used in the file load menu"""
         bdf_h5 = ''
         if IS_H5PY:
             bdf_h5 = '*.h5; '
@@ -2357,7 +2353,6 @@ class NastranIO(NastranGuiResults, NastranGeometryHelper):
             max_thetai = np.nan
             #max_thetai = np.nan
             max_skew = np.nan
-            #max_warp = np.nan
             max_warp = np.nan
             aspect_ratio = np.nan
             areai = np.nan

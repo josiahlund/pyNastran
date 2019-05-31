@@ -2139,6 +2139,23 @@ class PBEAM3(LineProperty):  # not done, cleanup; MSC specific card
     """
     type = 'PBEAM3'
 
+    @classmethod
+    def _init_from_empty(cls):
+        pid = 1
+        mid = 2
+        A = 3.
+        iz =4.
+        iy = 5.
+        return PBEAM3(pid, mid, A, iz, iy,
+                      iyz=None, j=None, nsm=0.,
+                      so=None, cy=None, cz=None, dy=None, dz=None,
+                      ey=None, ez=None, fy=None, fz=None,
+                      ky=1., kz=1.,
+                      ny=None, nz=None, my=None, mz=None,
+                      nsiy=None, nsiz=None, nsiyz=None,
+                      cw=None, stress='GRID',
+                      w=None, wy=None, wz=None, comment='')
+
     def __init__(self, pid, mid, A, iz, iy, iyz=None, j=None, nsm=0.,
                  so=None,
                  cy=None, cz=None, dy=None, dz=None, ey=None, ez=None, fy=None, fz=None,
@@ -2321,17 +2338,17 @@ class PBEAM3(LineProperty):  # not done, cleanup; MSC specific card
         nsm = [double_or_blank(card, 8, 'nsm', 0.0)]
 
         #CY(A) CZ(A) DY(A) DZ(A) EY(A) EZ(A) FY(A) FZ(A)
-        cy = [double(card, 9, 'cy')]
-        cz = [double(card, 10, 'cz')]
+        cy = [double_or_blank(card, 9, 'cy', default=0.)]
+        cz = [double_or_blank(card, 10, 'cz', default=0.)]
 
-        dy = [double(card, 11, 'dy')]
-        dz = [double(card, 12, 'dz')]
+        dy = [double_or_blank(card, 11, 'dy', default=0.)]
+        dz = [double_or_blank(card, 12, 'dz', default=0.)]
 
-        ey = [double(card, 13, 'ey')]
-        ez = [double(card, 14, 'ez')]
+        ey = [double_or_blank(card, 13, 'ey', default=0.)]
+        ez = [double_or_blank(card, 14, 'ez', default=0.)]
 
-        fy = [double(card, 15, 'fy')]
-        fz = [double(card, 16, 'fz')]
+        fy = [double_or_blank(card, 15, 'fy', default=0.)]
+        fz = [double_or_blank(card, 16, 'fz', default=0.)]
 
         #SO(B)        A(B) IZ(B) IY(B) IYZ(B)  J(B) NSM(B)
         #CY(B) CZ(B) DY(B) DZ(B) EY(B)  EZ(B) FY(B)  FZ(B)
@@ -2939,6 +2956,7 @@ class PBEND(LineProperty):
         # type: () -> float
         """m/L = rho*A + nsm"""
         rho = self.mid_ref.Rho()
+        assert isinstance(self.A, float), self.get_stats()
         return self.A * rho + self.nsm
 
     def raw_fields(self):

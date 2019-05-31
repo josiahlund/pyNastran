@@ -2,6 +2,7 @@
 """
 Main BDF class.  Defines:
   - BDFInputPy
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
@@ -180,6 +181,7 @@ class BDFInputPy(object):
         -------
         lines : List[str]
             all the lines packed into a single line stream
+
         """
         #print('bdf_filename_main =', bdf_filename)
         if hasattr(bdf_filename, 'read') and hasattr(bdf_filename, 'write'):
@@ -221,6 +223,7 @@ class BDFInputPy(object):
                 the [ifile, iline] pair for each line in the file
             if make_ilines = False:
                  ilines = None
+
         """
         nlines = len(lines)
         #bdf_filenames = [self.bdf_filename]
@@ -454,6 +457,7 @@ class BDFInputPy(object):
             the entire list of lines
         i : int
             the last index to write
+
         """
         with open(_filename(bdf_dump_filename),
                   'w', encoding=self.encoding) as crash_file:
@@ -1055,6 +1059,7 @@ def _is_begin_bulk(uline):
       'BEGIN BULK SUPER=2'
       'BEGIN BULK AUXMODEL=2'
       'BEGIN BULK AFPM=2'
+
     """
     is_begin_bulk = 'BULK' in uline and (
         'AUXMODEL' not in uline and
@@ -1169,6 +1174,7 @@ def _break_system_lines(executive_control_lines):
     PROJ      Defines the current or default project identifier.
 
     F:\\Program Files\\Siemens\\NXNastran\\nxn10p1\\nxn10p1\\nast\\tpl\\mdb01.dat
+
     """
     j = None
     sol_line = None

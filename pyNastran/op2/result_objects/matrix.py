@@ -22,6 +22,7 @@ class Matrix(object):
         data is initialized by setting the matrix.data attribute externally
     is_matpool : bool
         is this a matpool matrix
+
     """
     def __init__(self, name, form, is_matpool=False):
         """
@@ -44,6 +45,7 @@ class Matrix(object):
         |  6   | Symmetric       |
         |  9   | Pseudo identity |
         +------+-----------------+
+
         """
         self.name = name
         self.data = None

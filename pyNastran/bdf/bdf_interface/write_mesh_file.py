@@ -2,6 +2,7 @@
 """
 This file defines:
   - WriteMesh
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
@@ -20,6 +21,7 @@ from pyNastran.bdf.bdf_interface.write_mesh import WriteMesh
 #from pyNastran.bdf.cards.nodes import write_xpoints
 from pyNastran.bdf.write_path import write_include
 
+
 class WriteMeshs(WriteMesh):
     """
     Defines methods for writing cards
@@ -28,6 +30,7 @@ class WriteMeshs(WriteMesh):
       - model.write_bdf(...)
       - model.echo_bdf(...)
       - model.auto_reject_bdf(...)
+
     """
     def __init__(self):
         """creates methods for writing cards"""

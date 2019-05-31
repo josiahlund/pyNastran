@@ -1,6 +1,4 @@
-"""
-tests dynamic cards and dynamic load cards
-"""
+"""tests dynamic cards and dynamic load cards"""
 from __future__ import print_function
 import unittest
 from six.moves import StringIO

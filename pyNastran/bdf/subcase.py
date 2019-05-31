@@ -1,7 +1,4 @@
-"""
-Subcase creation/extraction class
-"""
-from __future__ import print_function, unicode_literals
+"""Subcase creation/extraction class"""
 from typing import List, Dict, Any
 from six import string_types, PY2, PY3, text_type, binary_type
 from numpy import ndarray
@@ -124,7 +121,7 @@ class Subcase(object):
                 keys = list(self.params.keys())
                 params_group = hdf5_file.create_group('params')
                 #print('keys =', keys)
-                keys_bytes = [key.encode(encoding) for key in keys]
+                unused_keys_bytes = [key.encode(encoding) for key in keys]
                 #params_group.create_dataset('keys', data=keys_bytes)
                 for key, (value, options, param_type) in self.params.items():
                     #print('  %-14s: %-8r %r %r' % (key, value, options, param_type))

@@ -3,6 +3,7 @@ defines:
  - tecplot = nastran_to_tecplot(model)
  - tecplot = nastran_to_tecplot_filename(bdf_filename, tecplot_filename, z
                                          log=None, debug=False)
+
 """
 from __future__ import print_function
 from numpy import zeros, array

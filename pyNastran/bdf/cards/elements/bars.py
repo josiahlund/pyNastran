@@ -919,10 +919,22 @@ class CBAR(LineElement):
 
 
 class CBEAM3(LineElement):  # was CBAR
+    _properties = ['node_ids', 'nodes']
     """
     Defines a three-node beam element
 
     """
+    @classmethod
+    def _init_from_empty(cls):
+        eid = 1
+        pid = 1
+        x = None
+        nids = [1, 2, 3]
+        g0 = 4
+        return CBEAM3(eid, pid, nids, x, g0,
+                      wa=None, wb=None, wc=None,
+                      tw=None, s=None, comment='')
+
     type = 'CBEAM3'
     def __init__(self, eid, pid, nids, x, g0,
                  wa=None, wb=None, wc=None, tw=None, s=None, comment=''):
@@ -1044,6 +1056,13 @@ class CBEAM3(LineElement):  # was CBAR
         self.gc_ref = None
         self.pid_ref = None
 
+    def center_of_mass(self):
+        return np.zeros(3)
+    def Centroid(self):
+        return np.zeros(3)
+    def MassPerLength(self):
+        return 0.
+
     def Length(self):
         r"""
         [xa, xb, xc] = [A][a1, b1, c1].T
@@ -1149,6 +1168,10 @@ class CBEAM3(LineElement):  # was CBAR
         if self.g0_ref is None:
             return self.g0
         return self.g0_ref.nid
+
+    @property
+    def nodes(self):
+        return [self.Ga(), self.Gb(), self.Gc()]
 
     @property
     def node_ids(self):

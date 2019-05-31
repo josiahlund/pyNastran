@@ -7,6 +7,7 @@ Defines:
      - read_mapbc(mapbc_filename)
      - read_bc(self, bc_filename, stop_after_header=False, get_lbouf=False)
      - read_flo(self, flo_filename, n=None, node_ids=None)
+
 """
 from __future__ import print_function
 import os
@@ -27,9 +28,7 @@ def read_usm3d(basename, log=None, debug=None):
     return model
 
 class Usm3d(object):
-    """
-    Usm3d interface class
-    """
+    """Usm3d interface class"""
     bcmap_to_bc_name = {
         0 : 'Supersonic Inflow',
         1 : 'Reflection plane',

@@ -2,6 +2,7 @@
 defines:
  - fields_out = build_table_lines(fields, nstart=1, nend=0)
  - fields_out = wipe_empty_fields(card)
+
 """
 from __future__ import unicode_literals, print_function
 from typing import List, Union, Optional

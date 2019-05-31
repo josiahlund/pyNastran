@@ -1,6 +1,4 @@
-"""
-Defines the GUI IO file for SU2.
-"""
+"""Defines the GUI IO file for SU2."""
 from __future__ import print_function
 from collections import OrderedDict
 

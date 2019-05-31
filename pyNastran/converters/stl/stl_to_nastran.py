@@ -5,6 +5,7 @@ from pyNastran.bdf.field_writer_8 import print_card_8
 from pyNastran.bdf.field_writer_16 import print_card_16
 from pyNastran.bdf.field_writer_double import print_card_double
 
+
 def stl_to_nastran_filename(stl_filename, bdf_filename,
                             nnodes_offset=0, nelements_offset=0,
                             pid=100, mid=200,

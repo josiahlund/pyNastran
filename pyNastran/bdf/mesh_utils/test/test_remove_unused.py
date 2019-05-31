@@ -1,3 +1,4 @@
+"""tests remove_unused"""
 from __future__ import print_function
 import os
 import unittest
@@ -43,7 +44,7 @@ class TestRemoveUnused(unittest.TestCase):
         model.write_bdf(bdf_filename_out)
         os.remove(bdf_filename_out)
 
-    def _test_remove_bwb(self):
+    def test_remove_bwb(self):
         """removes unused data from the bwb model"""
         bdf_filename = os.path.join(pkg_path, '..', 'models', 'bwb', 'bwb_saero.bdf')
         bdf_filename_out = os.path.join(pkg_path, '..', 'models', 'bwb', 'bwb_modes.bdf')

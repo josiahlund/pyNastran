@@ -6,6 +6,7 @@ This includes:
  - row_col_pairs, optional_index, optional_inverse = unique_rows(
        return_index=False, return_inverse=False):
  - augmented_identity(A)
+
 """
 from __future__ import print_function
 import numpy as np
@@ -15,9 +16,7 @@ import numpy as np
 
 
 def pivot_table(data, rows, cols):
-    """
-    PCOMP: rows=element_ids, cols=layer
-    """
+    """PCOMP: rows=element_ids, cols=layer"""
     ncount = len(rows)
     icount = np.arange(ncount)
     assert len(data.shape) == 3, data.shape

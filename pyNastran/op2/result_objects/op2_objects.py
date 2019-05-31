@@ -21,6 +21,7 @@ class BaseScalarObject(Op2Codes):
      - BucklingEigenvalues
      - ComplexEigenvalues
      - ScalarObject
+
     """
     def __init__(self):
         Op2Codes.__init__(self)

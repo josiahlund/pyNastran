@@ -22,6 +22,7 @@ from pyNastran.bdf.bdf_interface.assign_type import (
 
 from pyNastran.bdf.cards.thermal.thermal import ThermalBC
 
+
 class RADM(ThermalBC):
     """
     Defines the radiation properties of a boundary element for heat transfer

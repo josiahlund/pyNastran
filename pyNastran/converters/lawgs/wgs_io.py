@@ -1,6 +1,4 @@
-"""
-Defines the GUI IO file for LaWGS.
-"""
+"""Defines the GUI IO file for LaWGS."""
 from __future__ import print_function
 from collections import OrderedDict
 

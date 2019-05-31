@@ -1,6 +1,4 @@
-"""
-Defines the GUI IO file for Usm3d.
-"""
+"""Defines the GUI IO file for Usm3d."""
 from __future__ import print_function
 import os
 from collections import defaultdict, OrderedDict

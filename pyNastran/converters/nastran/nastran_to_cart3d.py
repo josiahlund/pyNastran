@@ -3,6 +3,7 @@ defines:
  - cart3d = nastran_to_cart3d(bdf, log=None, debug=False)
  - nastran_to_cart3d_filename(bdf_filename, cart3d_filename,
                               log=None, debug=False)
+
 """
 from __future__ import print_function
 from codecs import open
@@ -31,6 +32,7 @@ def nastran_to_cart3d(bdf, log=None, debug=False):
     -------
     cart3d : Cart3D()
         a Cart3D object
+
     """
     cart3d = Cart3D(log=log, debug=debug)
 

@@ -1,6 +1,5 @@
 """defines testing utils"""
 import os
-#from copy import deepcopy
 from six import StringIO
 import numpy as np
 from pyNastran.bdf.bdf import BDF

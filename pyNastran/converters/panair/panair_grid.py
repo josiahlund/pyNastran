@@ -1,6 +1,7 @@
 """
 defines:
  - PanairGrid(log=None, debug=False)
+
 """
 from __future__ import print_function
 import os
@@ -44,6 +45,7 @@ class PanairGrid(object):
         log : logging module object / None
             if log is set, debug is ignored and uses the
             settings the logging object has
+
         """
         self.infilename = None
         self.title_lines = []
@@ -194,10 +196,6 @@ class PanairGrid(object):
     def write_panair(self, out_filename):
         """writes the panair file"""
         self.update_cases()
-        #if PY2:
-            #wb = 'wb'
-        #else:
-            #wb = 'w'
         with open(out_filename, 'w') as panair_file:
             panair_file.write(self.title_section)
             panair_file.write(self.write_data_check())
@@ -328,6 +326,7 @@ class PanairGrid(object):
           11.       3.                                                          winga
           =x(1,1)   y(1,1)    z(1,1)    x(*,*)    y(*,*)    z(*,*)
              69.4737    9.2105    0.0000   63.7818    9.5807    0.7831
+
         """
         nnetworks = integer(section[1][0:10], 'nnetworks')
         cp_norm = section[1][50:60].strip()
@@ -395,6 +394,7 @@ class PanairGrid(object):
           5.
           =th(1)    th(2)     th(3)     th(4)     th(5)
           -90.      -45.      0.        45.       90.
+
         """
         nnetworks = integer(section[1][0:10], 'nnetworks')
         cp_norm = section[1][50:60].strip()
@@ -553,6 +553,7 @@ class PanairGrid(object):
 
           isings  igeomp  isingp  icontp  ibconp  iedgep
           ipraic  nexdgn  ioutpr  ifmcpr  icostp
+
         """
         #self.printoutSection = '\n'.join(section)+'\n'
 
@@ -639,6 +640,7 @@ class PanairGrid(object):
           =inat     insd      xwake     twake                                   netname
           bodyl     3.        100.      .0                                      bodylwk
           bodyu     3.        100.      .0                                      bodyuwk
+
         """
         #return True  # disable wakes
         nnetworks = integer_or_blank(section[1][0:10], 'nnetworks', 0)
@@ -984,6 +986,7 @@ class PanairGrid(object):
         46.       0.        0.
         =sref     bref      cref      dref
         2400.     60.       40.       90.
+
         """
         self.xref = float(section[1][0:10])  # 0
         self.yref = float(section[1][10:20])

@@ -2,6 +2,7 @@
 dfeines:
  - read_shabp(shabp_filename, log=None, debug=False)
  - SHABP(log=None, debug=False)
+
 """
 from __future__ import print_function
 from numpy import array, zeros, arange, ones, cross
@@ -33,6 +34,7 @@ class SHABP(ShabpOut):
         log : logging module object / None
             if log is set, debug is ignored and uses the
             settings the logging object has
+
         """
         #self.xyz = {}
         self.X = {}

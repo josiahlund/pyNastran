@@ -4158,9 +4158,14 @@ class DVPREL1(DVXREL1):
             self._update_by_dvprel(prop, value)
         except AttributeError:
             raise
-            #raise NotImplementedError('prop_type=%r is not supported in update_model' % self.prop_type)
+            #raise NotImplementedError('prop_type=%r is not supported in '
+                                      #'update_model' % self.prop_type)
 
     def _update_by_dvprel(self, prop, value):
+        if self.prop_type != prop.type:
+            raise RuntimeError('prop_type=%s is not the same as the property type (%s)\n%s%s' % (
+                self.prop_type, prop.type, str(self), str(prop)))
+
         if hasattr(prop, 'update_by_pname_fid'):
             prop.update_by_pname_fid(self.pname_fid, value)
         else:

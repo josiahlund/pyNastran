@@ -2,6 +2,7 @@
 defines:
  - ugrid = nastran_to_ugrid(bdf_filename, ugrid_filename_out=None, properties=None,
                             check_shells=True, check_solids=True, log=None)
+
 """
 from six import string_types
 from pyNastran.bdf.bdf import BDF, read_bdf
@@ -29,6 +30,7 @@ def nastran_to_ugrid(bdf_filename, ugrid_filename_out=None, properties=None,
         verify that there is at least one solid element
     log : Logger()
         a Python logging object
+
     """
     if isinstance(bdf_filename, string_types):
         bdf_model = read_bdf(bdf_filename, log=log)
@@ -127,6 +129,7 @@ def main():  # pragma: no cover
     """
     Converts a Nastran model to UGRID model and renumbers the properties.
     Also creates a fun3d.mapbc file.
+
     """
     properties_orig = {
         'bay' : ('viscous', [13, 15, 17, 17]),

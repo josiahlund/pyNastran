@@ -7,6 +7,7 @@ All bush properties are defined in this file.  This includes:
  *   PBUSHT
 
 All bush properties are BushingProperty and Property objects.
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
@@ -738,6 +739,7 @@ class PBUSH2D(BushingProperty):
         if comment:
             self.comment = comment
         raise NotImplementedError()
+
     def write_card(self, size=8, is_double=False):
         """
         Writes the card with the specified width and precision
