@@ -1,6 +1,4 @@
-"""
-defines the MainWindow class
-"""
+"""defines the MainWindow class"""
 # coding: utf-8
 # pylint: disable=C0111
 from __future__ import division, unicode_literals, print_function
@@ -29,6 +27,7 @@ from pyNastran.gui.utils.version import check_for_newer_version
 from pyNastran.gui.plugins import plugin_name_to_path
 from pyNastran.gui.formats import NastranIO
 from pyNastran.gui.gui_common import GuiCommon
+from pyNastran.gui.menus.download import DownloadWindow
 
 # tcolorpick.png and tabout.png trefresh.png icons on LGPL license, see
 # http://openiconlibrary.sourceforge.net/gallery2/?./Icons/actions/color-picker-grey.png
@@ -167,7 +166,6 @@ class MainWindow(GuiCommon, NastranIO):
         version_latest, unused_version_current, is_newer = check_for_newer_version()
         if is_newer and check:
             url = pyNastran.__website__
-            from pyNastran.gui.menus.download import DownloadWindow
             win = DownloadWindow(url, version_latest, win_parent=self)
             win.show()
         #dt = time.time() - time0

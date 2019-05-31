@@ -1,6 +1,4 @@
-"""
-Defines the BDFCard class that is passed into the various Nastran cards.
-"""
+"""Defines the BDFCard class that is passed into the various Nastran cards."""
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
 from typing import List, Union, Optional, Any
@@ -10,10 +8,7 @@ from pyNastran.bdf.cards.utils import wipe_empty_fields
 
 
 class BDFCard(object):
-    """
-    A BDFCard is a list that has a default value of None for fields out of
-    range.
-    """
+    """A BDFCard is a list that has a default value of None for fields out of range."""
     def __init__(self, card, has_none=True):
         # type: (List[str], bool) -> None
         """

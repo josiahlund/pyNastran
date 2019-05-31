@@ -5105,7 +5105,6 @@ def get_deqatn_value(dvxrel2, model, desvar_values):
     values = get_deqatn_args(dvxrel2, model, desvar_values)
     deqatn = model.DEQATN(dvxrel2.dequation)
     #print(deqatn.func_str)
-    #from six import exec_
     #exec_(deqatn.func_str)
     func = deqatn.func
     if func is None:

@@ -65,6 +65,7 @@ Without cross referencing...
 Cross-referencing allows you to easily jump across cards and also helps
 with calculating things like position, area, and mass.  The BDF is designed
 around the idea of cross-referencing, so it's recommended that you use it.
+
 """
 # pylint: disable=R0902,R0904,R0914
 
@@ -470,9 +471,7 @@ class XrefMesh(BDFAttributes):
 
     def _cross_reference_loads(self):
         # type: () -> None
-        """
-        Links the loads to nodes, coordinate systems, and other loads.
-        """
+        """Links the loads to nodes, coordinate systems, and other loads."""
         for (unused_lid, load_combinations) in self.load_combinations.items():
             for load_combination in load_combinations:
                 try:

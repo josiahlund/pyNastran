@@ -7,7 +7,6 @@ Defines:
 
 """
 from __future__ import print_function
-#from math import nan
 import numpy as np
 from numpy import array, cross, allclose, mean
 from numpy.linalg import norm  # type: ignore

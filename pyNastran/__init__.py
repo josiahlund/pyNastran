@@ -7,9 +7,9 @@ if is_pynastrangui_exe:
     # pyInstaller
     from pyNastran.version import __version__, __releaseDate__
 else:
-    __version__ = '1.2.1'
-    __releaseDate__ = '2019/5/24'
-    __releaseDate2__ = 'MAY 24, 2019'
+    __version__ = '1.2.2'
+    __releaseDate__ = '2019/6/x'
+    __releaseDate2__ = 'JUNE x, 2019'
 
 __author__ = 'Steven Doyle, Michael Redmond, Saullo Castro, hurlei, Paul Blelloch, Nikita Kalutsky'
 __email__ = 'mesheb82@gmail.com'

@@ -310,9 +310,7 @@ def _write_shells(bdf_file, model, eid_set, face_map, eid_shell, pid_shell, mid_
             #print(elem)
             #break
 
-        #elem = next(itervalues(model.elements)) # old
         elem = model.elements[eids[0]]
-        #pid = next(iterkeys(model.properties))
         pid = elem.Pid()
         prop = model.properties[pid]
         try:

@@ -1,6 +1,4 @@
-"""
-Parses Nastran fields
-"""
+"""Parses Nastran fields"""
 from __future__ import print_function
 import re
 from typing import Union, Optional
@@ -60,6 +58,7 @@ def parse_components(card, ifield, fieldname):
     -------
     components : str
         a string of the dofs '0' or '123456' (not all are required)
+
     """
     assert isinstance(card, BDFCard), type(card)
     assert isinstance(ifield, int), type(ifield)
@@ -202,6 +201,7 @@ def integer_double_string_or_blank(card, ifield, fieldname, default=None):
     -------
     value : int, float, str, None
         the field value
+
     """
     svalue = card.field(ifield)
 
@@ -266,6 +266,7 @@ def modal_components(card, ifield, fieldname):
         field number
     fieldname : str
         name of field
+
     """
     value = integer(card, ifield, fieldname)
     if not(-1 <= value <= 6):
@@ -287,6 +288,7 @@ def modal_components_or_blank(card, ifield, fieldname, default=None):
         field number
     fieldname : str
         name of field
+
     """
     value = integer_or_blank(card, ifield, fieldname, default=default)
     if not(-1 <= value <= 6):
@@ -306,6 +308,7 @@ def integer(card, ifield, fieldname):
         field number
     fieldname : str
         name of field
+
     """
     svalue = card.field(ifield)
     if isinstance(svalue, float_types):
@@ -379,6 +382,7 @@ def double(card, ifield, fieldname):
     -------
     value : float
         the value from the desired field
+
     """
     svalue = card.field(ifield)
 
@@ -446,6 +450,7 @@ def double_or_blank(card, ifield, fieldname, default=None):
         name of field
     default : double, None
         the default value for the field (default=None)
+
     """
     svalue = card.field(ifield)
 
@@ -482,6 +487,7 @@ def double_or_string(card, ifield, fieldname):
         field number
     fieldname : str
         name of field
+
     """
     svalue = card.field(ifield)
 
@@ -543,6 +549,7 @@ def double_string_or_blank(card, ifield, fieldname, default=None):
         the typed value
 
     :raises SyntaxError: if there is an invalid type
+
     """
     svalue = card.field(ifield)
 
@@ -599,6 +606,7 @@ def integer_or_double(card, ifield, fieldname):
         the value with the proper type
 
     :raises SyntaxError: if there's an invalid type
+
     """
     svalue = card.field(ifield)
 
@@ -643,6 +651,7 @@ def integer_double_or_blank(card, ifield, fieldname, default=None):
         name of field
     default : int / float / None
         the default value for the field (default=None)
+
     """
     svalue = card.field(ifield)
 
@@ -676,6 +685,7 @@ def integer_or_string(card, ifield, fieldname):
         name of field
     default : int / str
         the default value for the field (default=None)
+
     """
     svalue = card.field(ifield)
 
@@ -733,6 +743,7 @@ def integer_string_or_blank(card, ifield, fieldname, default=None):
         name of field
     default : int, str, None
         the default value for the field (default=None)
+
     """
     svalue = card.field(ifield)
     if isinstance(svalue, integer_types):
@@ -769,6 +780,7 @@ def _get_dtype(value):
     -------
     dtype : str
         the type of the value
+
     """
     try:
         value = interpret_value(value)
@@ -804,6 +816,7 @@ def integer_double_or_string(card, ifield, fieldname):
     -------
     value : varies
         the value of the field
+
     """
     svalue = card.field(ifield)
     if isinstance(svalue, integer_float_types):
@@ -859,6 +872,7 @@ def string(card, ifield, fieldname):
     -------
     value : str
         the value of the field
+
     """
     svalue = card.field(ifield)
     if isinstance(svalue, string_types):
@@ -902,6 +916,7 @@ def string_or_blank(card, ifield, fieldname, default=None):
     -------
     value : varies
         the value of the field
+
     """
     svalue = card.field(ifield)
     if svalue is None:
@@ -949,6 +964,7 @@ def loose_string_or_blank(card, ifield, fieldname, default=None):
     -------
     value : varies
         the value of the field
+
     """
     svalue = card.field(ifield)
     if svalue is None:
@@ -996,6 +1012,7 @@ def exact_string_or_blank(card, ifield, fieldname, default=None):
     -------
     value : varies
         the value of the field
+
     """
     svalue = card.field(ifield)
     if svalue is None:
@@ -1039,6 +1056,7 @@ def interpret_value(value_raw, card=''):
     -------
     value : varies
         the Nastran reprentation of the value
+
     """
     if value_raw is None:
         return None

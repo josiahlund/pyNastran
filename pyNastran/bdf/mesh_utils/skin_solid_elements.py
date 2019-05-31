@@ -266,7 +266,6 @@ def _write_skin_solid_faces(model, skin_filename, face_map,
                     #print(elem)
                     #break
 
-                #elem = next(itervalues(model.elements)) # old
                 assert len(eids) == 1, eids
                 elem = model.elements[eids[0]]
                 #pid = next(model.properties.keys())

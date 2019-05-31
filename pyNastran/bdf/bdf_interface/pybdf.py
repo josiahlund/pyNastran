@@ -479,6 +479,7 @@ class BDFInputPy(object):
             the bdf filename to open
         basename : bool; default=False
             only take the basename of the bdf
+
         """
         if basename:
             bdf_filename_inc = os.path.join(self.include_dir, os.path.basename(bdf_filename))
@@ -532,6 +533,7 @@ class BDFInputPy(object):
         -------
         bdf_file : file
             a file object
+
         """
         if encoding is None:
             encoding = self.encoding
@@ -572,6 +574,7 @@ class BDFInputPy(object):
         ------
         RuntimeError : file is active
         IOError : Invalid file type
+
         """
         if check:
             if not os.path.exists(_filename(bdf_filename_inc)):
@@ -661,6 +664,7 @@ def _clean_comment(comment):
     -------
     updated_comment : str
         the comment
+
     """
     if comment == '':
         pass
@@ -719,6 +723,7 @@ def _lines_to_decks(lines, ilines, punch, log, keep_enddata=True,
         ???
     auxmodel_lines : List[str]
         ???
+
     """
     if punch:
         system_lines = []
@@ -1269,6 +1274,7 @@ def _show_bad_file(self, bdf_filename, encoding, nlines_previous=10):
         the file encoding
     nlines_previous : int; default=10
         the number of lines to show
+
     """
     lines = []  # type: List[str]
     print('ENCODING - show_bad_file=%r' % encoding)
@@ -1305,6 +1311,7 @@ def _get_auxmodel_id(line, uline):
         BEGIN AUXMODEL=2
         BEGIN BULK AUXMODEL=2
         BEGIN BULK AUXMODEL = 2
+
     """
     #if '=' in uline:
     sline = uline.split('=')
@@ -1329,6 +1336,7 @@ def _get_afpm_id(line, uline):
         BEGIN AFPM=2
         BEGIN BULK AFPM=2
         BEGIN BULK AFPM = 2
+
     """
     sline = uline.split('=')
     try:
@@ -1351,6 +1359,7 @@ def _get_super_id(line, uline):
         BEGIN BULK SUPER=2
         BEGIN BULK SUPER = 2
         BEGIN BULK SUPER 2
+
     """
     if '=' in uline:
         sline = uline.split('=')
@@ -1391,6 +1400,7 @@ def _clean_comment_bulk(comment):
     -------
     updated_comment : str
         the comment
+
     """
     if comment == '':
         pass
