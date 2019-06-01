@@ -107,16 +107,16 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
     is_travis = 'TRAVIS' in os.environ
     is_rtd = 'READTHEDOCS' in os.environ
 
-    if is_dev or (is_gui and add_vtk_qt):
-        try:
-            import vtk
-            vtk_version = '.'.join(vtk.VTK_VERSION.split('.'))
-            all_reqs['vtk'] = vtk_version
-            if vtk_version < '7.0.0':
-                print("vtk.VTK_VERSION = %r < '7.0.0'" % vtk.VTK_VERSION)
-                install_requires.append('vtk >= 7.0.0')
-        except ImportError:
-            install_requires.append('vtk >= 7.0.0')  # 8.x used
+    #if is_dev or (is_gui and add_vtk_qt):
+        #try:
+            #import vtk
+            #vtk_version = '.'.join(vtk.VTK_VERSION.split('.'))
+            #all_reqs['vtk'] = vtk_version
+            #if vtk_version < '7.0.0':
+                #print("vtk.VTK_VERSION = %r < '7.0.0'" % vtk.VTK_VERSION)
+                #install_requires.append('vtk >= 7.0.0')
+        #except ImportError:
+            #install_requires.append('vtk >= 7.0.0')  # 8.x used
 
     install_requires = []
 
