@@ -251,8 +251,7 @@ class Subcase(object):
         #subtable_name = data_code['subtable_name']
         table_name = data_code['table_name']
         if (PY2 and isinstance(table_name, str)) or (PY3 and not isinstance(table_name, str)):
-            # PY2 : table_name is a byte string
-            # PY3: table_name is a byte string
+            # table_name is a byte string
             table_name = table_name.decode('latin1')
         else:
             raise NotImplementedError('table_name=%r PY2=%s PY3=%s' % (table_name, PY2, PY3))

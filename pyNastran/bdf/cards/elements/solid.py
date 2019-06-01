@@ -12,6 +12,7 @@ All solid elements are defined in this file.  This includes:
  * CIHEX2
 
 All solid elements are SolidElement and Element objects.
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)

@@ -1,6 +1,5 @@
 """Defines the GUI IO file for Tecplot."""
 from __future__ import print_function
-#import os
 from six import integer_types
 from collections import OrderedDict
 

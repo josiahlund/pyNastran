@@ -1,6 +1,4 @@
-"""
-defines the ZoomStyle class
-"""
+"""defines the ZoomStyle class"""
 from __future__ import print_function, division
 import vtk
 

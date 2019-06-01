@@ -10,9 +10,6 @@ defines:
 
 """
 from __future__ import print_function
-#from itertools import count
-#import warnings
-
 from six import iterkeys
 import numpy as np
 from pyNastran.bdf.cards.coordinate_systems import CORD2R

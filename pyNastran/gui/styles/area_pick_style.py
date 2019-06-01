@@ -62,9 +62,7 @@ class AreaPickStyle(vtk.vtkInteractorStyleRubberBandZoom):  # works
         assert name is not None
 
     def _left_button_press_event(self, obj, event):
-        """
-        gets the first point
-        """
+        """gets the first point"""
         #print('area_picker - left_button_press_event')
         self.OnLeftButtonDown()
         pixel_x, pixel_y = self.parent.vtk_interactor.GetEventPosition()
@@ -76,6 +74,7 @@ class AreaPickStyle(vtk.vtkInteractorStyleRubberBandZoom):  # works
 
         TODO: doesn't handle panning of the camera to center the image
               with respect to the selected limits
+
         """
         #self.OnLeftButtonUp()
         pixel_x, pixel_y = self.parent.vtk_interactor.GetEventPosition()
@@ -107,9 +106,7 @@ class AreaPickStyle(vtk.vtkInteractorStyleRubberBandZoom):  # works
         self.picker_points = []
 
     def _pick_visible_ids(self, xmin, ymin, xmax, ymax):
-        """
-        Does an area pick of all the visible ids inside the box
-        """
+        """Does an area pick of all the visible ids inside the box"""
         #vtk.vtkSelectVisiblePoints()
         #vcs = vtk.vtkVisibleCellSelector()
         area_picker = vtk.vtkRenderedAreaPicker()

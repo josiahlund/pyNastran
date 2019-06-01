@@ -11,6 +11,7 @@ All rigid elements are defined in this file.  This includes:
  * RSSCON
 
 All rigid elements are RigidElement and Element objects.
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)

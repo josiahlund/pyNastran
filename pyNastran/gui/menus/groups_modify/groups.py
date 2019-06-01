@@ -1,6 +1,7 @@
 """
 defines:
  - Group
+
 """
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
@@ -29,6 +30,7 @@ class Group(object):
             the max id
         editable : bool; default=True
             not sure what this is used for
+
         """
         if len(name):
             assert len(name) > 0, name

@@ -34,7 +34,6 @@ from numpy import arccos, sqrt, pi, in1d, cos, unique, cross
 
 def filter1d(a, b=None, zero_tol=0.001):
     """
-
     Filters a 1d numpy array of values near 0.
 
     Parameters

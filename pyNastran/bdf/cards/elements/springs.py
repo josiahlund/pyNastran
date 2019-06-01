@@ -8,6 +8,7 @@ All spring elements are defined in this file.  This includes:
  * CELAS4
 
 All spring elements are SpringElement and Element objects.
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)

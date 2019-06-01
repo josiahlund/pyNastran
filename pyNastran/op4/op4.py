@@ -1,6 +1,4 @@
-"""
-Main OP4 class
-"""
+"""Main OP4 class"""
 from __future__ import print_function
 import sys
 import os
@@ -94,6 +92,7 @@ def read_op4(op4_filename=None, matrix_names=None, precision='default',
     .. note:: it's strongly recommended that you convert sparse matrices to
               another format before doing math on them.  This is standard
               with sparse matrices.
+
     """
     op4 = OP4(log=log, debug=debug)
     return op4.read_op4(op4_filename, matrix_names, precision)
@@ -104,6 +103,7 @@ class OP4(object):
     todo:: add endian checking
     todo:: test on big matrices
     todo:: finish write_op4
+
     """
     def __init__(self, log=None, debug=False):
         self.n = 0
@@ -115,9 +115,7 @@ class OP4(object):
         self.large = None
 
     def read_op4(self, op4_filename=None, matrix_names=None, precision='default'):
-        """
-        See ``read_op4``
-        """
+        """See ``read_op4``"""
         if precision not in ('default', 'single', 'double'):
             msg = "precision=%r and must be 'single', 'double', or 'default'" % precision
             raise ValueError(msg)
@@ -156,9 +154,7 @@ class OP4(object):
         return matrices
 
     def _read_matrix_ascii(self, op4, matrix_names=None, precision='default'):
-        """
-        reads a matrix
-        """
+        """Reads an ASCII matrix"""
         iline = 0
         line = op4.readline().rstrip()
         iline += 1
@@ -212,7 +208,7 @@ class OP4(object):
         return (name, form, A)
 
     def _read_real_sparse_ascii(self, op4, iline, nrows, ncols, line_size, line, dtype, is_big_mat):
-        """reads a sparse real ASCII matrix"""
+        """Reads a sparse real ASCII matrix"""
         self.log.debug('_read_real_sparse_ascii')
         rows = []
         cols = []
@@ -294,7 +290,7 @@ class OP4(object):
 
     def _read_real_sparse_ascii_new(self, op4, iline, nrows, ncols, line_size, line,
                                     dtype, is_big_mat):
-        """reads a sparse real ASCII matrix"""
+        """Reads a sparse real ASCII matrix"""
         self.log.debug('_read_real_sparse_ascii')
         rows = []
         cols = []
@@ -380,7 +376,7 @@ class OP4(object):
         return A, iline
 
     def _read_real_dense_ascii(self, op4, iline, nrows, ncols, line_size, line, dtype, is_big_mat):
-        """reads a real dense ASCII matrix"""
+        """Reads a real dense ASCII matrix"""
         self.log.debug('_read_real_dense_ascii')
         A = zeros((nrows, ncols), dtype=dtype)  # Initialize a real matrix
         nloops = 0
@@ -441,7 +437,7 @@ class OP4(object):
 
     def _read_real_ascii(self, op4, iline, nrows, ncols, line_size, line, dtype,
                          is_sparse, is_big_mat):
-        """reads a real ASCII matrix"""
+        """Reads a real ASCII matrix"""
         if is_sparse:
             if self._new:
                 A, iline = self._read_real_sparse_ascii_new(op4, iline, nrows, ncols,
@@ -456,7 +452,7 @@ class OP4(object):
 
     def _read_complex_sparse_ascii(self, op4, iline, nrows, ncols, line_size,
                                    line, dtype, is_big_mat):
-        """reads a sparse complex ASCII matrix"""
+        """Reads a sparse complex ASCII matrix"""
         rows = []
         cols = []
         entries = []
@@ -525,7 +521,7 @@ class OP4(object):
 
     def _read_complex_ascii(self, op4, iline, nrows, ncols, line_size, line,
                             dtype, is_sparse, is_big_mat):
-        """reads a complex ASCII matrix"""
+        """Reads a complex ASCII matrix"""
         if is_sparse:
             A, iline = self._read_complex_sparse_ascii(op4, iline, nrows, ncols,
                                                        line_size, line, dtype, is_big_mat)
@@ -536,7 +532,7 @@ class OP4(object):
 
     def _read_complex_dense_ascii(self, op4, iline, nrows, ncols, line_size, line, dtype,
                                   is_big_mat):
-        """reads a dense complex ASCII matrix"""
+        """Reads a dense complex ASCII matrix"""
         A = zeros((nrows, ncols), dtype=dtype)  # Initialize a complex matrix
 
         nloops = 0
@@ -621,6 +617,7 @@ class OP4(object):
            the row id
         L : int
             the row length
+
         """
         if len(data) == 0:
             data = op4.read(4)
@@ -658,6 +655,7 @@ class OP4(object):
            the row id
         L : int
             ???
+
         """
         if len(data) == 0:
             data = op4.read(8)
@@ -739,7 +737,7 @@ class OP4(object):
         return (a, icol, irow, nwords)
 
     def _read_matrix_binary(self, op4, precision, matrix_names):
-        """reads a matrix"""
+        """Reads a binary matrix"""
         #self.show(f, 60)
         if self.debug:
             self.log.info("*************************")
@@ -1013,9 +1011,7 @@ class OP4(object):
         return A
 
     def _show(self, op4, n, types='ifs', endian=None):
-        """
-        Shows binary data
-        """
+        """Shows binary data"""
         assert self.n == op4.tell()
         nints = n // 4
         data = op4.read(4 * nints)
@@ -1046,6 +1042,7 @@ class OP4(object):
             the big/little endian {>, <}
 
         .. warning:: 's' is apparently not Python 3 friendly
+
         """
         return self._write_data(sys.stdout, data, types=types, endian=endian)
 
@@ -1071,6 +1068,7 @@ class OP4(object):
         endian : str; default=None -> auto determined somewhere else in the code
             the big/little endian {>, <}
         types = 'ifdlqILQ'
+
         """
         n = len(data)
         nints = n // 4
@@ -1118,9 +1116,7 @@ class OP4(object):
         return self._write_ndata(sys.stdout, f, n, types=types)
 
     def _write_ndata(self, fout, f, n, types='ifs'):
-        """
-        Useful function for seeing what's going on locally when debugging.
-        """
+        """Useful function for seeing what's going on locally when debugging."""
         nold = self.n
         data = f.read(n)
         self.n = nold
@@ -1229,7 +1225,7 @@ class OP4(object):
         return A
 
     def _read_complex_binary(self, op4, nrows, ncols, matrix_type, is_sparse, is_big_mat):
-        """reads a complex binary matrix"""
+        """Reads a complex binary matrix"""
         if is_sparse:
             A = self._read_complex_sparse_binary(op4, nrows, ncols, matrix_type, is_big_mat)
         else:
@@ -1237,7 +1233,7 @@ class OP4(object):
         return A
 
     def _read_complex_sparse_binary(self, op4, nrows, ncols, matrix_type, is_big_mat):
-        """reads a sparse complex binary matrix"""
+        """Reads a sparse complex binary matrix"""
         if self.debug:
             self.log.info('_read_complex_sparse_binary')
         out = self._get_matrix_info(matrix_type, debug=False)
@@ -1409,6 +1405,7 @@ class OP4(object):
         }
 
         .. todo::  This method is not even close to being done
+
         """
         if precision not in ('single', 'double', 'default'):
             msg = "precision=%r and must be 'single', 'double', or 'default'" % precision
@@ -1517,6 +1514,7 @@ class OP4(object):
 
         .. note:: form defaults to 2, but 1 can be easily determined.
                   Any others must be specified.
+
         """
         assert isinstance(name, string_types), name
         assert isinstance(form, int), form
@@ -1542,6 +1540,7 @@ class OP4(object):
         6 words * 4 bytes/word = 24 bytes
 
         .. todo:: support precision
+
         """
         A = matrix
         matrix_type, nwords_per_value = _get_type_nwv(A[0, 0], precision)
@@ -1649,7 +1648,7 @@ class OP4(object):
 
 
     def _determine_endian(self, op4):
-        """get the endian"""
+        """Get the endian"""
         data = op4.read(8)
         (record_length_big, unused_dum_a) = unpack('>ii', data)
         (record_length_little, unused_dum_b) = unpack('<ii', data)
@@ -1683,7 +1682,7 @@ class OP4(object):
 
 
 def _get_start_end_row(A, nrows):
-    """find the starting and ending points of the matrix"""
+    """Find the starting and ending points of the matrix"""
     istart = None
     for irow in range(nrows):
         if abs(A[irow]) > 0.0:
@@ -1826,6 +1825,7 @@ def get_big_mat_nrows(nrows):
         matrix has more than 65535 rows, then BIGMAT will
         automatically be set to TRUE regardless of the value
         specified.
+
     """
     if nrows < 0:  # if less than 0, big
         is_big_mat = True
@@ -1841,7 +1841,7 @@ def get_big_mat_nrows(nrows):
 
 
 def get_dtype(matrix_type, precision='default'):
-    """reset the type if 'default' not selected"""
+    """Reset the type if 'default' not selected"""
     if precision == 'single':
         if matrix_type in [1, 2]:
             dtype = 'float32'
@@ -1896,6 +1896,7 @@ def _get_type_nwv(A, precision='default'):
     +-------------+------------+-----------+--------+--------+
     |      4      | complex128 |   double  |    4   |   16   |
     +-------------+------------+-----------+--------+--------+
+
     """
     # real
     if isinstance(A.dtype.type(), float32):

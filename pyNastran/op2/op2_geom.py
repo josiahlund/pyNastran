@@ -7,6 +7,7 @@ Defines:
                  mode='msc', log=None, debug=True, debug_file=None, encoding=None)
  - OP2Geom(make_geom=True, debug=False, log=None, debug_file=None, mode='msc')
    - OP2
+
 """
 from six.moves.cPickle import dump
 from pyNastran.op2.tables.geom.geom1 import GEOM1

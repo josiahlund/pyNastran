@@ -1,7 +1,5 @@
 # coding: latin1
-"""
-defines the command line tool test_gui
-"""
+"""defines the command line tool test_gui"""
 from __future__ import print_function
 import os
 import sys

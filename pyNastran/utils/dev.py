@@ -88,8 +88,10 @@ def list_print(lst, float_fmt='%-4.2f'):
 
         if isinstance(lst, (np.ndarray)) and lst.ndim == 2:
             row, col = lst.shape
-            return ("["+",\n ".join(["["+",".join([float_fmt % lst[i, j]
-                    for j in range(col)])+"]" for i in range(row)])+"]")
+            return (
+                "["+",\n ".join(["["+",".join(
+                    [float_fmt % lst[i, j]
+                     for j in range(col)]) + "]" for i in range(row)])+"]")
         return "[" + ", ".join([_print(a) for a in lst]) + "]"
     except: # not a list
         return _print(lst)

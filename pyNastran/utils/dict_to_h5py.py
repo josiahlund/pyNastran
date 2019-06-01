@@ -18,6 +18,7 @@ Limitations:
 - May run into problems if you have two classes with the same name,
   but point to different locations.  There is some support for this,
   but hopefully you aren’t using it.
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
@@ -390,7 +391,8 @@ class HDF5Importer(object):
            '2' : value2,
            '3' : value3,
         }
-        We do this because we need top worry about unicode
+        We do this because we need to worry about unicode
+
         """
         temp_dict = {}
         sub_h5 = value

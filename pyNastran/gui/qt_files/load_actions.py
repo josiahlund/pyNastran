@@ -35,6 +35,7 @@ class LoadActions(object):
             If you're calling the on_load_results method immediately after, set it to False
         raise_error : bool; default=True
             stop the code if True
+
         """
         assert isinstance(name, string_types), 'name=%r type=%s' % (name, type(name))
         is_failed, out = self._load_geometry_filename(
@@ -228,6 +229,7 @@ class LoadActions(object):
         ----------
         out_filename : str / None
             the path to the results file
+
         """
         geometry_format = self.gui.format
         if self.gui.format is None:
@@ -407,6 +409,7 @@ class LoadActions(object):
             'Nodal', 'Elemental'
         out_filename : str / None
             the path to the results file
+
         """
         try:
             self._load_csv(result_type, out_filename)
@@ -445,6 +448,7 @@ class LoadActions(object):
             ???
         out_filename : str
             the CSV filename to load
+
         """
         out_filename_short = os.path.relpath(out_filename)
         A, fmt_dict, headers = load_csv(out_filename)

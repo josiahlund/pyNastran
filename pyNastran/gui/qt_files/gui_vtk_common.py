@@ -5,7 +5,6 @@ from collections import OrderedDict
 
 from six import string_types
 import numpy as np
-
 import vtk
 
 from pyNastran.gui.qt_version import qt_version

@@ -172,6 +172,7 @@ from pyNastran.bdf.bdf_interface.pybdf import (
     BDFInputPy, _clean_comment, _clean_comment_bulk, EXECUTIVE_CASE_SPACES)
 from pyNastran.bdf.bdf_interface.add_card import CARD_MAP
 
+
 def load_bdf_object(obj_filename, xref=True, log=None, debug=True):
     model = BDF(log=log, debug=debug)
     model.load(obj_filename=obj_filename)
@@ -569,9 +570,9 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
 
         self._xref = False
 
-        case_control_cards = {'FREQ', 'GUST', 'MPC', 'SPC', 'NLPARM', 'NSM',
-                              'TEMP', 'TSTEPNL', 'INCLUDE'}
-        self._unique_bulk_data_cards = self.cards_to_read.difference(case_control_cards)
+        #case_control_cards = {'FREQ', 'GUST', 'MPC', 'SPC', 'NLPARM', 'NSM',
+                              #'TEMP', 'TSTEPNL', 'INCLUDE'}
+        #self._unique_bulk_data_cards = self.cards_to_read.difference(CASE_CONTROL_CARDS)
 
         #: / is the delete from restart card
         self.special_cards = ['DEQATN', '/']
@@ -605,8 +606,6 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
     def get_h5attrs(self):
         """helper method for dict_to_h5py"""
         attrs = self.object_attributes(mode='both', keys_to_skip=None)
-        #attrs.remove('_card_parser')
-        #attrs.remove('log')
         return attrs
 
     def export_hdf5_filename(self, hdf5_filename):

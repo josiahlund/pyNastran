@@ -889,6 +889,7 @@ def quad_quality(element, p1, p2, p3, p4):
         #n2b = np.cross(v42, -v21) # v42 x v12
         #warp2 = np.dot(n2a, n2b) / (np.linalg.norm(n2a) * np.linalg.norm(n2b))
         #max_warp = max(np.arccos(warp1), np.arccos(warp2))
+
     out = (area, taper_ratio, area_ratio, max_skew, aspect_ratio,
            min_theta, max_theta, dideal_theta, min_edge_length)
     return out
@@ -916,6 +917,7 @@ def get_min_max_theta(faces, all_node_ids, nid_map, xyz_cid0):
             cos_theta3 = np.dot(v13, -v32) / (length13 * length32)
             cos_thetas.extend([cos_theta1, cos_theta2, cos_theta3])
             ideal_theta.extend([PIOVER3, PIOVER3, PIOVER3])
+
         elif len(face) == 4:
             try:
                 node_ids = (all_node_ids[face[0]], all_node_ids[face[1]],
