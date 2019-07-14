@@ -6,9 +6,10 @@ import time as time_module
 from six import string_types
 
 from qtpy.compat import getopenfilename
+from pyNastran.bdf.patran_utils.read_patran import load_patran_nod
+from pyNastran.utils import print_bad_path
 from pyNastran.gui.utils.load_results import load_csv, load_deflection_csv
 from pyNastran.gui.utils.load_results import create_res_obj
-from pyNastran.utils import print_bad_path
 IS_TESTING = 'test' in sys.argv[0]
 
 
@@ -16,6 +17,11 @@ class LoadActions(object):
     """performance mode should be handled in the main gui to minimize flipping"""
     def __init__(self, gui):
         self.gui = gui
+
+    @property
+    def log(self):
+        """links the the GUI's log"""
+        return self.gui.log
 
     def on_load_geometry(self, infile_name=None, geometry_format=None, name='main',
                          plot=True, raise_error=False):
@@ -427,7 +433,6 @@ class LoadActions(object):
 
     def load_patran_nod(self, nod_filename):
         """reads a Patran formatted *.nod file"""
-        from pyNastran.bdf.patran_utils.read_patran import load_patran_nod
         A, fmt_dict, headers = load_patran_nod(nod_filename, self.gui.node_ids)
 
         out_filename_short = os.path.relpath(nod_filename)
@@ -464,7 +469,6 @@ class LoadActions(object):
         elif result_type == 'Elemental':
             assert nrows == self.gui.nelements, 'nrows=%s nelements=%s' % (nrows, self.gui.nelements)
             result_type2 = 'centroid'
-            #ids = self.element_ids
         else:
             raise NotImplementedError('result_type=%r' % result_type)
 

@@ -16,9 +16,9 @@ from six import StringIO
 import numpy as np
 from cpylog import get_logger2
 from pyNastran.utils import print_bad_path, _filename
+from pyNastran.bdf.errors import MissingDeckSections
 from pyNastran.bdf.bdf_interface.utils import _parse_pynastran_header
 from pyNastran.bdf.bdf_interface.include_file import get_include_filename
-from pyNastran.bdf.errors import MissingDeckSections
 
 FILE_MANAGEMENT = (
     'ACQUIRE ', 'ASSIGN ', 'CONNECT ', 'DBCLEAN ', 'DBDICT ', 'DBDIR ',

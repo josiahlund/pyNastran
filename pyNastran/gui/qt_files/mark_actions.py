@@ -106,14 +106,14 @@ class MarkActions(object):
 
         """
         if icase_result not in self.gui.label_actors:
-            msg = 'icase_result=%r not in label_actors=[%s]' % (
-                icase_result, ', '.join(self.gui.label_actors))
+            actorsi = list(self.gui.label_actors.keys())
+            msg = 'icase_result=%r not in label_actors=%s' % (icase_result, actorsi)
             self.gui.log_error(msg)
             return
         if icase_to_apply not in self.gui.label_actors:
-            msg = 'icase_to_apply=%r not in label_actors=[%s]' % (
-                icase_to_apply, ', '.join(self.gui.label_actors))
-            self.gui.log_error(msg)
+            actorsi = list(self.gui.label_actors.keys())
+            msg = 'icase_to_apply=%r not in label_actors=%s' % (icase_to_apply, actorsi)
+            self.gui.log.error(msg)
             return
 
         eids = np.unique(eids)

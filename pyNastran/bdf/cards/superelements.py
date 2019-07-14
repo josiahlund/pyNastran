@@ -93,6 +93,7 @@ class SEBNDRY(BaseCard):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):
@@ -187,6 +188,7 @@ class SEELT(BaseCard):
         return self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eids_ref = None
 
     def raw_fields(self):
@@ -309,6 +311,7 @@ class SEEXCLD(BaseCard):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     @property
@@ -394,6 +397,7 @@ class SEMPLN(BaseCard):
         self.nodes_ref = model.Nodes(self.nodes, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.nodes_ref = None
 
@@ -474,6 +478,7 @@ class SELABEL(BaseCard):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):
@@ -642,6 +647,7 @@ class SELOC(BaseCard):
         return xyz_cid0
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes_seid = self.nodes_seid_ids
         self.nodes_0 = self.nodes_0_ids
         self.nodes_0_ref = None
@@ -739,6 +745,7 @@ class SETREE(BaseCard):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):
@@ -828,6 +835,7 @@ class CSUPER(BaseCard):
         self.nodes_ref = model.Nodes(self.nodes, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.nodes_ref = None
 
@@ -916,6 +924,7 @@ class CSUPEXT(BaseCard):
         self.nodes_ref = model.Nodes(self.nodes, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.nodes_ref = None
 
@@ -1039,6 +1048,7 @@ class SEBULK(BaseCard):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):
@@ -1196,6 +1206,7 @@ class SECONCT(BaseCard):
         self.nodes_b_ref = model.superelement_nodes(self.seid_b, self.nodes_b, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes_a = self.node_ids_a
         self.nodes_b = self.node_ids_b
         self.nodes_a_ref = None

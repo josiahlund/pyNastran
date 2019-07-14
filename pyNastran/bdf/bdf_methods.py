@@ -198,16 +198,16 @@ class BDFMethods(BDFAttributes):
         >>> pids = list(model.pids.keys())
         >>> pid_eids = self.get_element_ids_dict_with_pids(pids)
         >>> for pid, eids in sorted(pid_eids.items()):
-        >>>     mass, cg, I = model.mass_properties(element_ids=eids)
+        >>>     mass, cg, inertia = model.mass_properties(element_ids=eids)
 
         """
-        mass, cg, I = mass_properties(
+        mass, cg, inertia = mass_properties(
             self,
             element_ids=element_ids, mass_ids=mass_ids,
             reference_point=reference_point,
             sym_axis=sym_axis, scale=scale,
             inertia_reference=inertia_reference)
-        return mass, cg, I
+        return mass, cg, inertia
 
     def mass_properties_no_xref(self, element_ids=None, mass_ids=None,
                                 reference_point=None,
@@ -589,7 +589,7 @@ class BDFMethods(BDFAttributes):
             the string encoding
 
         """
-        return write_skin_solid_faces(
+        write_skin_solid_faces(
             self, skin_filename,
             write_solids=write_solids, write_shells=write_shells,
             size=size, is_double=is_double, encoding=encoding)

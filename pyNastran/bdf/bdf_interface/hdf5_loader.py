@@ -1008,7 +1008,6 @@ def hdf5_load_dresps(model, group, encoding):
     if len(keys) == 0:
         #model.log.warning('skipping loading %s' % group)
         raise RuntimeError('error loading %s' % group)
-        #return
 
     for class_type in group.keys():
         sub_group = group[class_type]

@@ -352,8 +352,7 @@ class TestElements(unittest.TestCase):
         genel.raw_fields()
         str(genel)
         assert len(genel.ul.ravel()) == 2, genel.ul
-        save_load_deck(model, xref='standard', punch=True,
-                       run_mirror=False)
+        save_load_deck(model, xref='standard', punch=True, run_mirror=False)
 
 
 if __name__ == '__main__':  # pragma: no cover

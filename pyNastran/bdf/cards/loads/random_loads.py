@@ -138,6 +138,7 @@ class RANDPS(RandomLoad):
         return self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.tid = self.Tid()
         self.tid_ref = None
 
@@ -250,6 +251,7 @@ class RANDT1(RandomLoad):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def get_loads(self):

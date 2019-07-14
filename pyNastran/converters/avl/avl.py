@@ -568,7 +568,7 @@ def interp_stations(y, unused_nspan,
     # (nspan, nchord, 2) -> (2, nsan, )
     # (3, 11, 2) -> (2, 3, 11)
     interpolated_stations = np.dstack([x_final, y_final])#.swapaxes(0, 1).swapaxes(0, 2)
-    print(x_final.shape)
+    #print(x_final.shape)
     #print(xy_final.shape)
     return interpolated_stations
 

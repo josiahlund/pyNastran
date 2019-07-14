@@ -360,8 +360,11 @@ def _convert_elements(model, xyz_scale, mass_scale, weight_scale):
             if elem.tflag == 0:
                 if elem.T1 is not None:
                     elem.T1 *= xyz_scale
+                if elem.T2 is not None:
                     elem.T2 *= xyz_scale
+                if elem.T3 is not None:
                     elem.T3 *= xyz_scale
+                if elem.T4 is not None:
                     elem.T4 *= xyz_scale
             # nsm
             #elem.nsm *= nsm_scale
@@ -370,8 +373,16 @@ def _convert_elements(model, xyz_scale, mass_scale, weight_scale):
             elem.A *= area_scale # area
             elem.nsm *= nsm_bar_scale
         elif elem_type == 'CGAP':
-            if elem.x is not None:  # vector
+            if elem.g0 is None and None in elem.x:
+                pass
+            elif elem.x is not None:  # vector
                 elem.x = [x*xyz_scale for x in elem.x]
+
+            #g0 = None
+            #x = [None, None, None]
+            #if elem.g0 is None and :  # vector
+                #print(elem.get_stats())
+                #elem.x = [x*xyz_scale for x in elem.x]
 
         elif elem_type == 'CBAR':
             if elem.x is not None:  # vector
@@ -998,26 +1009,7 @@ def _convert_aero(model, xyz_scale, time_scale, weight_scale):
 
     xyz_aefacts = set()
     for caero in model.caeros.values():
-        if caero.type == 'CAERO1':
-            caero.p1 *= xyz_scale
-            caero.p4 *= xyz_scale
-            caero.x12 *= xyz_scale
-            caero.x43 *= xyz_scale
-        elif caero.type == 'CAERO2':
-            caero.p1 *= xyz_scale
-            caero.x12 *= xyz_scale
-            #: ID of an AEFACT Bulk Data entry for slender body division
-            #: points; used only if NSB is zero or blank. (Integer >= 0)
-            if caero.lsb > 0:
-                xyz_aefacts.add(caero.lsb)
-
-            #: ID of an AEFACT data entry containing a list of division
-            #: points for interference elements; used only if NINT is zero
-            #: or blank. (Integer > 0)
-            if caero.lint > 0:
-                xyz_aefacts.add(caero.lint)
-        else:
-            raise NotImplementedError('\n' + str(caero))
+        _scale_caero(caero, xyz_scale, xyz_aefacts)
 
     for paero in model.paeros.values():
         if paero.type in ['PAERO1']:
@@ -1100,6 +1092,32 @@ def _convert_aero(model, xyz_scale, time_scale, weight_scale):
     for flfact_id in flfact_velocity_ids: # velocity
         flfact = model.flfacts[flfact_id]
         flfact.factors *= velocity_scale
+
+def _scale_caero(caero, xyz_scale, xyz_aefacts):
+    try:
+        if caero.type == 'CAERO1':
+            caero.p1 *= xyz_scale
+            caero.p4 *= xyz_scale
+            caero.x12 *= xyz_scale
+            caero.x43 *= xyz_scale
+        elif caero.type == 'CAERO2':
+            caero.p1 *= xyz_scale
+            caero.x12 *= xyz_scale
+            #: ID of an AEFACT Bulk Data entry for slender body division
+            #: points; used only if NSB is zero or blank. (Integer >= 0)
+            if caero.lsb > 0:
+                xyz_aefacts.add(caero.lsb)
+
+            #: ID of an AEFACT data entry containing a list of division
+            #: points for interference elements; used only if NINT is zero
+            #: or blank. (Integer > 0)
+            if caero.lint > 0:
+                xyz_aefacts.add(caero.lint)
+        else:
+            raise NotImplementedError('\n' + str(caero))
+    except TypeError:  # pragma: no cover
+        print(caero.get_stats())
+        raise
 
 def _convert_optimization(model, xyz_scale, mass_scale, weight_scale):
     """

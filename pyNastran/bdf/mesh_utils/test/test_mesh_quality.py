@@ -323,7 +323,7 @@ class TestMeshQuality(unittest.TestCase):
         assert eids_to_delete == [101], eids_to_delete
 
         #assert len(model.elements) == 0, model.elements
-        #os.remove(bdf_filename)
+        os.remove(bdf_filename)
 
     def test_fix_bad_quads(self):
         """split high interior angle quads"""
@@ -362,6 +362,7 @@ class TestMeshQuality(unittest.TestCase):
         assert model.card_count['CQUAD4'] == 2, model.card_count
         assert model.card_count['CTRIA3'] == 1, model.card_count
         os.remove(bdf_filename)
+
 
 if __name__ == '__main__':  # pragma: no cover
     unittest.main()

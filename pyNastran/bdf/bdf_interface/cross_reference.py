@@ -79,14 +79,10 @@ from numpy import zeros, argsort, arange, array_equal, array
 from pyNastran.bdf.bdf_interface.attributes import BDFAttributes
 
 class XrefMesh(BDFAttributes):
-    """
-    Links up the various cards in the BDF.
-    """
+    """Links up the various cards in the BDF."""
     def __init__(self):
         # type: () -> None
-        """
-        The main BDF class defines all the parameters that are used.
-        """
+        """The main BDF class defines all the parameters that are used."""
         BDFAttributes.__init__(self)
         self._nxref_errors = 100
         self._stop_on_xref_error = True
@@ -391,9 +387,7 @@ class XrefMesh(BDFAttributes):
 
     def _cross_reference_nodes_with_elements(self):
         # type: () -> None
-        """
-        Links the nodes to all connected elements
-        """
+        """Links the nodes to all connected elements"""
         nodes = defaultdict(list)  # type: Dict[int, List[Any]]
         for element in itervalues(self.elements):
             #if element.type in ['CONM2']:
@@ -431,9 +425,7 @@ class XrefMesh(BDFAttributes):
 
     def _cross_reference_properties(self):
         # type: () -> None
-        """
-        Links the properties to materials
-        """
+        """Links the properties to materials"""
         for prop in self.properties.values():
             try:
                 prop.cross_reference(self)

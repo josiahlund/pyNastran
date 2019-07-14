@@ -266,9 +266,7 @@ class GuiAttributes(object):
         we won't unsupress logging at the end of the function.
         """
         def new_func(self, *args, **kwargs):
-            """
-            The actual function exec'd by the decorated function.
-            """
+            """The actual function exec'd by the decorated function."""
             performance_mode_initial = self.performance_mode
             if not performance_mode_initial:
                 self.performance_mode = True
@@ -298,6 +296,7 @@ class GuiAttributes(object):
             the new function name
         deprecated_version : float
             the version the method was first deprecated in
+
         """
         deprecated(old_name, new_name, deprecated_version, levels=[0])
 
@@ -395,9 +394,7 @@ class GuiAttributes(object):
     #-------------------------------------------------------------------
     def set_point_grid(self, name, nodes, elements, color,
                        point_size=5, opacity=1., add=True):
-        """
-        Makes a POINT grid
-        """
+        """Makes a POINT grid"""
         self.create_alternate_vtk_grid(name, color=color, point_size=point_size,
                                        opacity=opacity, representation='point')
 
@@ -422,9 +419,7 @@ class GuiAttributes(object):
 
     def set_quad_grid(self, name, nodes, elements, color,
                       line_width=5, opacity=1., representation='wire', add=True):
-        """
-        Makes a CQUAD4 grid
-        """
+        """Makes a CQUAD4 grid"""
         self.create_alternate_vtk_grid(name, color=color, line_width=line_width,
                                        opacity=opacity, representation=representation)
 
@@ -495,9 +490,7 @@ class GuiAttributes(object):
         self._script_path = script_path
 
     def set_icon_path(self, icon_path):
-        """
-        Sets the path to the icon directory where custom icons are found
-        """
+        """Sets the path to the icon directory where custom icons are found"""
         self._icon_path = icon_path
 
     def form(self):
@@ -670,9 +663,7 @@ class GuiAttributes(object):
             self.label_ids[icase] = set()
 
     def clear_labels(self):
-        """
-        This clears out all labels from all result cases.
-        """
+        """This clears out all labels from all result cases."""
         if len(self.label_actors) == 0:
             self.log.warning('No actors to clear')
             return
@@ -752,6 +743,7 @@ class GuiAttributes(object):
             displacemnt scale factor; true scale
 
         TODO: speed up by using existing values to skip update steps
+
         """
         self.legend_obj.on_update_legend(
             title=title, min_value=min_value, max_value=max_value,
@@ -792,6 +784,7 @@ class GuiAttributes(object):
                 red-green-blue array
         is_shown : bool
             show the scalar bar
+
         """
         if colormap is None:
             colormap = self.settings.colormap
@@ -844,6 +837,7 @@ class GuiAttributes(object):
 
         .. todo::  coord_type is not supported ('xyz' ONLY)
         .. todo::  Can only set one coordinate system
+
         """
         self.tool_actions.create_coordinate_system(
             coord_id, dim_max, label=label,
@@ -1194,6 +1188,7 @@ class GuiAttributes(object):
             cell_id, world_position, icase=icase)
         return res_name, result_values, xyz
 
+
     def mark_elements_by_different_case(self, eids, icase_result, icase_to_apply):
         """
         Marks a series of elements with custom text labels
@@ -1220,8 +1215,10 @@ class GuiAttributes(object):
           icase_result = 22
           icase_to_apply = 25
           self.mark_elements_by_different_case(eids, icase_result, icase_to_apply)
+
         """
         self.mark_actions.mark_elements_by_different_case(eids, icase_result, icase_to_apply)
+
 
     def mark_nodes(self, nids, icase, text):
         """
@@ -1241,6 +1238,7 @@ class GuiAttributes(object):
         self.mark_nodes(6, 0, 'min')
         self.mark_nodes([1, 6], 0, 'max')
         self.mark_nodes([1, 6], 0, ['max', 'min'])
+
         """
         self.mark_actions.mark_nodes(nids, icase, text)
 
@@ -1260,6 +1258,7 @@ class GuiAttributes(object):
         -------
         annotation : vtkBillboardTextActor3D
             the annotation object
+
         """
         annotation = self.mark_actions.create_annotation(text, x, y, z)
         return annotation
@@ -1369,6 +1368,7 @@ class GuiAttributes(object):
             the name for the user points
         color : (float, float, float)
             RGB values as 0.0 <= rgb <= 1.0
+
         """
         self.tool_actions.on_load_user_geom(csv_filename=csv_filename, name=name, color=color)
 
@@ -1388,6 +1388,7 @@ class GuiAttributes(object):
             the name for the user points
         color : (float, float, float)
             RGB values as 0.0 <= rgb <= 1.0
+
         """
         is_failed = self.tool_actions.on_load_csv_points(
             csv_filename=csv_filename, name=name, color=color)
@@ -1461,6 +1462,7 @@ class GuiAttributes(object):
         focal_point : (3, ) float ndarray
             The focal point
             [ 188.25109863 -7. -32.07858658]
+
         """
         self.view_actions.set_focal_point(focal_point)
 
@@ -1486,6 +1488,7 @@ class GuiAttributes(object):
             int : resolution increase factor
         show_msg : bool; default=True
             log the command
+
         """
         self.tool_actions.on_take_screenshot(fname=fname, magnify=magnify, show_msg=show_msg)
 
@@ -1530,6 +1533,7 @@ class GuiAttributes(object):
            i x j' -> k
            k x i -> j
            or it's like k'
+
         """
         self.camera_obj.on_set_camera_data(camera_data, show_log=show_log)
 
@@ -1625,6 +1629,7 @@ def _add_fmt(fmts, fmt, geom_results_funcs, data):
     data : function
         the outputs from ``get_nastran_wildcard_geometry_results_functions()``
         so 1 or more formats (macro_name, geo_fmt, geo_func, res_fmt, res_func)
+
     """
     msg = 'macro_name, geo_fmt, geo_func, res_fmt, res_func = data\n'
     msg += 'data = %s'

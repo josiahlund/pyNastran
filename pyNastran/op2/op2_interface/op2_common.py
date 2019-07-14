@@ -213,7 +213,7 @@ class OP2Common(Op2Codes, F06Writer):
             pass
         #elif self.analysis_code==3: # differential stiffness
         #elif self.analysis_code==4: # differential stiffness
-        elif self.analysis_code == 5:   # frequency
+        elif self.analysis_code == 5:  # frequency
             pass
         elif self.analysis_code == 6:  # transient
             pass

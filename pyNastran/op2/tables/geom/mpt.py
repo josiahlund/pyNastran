@@ -569,9 +569,7 @@ class MPT(GeomCommon):
         return len(data)
 
     def _read_tstepnl(self, data, n):
-        """
-        TSTEPNL(3103,31,337) - record 29
-        """
+        """TSTEPNL(3103,31,337) - record 29"""
         ntotal = 88  # 19*4
         s = Struct(self._endian + b'iif5i3f3if3i4f')
         nentries = (len(data) - n) // ntotal

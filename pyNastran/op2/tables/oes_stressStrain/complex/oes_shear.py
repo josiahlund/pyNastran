@@ -148,10 +148,11 @@ class ComplexShearArray(OES_Object):
         #ntotal = self.ntotal
         msg = []
         if self.nonlinear_factor not in (None, np.nan):  # transient
-            msg.append('  type=%s ntimes=%i nelements=%i nnodes=%i\n'
-                       % (self.__class__.__name__, ntimes, nelements, nnodes))
+            msg.append('  type=%s ntimes=%i nelements=%i nnodes=%i; table_name=%r\n' % (
+                self.__class__.__name__, ntimes, nelements, nnodes, self.table_name))
         else:
-            msg.append('  type=%s nelements=%i nnodes=%i\n' % (self.__class__.__name__, nelements, nnodes))
+            msg.append('  type=%s nelements=%i nnodes=%i; table_name=%r\n' % (
+                self.__class__.__name__, nelements, nnodes, self.table_name))
         msg.append('  data: [ntimes, nnodes, 2] where 2=[%s]\n' % str(', '.join(self._get_headers())))
         msg.append('  element.shape = %s\n' % str(self.element.shape).replace('L', ''))
         msg.append('  data.shape = %s\n' % str(self.data.shape).replace('L', ''))

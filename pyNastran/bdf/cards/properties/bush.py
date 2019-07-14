@@ -30,6 +30,7 @@ class BushingProperty(Property):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
 

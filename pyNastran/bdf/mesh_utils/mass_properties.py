@@ -25,6 +25,7 @@ NO_MASS = {
     'MAT1', 'MAT2', 'MAT4', 'MAT5', 'MAT8', 'MAT10', 'MAT11', 'MAT3D', 'CREEP',
     'MATT1', 'MATT3',
 
+    'PELAS', 'PVISC', 'PBUSH1D',
     'CELAS1', 'CELAS2', 'CELAS3', 'CELAS4', #'CLEAS5',
     'CDAMP1', 'CDAMP2', 'CDAMP3', 'CDAMP4', 'CDAMP5',
     'CBUSH', 'CBUSH1D', 'CBUSH2D', 'CVISC', 'CGAP', # is this right?
@@ -1048,7 +1049,7 @@ def _get_cbeam_mass_no_nsm(model, elem, mass, cg, inertia, reference_point):
     nsm = nsm_per_length * length
     if (m + nsm) != elem.Mass() or not np.array_equal(centroid, elem.Centroid()):  # pragma: no cover
         msg = 'CBEAM; eid=%s; %s pid=%s; m/L=%s nsm/L=%s; length=%s\n' % (
-            eid, pid, prop.type, mass_per_length, nsm_per_length, length)
+            elem.eid, elem.pid, prop.type, mass_per_length, nsm_per_length, length)
         msg += 'mass_new=%s mass_old=%s\n' % (m, elem.Mass())
         msg += 'centroid_new=%s centroid_old=%s\n%s' % (
             str(centroid), str(elem.Centroid()), str(elem))
@@ -1220,9 +1221,6 @@ def _get_quad_mass(model, xyz, element_ids, all_eids,
             #msg += prop.get_stats()
             #msg += prop.mid_ref.get_stats()
             #raise RuntimeError(msg)
-
-        #print(elem)
-        #print(prop)
         #print('eid=%s type=%s mass=%s; area=%s mpa=%s'  % (elem.eid, elem.type, m, area, mpa))
         if eid in element_ids:
             mass = _increment_inertia(centroid, reference_point, m, mass, cg, inertia)
@@ -1275,7 +1273,6 @@ def _setup_apply_nsm(area_eids_pids, areas, nsm_centroids_area,
         nsm_centroidsi = np.array(nsm_centroids_area[ptype])
         nsm_centroids.append(nsm_centroidsi)
         assert len(eids_pids) == len(nsm_centroids_area[ptype]), ptype
-        #print(areasi)
         area_length.append(areasi)
         is_area += [True] * len(areasi)
         #is_data = True
@@ -1290,7 +1287,6 @@ def _setup_apply_nsm(area_eids_pids, areas, nsm_centroids_area,
         nsm_centroidsi = np.array(nsm_centroids_length[ptype])
         nsm_centroids.append(nsm_centroidsi)
         assert len(eids_pids) == len(nsm_centroids_length[ptype]), ptype
-        #print(lengthsi)
         area_length.append(lengthsi)
         is_area += [False] * len(lengthsi)
         #is_data = True
@@ -1491,7 +1487,6 @@ def _apply_nsm(model, nsm_id,
         'CONROD' : 'CONROD',
         'ELEMENT' : 'ELEMENT',
     }
-
     #all_eid_nsms = []
     if len(nsms) == 0:
         model.log.warning('no nsm...')
@@ -1739,7 +1734,6 @@ def _get_nsml1_prop(
     areas_ipids = []
     for upid in pids_to_apply:
         ipid = np.where(all_pids == upid)[0]
-        #print('ipid =', ipid)
         eids = eids_pids[ipid, 0]
         area = area_all[ipid]
 

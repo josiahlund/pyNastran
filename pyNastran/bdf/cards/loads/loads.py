@@ -360,6 +360,7 @@ class LSEQ(BaseCard):  # Requires LOADSET in case control deck
         return self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.lid = self.Lid()
         self.tid = self.Tid()
         self.lid_ref = None
@@ -474,6 +475,7 @@ class LOADCYN(Load):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def safe_cross_reference(self, model, xref_errors):
@@ -628,6 +630,7 @@ class DAREA(BaseCard):
         self.nodes_ref = nids2
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes_ref = None
 
     @property
@@ -795,6 +798,7 @@ class SPCD(Load):
         self.nodes_ref = model.EmptyNodes(self.nodes, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.nodes_ref = None
 
@@ -917,6 +921,7 @@ class DEFORM(Load):
         self.eid_ref = model.safe_element(self.eid, self.sid, xref_errors, msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eid = self.Eid()
         self.eid_ref = None
 
@@ -1063,6 +1068,7 @@ class SLOAD(Load):
         #self.nodes_ref = model.safe_empty_nodes(self.nodes, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.nodes_ref = None
 
@@ -1243,6 +1249,7 @@ class RFORCE(Load):
         self.cid_ref = model.safe_coord(self.cid, self.sid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nid = self.Nid()
         self.cid = self.Cid()
         self.nid_ref = None
@@ -1426,6 +1433,7 @@ class RFORCE1(Load):
         self.cid_ref = model.safe_coord(self.cid, self.sid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nid = self.node_id
         self.cid = self.Cid()
         self.nid_ref = None

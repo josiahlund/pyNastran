@@ -126,8 +126,8 @@ def run_lots_of_files(filenames, folder='', debug=False, xref=True, check=True,
 
     size_doubles_post = []
     #print('posts=%s' % posts)
-    for size, is_double, post in zip(sizes, is_doubles, posts):
-        size_doubles_post.append((size, is_double, post))
+    for sizei, is_doublei, posti in zip(sizes, is_doubles, posts):
+        size_doubles_post.append((sizei, is_doublei, posti))
 
     #debug = True
     filenames2 = []
@@ -147,15 +147,15 @@ def run_lots_of_files(filenames, folder='', debug=False, xref=True, check=True,
             print("filename = %s" % abs_filename)
         is_passed = False
         try:
-            for size, is_double, post in size_doubles_post:
+            for sizei, is_doublei, posti in size_doubles_post:
                 fem1, fem2, unused_diff_cards2 = run_bdf(
                     folder, filename, debug=debug,
                     xref=xref, check=check, punch=punch,
                     encoding=encoding,
                     is_folder=True, dynamic_vars={},
-                    nastran=nastran, size=size, is_double=is_double,
+                    nastran=nastran, size=sizei, is_double=is_doublei,
                     nerrors=0,
-                    post=post, sum_load=sum_load, dev=dev,
+                    post=posti, sum_load=sum_load, dev=dev,
                     crash_cards=crash_cards,
                     run_extract_bodies=False, pickle_obj=pickle_obj,
                     hdf5=write_hdf5, quiet=quiet)
@@ -246,8 +246,6 @@ def run_bdf(folder, bdf_filename, debug=False, xref=True, check=True, punch=Fals
         validate cards for things like mass, area, etc.
     punch : bool, optional
         this is a PUNCH file (no executive/case control decks)
-    cid : int / None, optional
-        convert the model grids to an alternate coordinate system (default=None; no conversion)
     mesh_form : str, optional, {'combined', 'separate'}
         'combined' : interspersed=True
         'separate' : interspersed=False
@@ -990,12 +988,12 @@ def check_case(sol, subcase, fem2, p0, isubcase, subcases,
         msg = 'sol=%s\n%s' % (sol, subcase)
         ierror = check_for_optional_param(('TSTEP', 'TSTEPNL'), subcase, msg,
                                           RuntimeError, log, ierror, nerrors)
-    elif sol == 101:
+    elif sol in [1, 101]:
         _assert_has_spc(subcase, fem2)
         msg = 'sol=%s\n%s' % (sol, subcase)
         ierror = check_for_optional_param(('LOAD', 'TEMPERATURE(LOAD)', 'P2G'), subcase, msg,
                                           RuntimeError, log, ierror, nerrors)
-    elif sol == 103:
+    elif sol in [3, 103]:
         msg = 'sol=%s\n%s' % (sol, subcase)
         ierror = check_for_optional_param(('METHOD', 'RSMETHOD', 'RIGID', 'BOLTID'), subcase, msg,
                                           RuntimeError, log, ierror, nerrors)
@@ -1027,7 +1025,7 @@ def check_case(sol, subcase, fem2, p0, isubcase, subcases,
         msg = 'sol=%s\n%s' % (sol, subcase)
         ierror = check_for_optional_param(('LOAD', 'TEMPERATURE(LOAD)'), subcase, msg,
                                           RuntimeError, log, ierror, nerrors)
-    elif sol == 108: # freq
+    elif sol in [8, 108]: # freq
         assert 'FREQUENCY' in subcase, subcase
     elif sol == 109:  # time
         check_for_flag_in_subcases(fem2, subcase, ('TIME', 'TSTEP', 'TSTEPNL'))

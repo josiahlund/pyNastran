@@ -9,10 +9,10 @@ defines:
        out_filename, encoding='latin1')
  - A, fmt_dict, names = load_csv(out_filename, encoding='latin1')
  - grid_ids, xyz, bars, tris, quads = load_user_geom(fname, log=None, encoding='latin1')
+
 """
 from __future__ import print_function
 import os
-#import re
 import sys
 import traceback
 from codecs import open
@@ -193,6 +193,7 @@ def load_deflection_csv(out_filename, encoding='latin1'):
     Considers:
       - extension in determining how to load a file (e.g. commas or not)
       - header line of file for information regarding data types
+
     """
     ext = os.path.splitext(out_filename)[1].lower()
     if ext not in ['.csv', '.dat', '.txt']:
@@ -251,7 +252,6 @@ def load_csv(out_filename, encoding='latin1'):
 
     with open(_filename(out_filename), 'r', encoding=encoding) as file_obj:
         names, fmt_dict, dtype, delimiter = _load_format_header(file_obj, ext, force_float=False)
-
         try:
             #A = loadtxt(file_obj, dtype=dtype, delimiter=delimiter)
             A = loadtxt_nice(file_obj, dtype=dtype, comments='#', delimiter=delimiter)

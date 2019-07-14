@@ -217,6 +217,7 @@ class CDAMP1(LineDamper):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None
@@ -383,6 +384,7 @@ class CDAMP2(LineDamper):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.nodes_ref = None
 
@@ -550,6 +552,7 @@ class CDAMP3(LineDamper):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.pid_ref = None
@@ -700,6 +703,7 @@ class CDAMP4(LineDamper):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.nodes_ref = None
 
@@ -850,6 +854,7 @@ class CDAMP5(LineDamper):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None
@@ -1000,6 +1005,7 @@ class CVISC(LineDamper):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None

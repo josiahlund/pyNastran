@@ -114,12 +114,18 @@ class PBEAM(IntegratedLineProperty):
             else:
                 raise NotImplementedError(pname_fid)
 
-            if pname_fid.startswith('I1'):
+            if pname_fid.startswith('I12'):
+                self.i12[i] = value
+                word = 'I12'
+            elif pname_fid.startswith('I1'):
                 self.i1[i] = value
                 word = 'I1'
             elif pname_fid.startswith('I2'):
                 self.i2[i] = value
                 word = 'I2'
+            elif pname_fid.startswith('J'):
+                self.j[i] = value
+                word = 'J'
             elif pname_fid.startswith('A'):
                 self.A[i] = value
                 word = 'A'
@@ -148,13 +154,14 @@ class PBEAM(IntegratedLineProperty):
                 self.f2[i] = value
                 word = 'F2'
             else:
-                msg = "property_type='PBEAM' has not implemented %r in pname_map; word=%r" % (
-                    pname_fid, word)
+                msg = "property_type='PBEAM' has not implemented %r in pname_map" % (
+                    pname_fid)
                 raise NotImplementedError(msg)
 
             expected_word = word + end
             if pname_fid != expected_word:
-                raise RuntimeError('%r is invalid' % expected_word)
+                raise RuntimeError('pname_fid=%r expected_word=%r is invalid' % (
+                    pname_fid, expected_word))
         else:
             msg = "property_type='PBEAM' has not implemented %r in pname_map; type=%s" % (
                 pname_fid, type(pname_fid))
@@ -871,16 +878,17 @@ class PBEAM(IntegratedLineProperty):
 
     def get_optimization_value(self, name_str):
         if name_str == 'I1(A)':
-            return self.i1[0]
+            out = self.i1[0]
         elif name_str == 'I1(B)':
-            return self.i1[-1]
+            out = self.i1[-1]
 
         elif name_str == 'I2(A)':
-            return self.i2[-1]
+            out = self.i2[-1]
         elif name_str == 'I2(B)':
-            return self.i2[-1]
+            out = self.i2[-1]
         else:
             raise NotImplementedError(name_str)
+        return out
 
     #def Area(self):
        #""".. warning:: area field not supported fully on PBEAM card"""
@@ -927,6 +935,7 @@ class PBEAM(IntegratedLineProperty):
             #assert min(self.j) == 0.0, self.j
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
 
@@ -1578,6 +1587,7 @@ class PBEAML(IntegratedLineProperty):
         self.mid_ref = model.Material(self.mid, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
 
@@ -1848,6 +1858,7 @@ class PBMSECT(LineProperty):
         #return self.brp1
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
         self.outp_ref = None
@@ -2143,6 +2154,7 @@ class PBCOMP(LineProperty):
         return [mid.mid for mid in self.mids_ref]
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mids = self.Mids()
         self.mid_ref = None

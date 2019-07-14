@@ -2372,6 +2372,7 @@ class DRESP2(OptConstraint):
             raise NotImplementedError(self.dequation)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         if hasattr(self, 'func'):
             del self.func
 
@@ -2738,6 +2739,7 @@ class DRESP3(OptConstraint):
             #raise NotImplementedError(self.dequation)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         if hasattr(self, 'func'):
             del self.func
         self.dtable_ref = {}
@@ -2851,6 +2853,7 @@ class DCONADD(OptConstraint):
         self.dconstrs_ref = [model.dconstrs[oid] for oid in self.dconstr_ids]
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.dconstrs = self.dconstr_ids
         self.dconstrs_ref = None
 
@@ -3159,6 +3162,7 @@ class DVCREL1(DVXREL1):  # similar to DVMREL1
         return elem
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eid = self.Eid()
         self.dvids = self.desvar_ids
         self.eid_ref = None
@@ -3428,6 +3432,7 @@ class DVCREL2(DVXREL2):
         self.dtable_ref = {}
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eid = self.Eid()
         self.dvids = self.desvar_ids
         self.dequation = self.DEquation()
@@ -3670,6 +3675,7 @@ class DVMREL1(DVXREL1):
         self.dvids_ref = [model.Desvar(dvid, msg) for dvid in self.dvids]
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.dvids = self.desvar_ids
         self.mid_ref = None
@@ -4003,6 +4009,7 @@ class DVMREL2(DVXREL2):
         #assert self.pid_ref.type not in ['PBEND', 'PBARL', 'PBEAML'], self.pid
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.dvids = self.desvar_ids
         self.dequation = self.DEquation()
@@ -4295,6 +4302,7 @@ class DVPREL1(DVXREL1):
         return pid_ref
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.pid = self.Pid()
         self.pid_ref = None
         self.dvids = self.desvar_ids
@@ -4679,6 +4687,7 @@ class DVPREL2(DVXREL2):
         return pid_ref
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.pid = self.Pid()
         self.dvids = self.desvar_ids
         self.dequation = self.DEquation()
@@ -4877,6 +4886,7 @@ class DVGRID(BaseCard):
         return self.dvid_ref.dvid
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nid = self.node_id
         self.cid = self.coord_id
         self.dvid = self.desvar_id

@@ -133,7 +133,12 @@ class GEOM4(GeomCommon):
         return self._read_xset1(data, n, 'ASET1', ASET1, self._add_aset_object)
 
     def _read_xset(self, data, n, card_name, cls, add_method):
-        """common method for ASET, QSET; not USET"""
+        """common method for ASET, QSET; not USET
+
+        Word Name Type Description
+        1 ID I Grid or scalar point identification number
+        2  C I Component numbers
+        """
         struct_2i = Struct(self._endian + b'2i')
         #self.show_data(data, types='ifs')
         ntotal = 8
@@ -471,7 +476,6 @@ class GEOM4(GeomCommon):
         7 UNDEF none Not used
         """
         idata = np.frombuffer(data[n:], self.idtype).copy()
-
         i = 0
         nelements = 0
         nfields = len(idata)
@@ -512,6 +516,14 @@ class GEOM4(GeomCommon):
     def _read_rbe2(self, data, n):
         """
         RBE2(6901,69,295) - Record 24
+
+        Word Name Type Description
+        1 EID I Element identification number
+        2  GN I Grid point identification number for independent degrees-of-freedom
+        3  CM I Component numbers of dependent degrees of-freedom
+        4  GM I Grid point identification number for dependent degrees-of-freedom
+        Word 4 repeats until End of Record
+        5 ALPHA RS Thermal expansion coefficient
 
         ::
 
@@ -629,6 +641,23 @@ class GEOM4(GeomCommon):
         return len(data)
 
     def _read_release(self, data, n):
+        """
+        Record - RELEASE(1310,13,247)
+
+        Word Name Type Description
+        1 SEID     I Superelement identification number
+        2 C        I Component numbers
+        3 THRUFLAG I Thru range flag
+        THRUFLAG=0 No
+            4 ID I Grid or scalar point identification number
+            Word 4 repeats until End of Record
+        THRUFLAG=1 Yes
+            4 ID1 I First grid or scalar point identification number
+            5 ID2
+        """
+        #[1310, 13, 247,
+         #10, 456, 0, 10, -1,
+         #20, 456, 0, 11, -1]
         self.log.info('skipping RELEASE in GEOM4')
         return len(data)
 

@@ -116,6 +116,7 @@ def components_or_blank(card, ifield, fieldname, default=None):
     -------
     components : str
         a string of the dofs '0' or '123456' (not all are required)
+
     """
     #assert isinstance(card, BDFCard), type(card)
     assert isinstance(ifield, int), type(ifield)
@@ -145,6 +146,7 @@ def blank(card, ifield, fieldname, default=None):
         name of field
     default : None
         the default value for the field (default=None)
+
     """
     assert isinstance(card, BDFCard), type(card)
     assert isinstance(ifield, int), type(ifield)

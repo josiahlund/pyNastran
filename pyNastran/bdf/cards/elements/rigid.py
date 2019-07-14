@@ -183,6 +183,7 @@ class RROD(RigidElement):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = [self.Ga(), self.Gb()]
         self.nodes_ref = None
 
@@ -409,6 +410,7 @@ class RBAR(RigidElement):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.ga = self.Ga()
         self.gb = self.Gb()
         self.ga_ref = None
@@ -550,6 +552,7 @@ class RBAR1(RigidElement):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.ga = self.Ga()
         self.gb = self.Gb()
         self.ga_ref = None
@@ -728,6 +731,7 @@ class RBE1(RigidElement):  # maybe not done, needs testing
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.Gni = self.Gni_node_ids
         self.Gmi = self.Gmi_node_ids
         self.Gni_ref = None
@@ -1059,6 +1063,7 @@ class RBE2(RigidElement):
         self.gn_ref = model.Node(self.Gn(), msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.Gmi = self.Gmi_node_ids
         self.gn = self.Gn()
         self.Gmi_ref = None
@@ -1417,6 +1422,7 @@ class RBE3(RigidElement):
             self.Gijs_ref.append(nodes)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.Gijs = self.Gijs_node_ids
         self.Gmi = self.Gmi_node_ids
         self.refgrid = self.ref_grid_id
@@ -1602,6 +1608,7 @@ class RSPLINE(RigidElement):
         self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
         #self.Gni = self.Gni_node_ids
         #self.Gmi = self.Gmi_node_ids

@@ -228,6 +228,7 @@ class MATS1(MaterialDependence):
             self.tid_ref = model.Table(self.tid, msg=msg) # TABLES1 or TABLEST
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         if self.tid:
             self.tid = self.Tid()
@@ -443,6 +444,7 @@ class MATT1(MaterialDependenceThermal):
         self._xref_table(model, 'ss_table', msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         ## TODO: remove refs
 
@@ -642,6 +644,7 @@ class MATT2(MaterialDependenceThermal):
         self._xref_table(model, 'ss_table', msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.g11_table = self.G11_table()
         self.g12_table = self.G12_table()
@@ -811,6 +814,7 @@ class MATT3(MaterialDependenceThermal):
             self.ge_table_ref = model.TableM(self.ge_table)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
 
@@ -1056,6 +1060,7 @@ class MATT4(MaterialDependenceThermal):
         self._xref_table(model, 'hgen_table', msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.k_table = self.K_table()
         self.cp_table = self.Cp_table()
@@ -1240,6 +1245,7 @@ class MATT5(MaterialDependenceThermal):
         self._xref_table(model, 'hgen_table', msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.kxx_table = self.Kxx_table()
         self.kxy_table = self.Kxy_table()
@@ -1458,6 +1464,7 @@ class MATT8(MaterialDependenceThermal):
             self.s_table_ref = model.TableM(self.s_table)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.e1_table = self.E1_table()
         self.e2_table = self.E2_table()
         self.nu12_table = self.Nu12_table()
@@ -1751,6 +1758,7 @@ class MATT9(MaterialDependenceThermal):
             #self.e2_table_ref = model.TableM(self.e2_table)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
         #self.e1_table = self.E1_table()
         #self.e2_table = self.E2_table()

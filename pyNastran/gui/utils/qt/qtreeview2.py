@@ -12,6 +12,7 @@ class QTreeView2(QTreeView):
     creates a QTreeView with:
      - a nice-ish way to extract the location in the tree
      - key press delete support
+
     """
     def __init__(self, parent, data, choices):
         self.parent = parent
@@ -29,6 +30,7 @@ class QTreeView2(QTreeView):
          - delete: delete result cases
          - enter/return: apply result
          - up/down/left/right: navigate the tree
+
         """
         #if event.key() == QtCore.Qt.Key_Escape:
             #self.close()
@@ -43,10 +45,11 @@ class QTreeView2(QTreeView):
             self.set_rows()
         else:
             QTreeView.keyPressEvent(self, event)
+        return None
 
     def remove_rows(self, rows):
         """
-        We just hide the row to delete things to prevent refreshing
+        We hide the row to delete things to prevent refreshing
         the window and changing which items have been expanded
 
         Parameters
@@ -85,6 +88,7 @@ class QTreeView2(QTreeView):
         # delete Min Edge Length
         data[0][5][1] = ('Min Edge Length', 6, [])
         >>> remove_rows([0, 5, 1])
+
         """
         # find the row the user wants to delete
         data = self.data
@@ -163,7 +167,7 @@ class QTreeView2(QTreeView):
 
     def on_left_mouse_button(self):
         self.set_rows()
-        valid, keys = self.get_row()
+        unused_valid, unused_keys = self.get_row()
         #if not valid:
             #print('invalid=%s keys=%s' % (valid, keys))
         #else:
@@ -208,6 +212,7 @@ class QTreeView2(QTreeView):
                 0 - the location (e.g. node, centroid)
                 1 - icase
                 2 - []
+
         """
         # if there's only 1 data member, we don't need to extract the data id
         if self.single:
@@ -222,7 +227,7 @@ class QTreeView2(QTreeView):
         data = self.data
         for row in self.old_rows:
             try:
-                key = data[row][0]
+                unused_key = data[row][0]
             except IndexError:
                 return False, irow
             irow = data[row][1]
@@ -243,12 +248,16 @@ class RightClickTreeView(QTreeView2):
      - all the features of QTreeView2
      - a right click context menu with:
        - Clear Active Results
+       - Export Case
        - Apply Results to Fringe
        - Apply Results to Displacement
        - Apply Results to Vector
        - Delete Case
+
     """
-    def __init__(self, parent, data, choices, include_clear=True, include_delete=True,
+    def __init__(self, parent, data, choices,
+                 include_clear=True, include_export_case=True,
+                 include_delete=True,
                  include_results=True):
         QTreeView2.__init__(self, parent, data, choices)
         #
@@ -260,6 +269,10 @@ class RightClickTreeView(QTreeView2):
         if include_clear:
             self.clear = self.right_click_menu.addAction("Clear Results...")
             self.clear.triggered.connect(self.on_clear_results)
+
+        if include_export_case:
+            self.export_case = self.right_click_menu.addAction("Export Case...")
+            self.export_case.triggered.connect(self.on_export_case)
 
         if include_results:
             self.fringe = self.right_click_menu.addAction("Apply Results to Fringe...")
@@ -288,29 +301,44 @@ class RightClickTreeView(QTreeView2):
         }
         return is_clicked
 
+    @property
+    def sidebar(self):
+        """gets the sidebar"""
+        return self.parent.parent
+
+    @property
+    def gui(self):
+        """get the MainWindow class"""
+        return self.sidebar.parent
+
     def on_clear_results(self):
         """clears the active result"""
-        self.parent.parent.on_clear_results()
+        self.sidebar.on_clear_results()
+
+    def on_export_case(self):
+        """exports the case to a file"""
+        unused_is_valid, icase = self.get_row()
+        self.gui.export_case_data(icase)
 
     def on_fringe(self):
         """applies a fringe result"""
-        is_valid, icase = self.get_row()
-        self.parent.parent.on_fringe(icase)
+        unused_is_valid, icase = self.get_row()
+        self.sidebar.on_fringe(icase)
 
     def on_disp(self):
         """applies a displacement result"""
-        is_valid, icase = self.get_row()
-        self.parent.parent.on_disp(icase)
+        unused_is_valid, icase = self.get_row()
+        self.sidebar.on_disp(icase)
 
     def on_vector(self):
         """applies a vector result"""
-        is_valid, icase = self.get_row()
-        self.parent.parent.on_vector(icase)
+        unused_is_valid, icase = self.get_row()
+        self.sidebar.on_vector(icase)
 
     def on_right_mouse_button(self):
         """interfaces with the right click menu"""
         self.set_rows()
-        is_valid, icase = self.get_row()
+        is_valid, unused_icase = self.get_row()
         if not is_valid:
             return
         # TODO: check if we should show disp/vector
@@ -333,6 +361,7 @@ def get_many_cases(data):
 
     >>> data = [(u'Max Interior Angle', 8, [])]
     [8]
+
     """
     name, case, rows = data
     if case is None:

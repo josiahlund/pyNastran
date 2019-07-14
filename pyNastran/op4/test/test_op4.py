@@ -1,6 +1,4 @@
-"""
-defines the command line argument ``test_op4``
-"""
+"""defines the command line argument ``test_op4``"""
 from __future__ import print_function
 import os
 import sys

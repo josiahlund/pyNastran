@@ -29,6 +29,7 @@ class DamperProperty(Property):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
 
@@ -212,6 +213,7 @@ class PDAMP5(DamperProperty):
         self.mid_ref = model.Material(self.mid)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
 
@@ -311,6 +313,7 @@ class PDAMPT(DamperProperty):
         self.tbid_ref = model.TableD(self.tbid)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.tbid = self.Tbid()
         self.tbid_ref = None
 
@@ -425,6 +428,7 @@ class PVISC(DamperProperty):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def _verify(self, xref):

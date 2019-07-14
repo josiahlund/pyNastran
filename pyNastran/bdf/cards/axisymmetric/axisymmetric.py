@@ -533,6 +533,7 @@ class CCONEAX(Element):
         self.pid_ref = model.Property(self.pid, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.pid = self.Pid()
         self.pid_ref = None
         self.rings_ref = None
@@ -699,6 +700,7 @@ class PCONEAX(Property):
             self.mid3_ref = model.Material(self.mid3, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid1 = self.Mid1()
         self.mid2 = self.Mid2()
         self.mid3 = self.Mid3()
@@ -899,6 +901,7 @@ class TEMPAX(ThermalLoad):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):

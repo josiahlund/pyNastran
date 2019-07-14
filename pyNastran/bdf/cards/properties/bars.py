@@ -1573,7 +1573,7 @@ class PBARL(LineProperty):
                 [-x1, y4],  # p12
             ]
             Area = d2*d3 + 2*d1*d4
-        elif beam_type in ['HEXA']:
+        elif beam_type == 'HEXA':
             (d1, d2, d3) = dim
             x1 = d2 / 2. - d1
             x2 = d2 / 2.
@@ -1590,11 +1590,11 @@ class PBARL(LineProperty):
             ]
             Area = d1 * (d2 + 2 * d3)
 
-        elif beam_type in ['I']:
+        elif beam_type == 'I':
             (d1, d2, d3) = dim
             raise NotImplementedError('PBARL beam_type=%r' % beam_type)
 
-        elif beam_type in ['H']:
+        elif beam_type == 'H':
             (d1, d2, d3, d4) = dim
             x1 = d1 / 2.
             x2 = (d1 + d2) / 2.
@@ -1619,7 +1619,7 @@ class PBARL(LineProperty):
             ]
             Area = d2 * d3 + d1 * d4
 
-        elif beam_type in ['T2']:
+        elif beam_type == 'T2':
             d1, d2, d3, d4 = dim  # check origin, y3 at bottom, x1 innner
             x1 = d4 / 2.
             x2 = d1 / 2.
@@ -1926,6 +1926,7 @@ class PBRSECT(LineProperty):
             this card is special and is not a ``BDFCard`` like other cards
         comment : str; default=''
             a comment for the card
+
         """
         line0 = card[0]
         if '\t' in line0:
@@ -1982,6 +1983,7 @@ class PBRSECT(LineProperty):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PBMSECT mid=%s' % self.mid
         self.mid_ref = model.Material(self.mid, msg=msg)
@@ -2008,6 +2010,7 @@ class PBRSECT(LineProperty):
             the figure id
         show : bool; default=False
             show the figure when done
+
         """
         class_name = self.__class__.__name__
         form_map = {
@@ -2024,6 +2027,7 @@ class PBRSECT(LineProperty):
             show=show)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
         self.outp_ref = None
@@ -2206,6 +2210,7 @@ class PBEAM3(LineProperty):  # not done, cleanup; MSC specific card
             Gradients of warping function in the local (y, z) coordinate
             system at stress recovery points
             None : array of 0.0
+
         """
         LineProperty.__init__(self)
         if comment:
@@ -2495,11 +2500,13 @@ class PBEAM3(LineProperty):  # not done, cleanup; MSC specific card
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PBEAM3 mid=%s' % self.mid
         self.mid_ref = model.Material(self.mid, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
 
@@ -2944,11 +2951,13 @@ class PBEND(LineProperty):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PBEND mid=%s' % self.mid
         self.mid_ref = model.Material(self.mid, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
 

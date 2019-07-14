@@ -232,7 +232,7 @@ def run_op2(op2_filename, make_geom=False, write_bdf=False, read_bdf=None,
             op2.post = -4
             op2_nv.post = -4
             op2_bdf.post = -4
-        if load_as_h5:
+        if load_as_h5 and IS_HDF5:
             # you can't open the same h5 file twice
             op2.load_as_h5 = load_as_h5
             #op2_nv.load_as_h5 = load_as_h5
@@ -258,7 +258,7 @@ def run_op2(op2_filename, make_geom=False, write_bdf=False, read_bdf=None,
         if post is not None:
             op2.post = -4
             op2_nv.post = -4
-        if load_as_h5:
+        if load_as_h5 and IS_HDF5:
             # you can't open the same h5 file twice
             op2.load_as_h5 = load_as_h5
             #op2_nv.load_as_h5 = load_as_h5

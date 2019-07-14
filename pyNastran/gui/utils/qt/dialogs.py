@@ -19,6 +19,7 @@ def open_file_dialog(self, title, default_filename,
     file_types : str
         the wildcard
         'Nastran Geometry - Punch (*.bdf; *.dat; *.nas; *.ecd; *.pch);;All files (*)'
+
     """
     options = QFileDialog.Options()
     options |= QFileDialog.DontUseNativeDialog
@@ -38,7 +39,6 @@ def save_file_dialog(self, title, default_dirname, file_types):
     """
     Common method for saving files
 
-
     Parameters
     ----------
     self : ???
@@ -50,8 +50,8 @@ def save_file_dialog(self, title, default_dirname, file_types):
     file_types : str
         the wildcard
         'Nastran Geometry - Punch (*.bdf; *.dat; *.nas; *.ecd; *.pch);;All files (*)'
+
     """
-    #asdf
     #if qt_version == 5:
     # hasn't been tested
     fname, wildcard_level = QFileDialog.getSaveFileName(self, title, default_dirname, file_types)

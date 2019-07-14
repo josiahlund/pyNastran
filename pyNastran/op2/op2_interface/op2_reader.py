@@ -1715,6 +1715,8 @@ class OP2Reader(object):
             type_flag = out[12]  # no meaning per MSC DMAP 2005
             seid = out[13]
 
+            response_label = response_label.decode(self._encoding)
+
             if response_type == 1:
                 responses.weight_response.add_from_op2(out, self.log)
             elif response_type == 5:  # DISP

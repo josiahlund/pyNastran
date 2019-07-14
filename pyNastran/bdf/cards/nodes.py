@@ -659,6 +659,7 @@ class GRDSET(BaseCard):
         #self.seid_ref = self.seid
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.cp = self.Cp()
         self.cd = self.Cd()
         self.cp_ref = None

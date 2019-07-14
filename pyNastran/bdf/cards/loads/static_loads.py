@@ -50,6 +50,7 @@ class LOAD(LoadCombination):
     +------+-----+------+------+----+-----+----+----+----+
     | LOAD | 101 | -0.5 | 1.0  | 3  | 6.2 | 4  |    |    |
     +------+-----+------+------+----+-----+----+----+----+
+
     """
     type = 'LOAD'
 
@@ -79,6 +80,7 @@ class LOAD(LoadCombination):
             a comment for the card
 
         .. note::  MSC can handle self-referencing loads, NX cannot
+
         """
         LoadCombination.__init__(self, sid, scale, scale_factors, load_ids,
                                  comment=comment)
@@ -122,6 +124,7 @@ class LOAD(LoadCombination):
             fatal error.
 
         .. todo:: lots more object types to support
+
         """
         scale_factors = []
         loads = []
@@ -172,6 +175,7 @@ class LOAD(LoadCombination):
         ----------
         model : BDF()
             the BDF object
+
         """
         load_ids2 = []
         msg = ', which is required by LOAD=%s' % (self.sid)
@@ -225,6 +229,7 @@ class LOAD(LoadCombination):
             return self.comment + print_card_16(card)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.load_ids = self.get_load_ids()
         self.load_ids_ref = None
 
@@ -240,6 +245,7 @@ class GRAV(BaseCard):
     +------+-----+-----+------+-----+-----+------+-----+
     | GRAV | 1   | 3   | 32.2 | 0.0 | 0.0 | -1.0 |     |
     +------+-----+-----+------+-----+-----+------+-----+
+
     """
     type = 'GRAV'
 
@@ -268,6 +274,7 @@ class GRAV(BaseCard):
             ???
         comment : str; default=''
             a comment for the card
+
         """
         if comment:
             self.comment = comment
@@ -312,6 +319,7 @@ class GRAV(BaseCard):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         cid = integer_or_blank(card, 2, 'cid', 0)
@@ -334,6 +342,7 @@ class GRAV(BaseCard):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid = data[0]
         cid = data[1]
@@ -355,6 +364,7 @@ class GRAV(BaseCard):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by GRAV sid=%s' % self.sid
         self.cid_ref = model.Coord(self.cid, msg=msg)
@@ -365,6 +375,7 @@ class GRAV(BaseCard):
         self.cid_ref = model.safe_coord(self.cid, self.sid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.cid = self.Cid()
         self.cid_ref = None
 
@@ -421,6 +432,7 @@ class ACCEL(BaseCard):
     +-------+------+------+--------+------+-----+-----+--------+-----+
     |       |  1.0 |  1.1 |   2.0  |  2.1 | 3.0 | 3.1 |  4.0   | 4.1 |
     +-------+------+------+--------+------+-----+-----+--------+-----+
+
     """
     type = 'ACCEL'
 
@@ -455,6 +467,7 @@ class ACCEL(BaseCard):
             the coordinate system for the load
         comment : str; default=''
             a comment for the card
+
         """
         if comment:
             self.comment = comment
@@ -489,6 +502,7 @@ class ACCEL(BaseCard):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         cid = integer_or_blank(card, 2, 'cid', 0)
@@ -521,11 +535,13 @@ class ACCEL(BaseCard):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by ACCEL sid=%s' % self.sid
         self.cid_ref = model.Coord(self.cid, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.cid = self.Cid()
         self.cid_ref = None
 
@@ -572,6 +588,7 @@ class ACCEL1(BaseCard):
     +--------+---------+---------+-----+----+----+----+
     |        | GRIDID1 | GRIDID2 | etc |    |    |    |
     +--------+---------+---------+-----+----+----+----+
+
     """
     type = 'ACCEL1'
     _properties = ['node_ids']
@@ -605,6 +622,7 @@ class ACCEL1(BaseCard):
             the coordinate system for the load
         comment : str; default=''
             a comment for the card
+
         """
         if comment:
             self.comment = comment
@@ -646,6 +664,7 @@ class ACCEL1(BaseCard):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         cid = integer_or_blank(card, 2, 'cid', 0)
@@ -665,6 +684,7 @@ class ACCEL1(BaseCard):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by ACCEL1 sid=%s' % self.sid
         self.cid_ref = model.Coord(self.cid, msg=msg)
@@ -676,6 +696,7 @@ class ACCEL1(BaseCard):
         self.nodes_ref = model.EmptyNodes(self.node_ids, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.cid = self.Cid()
         self.nodes = self.node_ids
         self.nodes_ref = None
@@ -821,6 +842,7 @@ class Load0(BaseCard):
             the coordinate system for the load
         comment : str; default=''
             a comment for the card
+
         """
         BaseCard.__init__(self)
         if comment:
@@ -851,6 +873,7 @@ class Load0(BaseCard):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         node = integer(card, 2, 'node')
@@ -873,6 +896,7 @@ class Load0(BaseCard):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid = data[0]
         node = data[1]
@@ -889,6 +913,7 @@ class Load0(BaseCard):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by %s sid=%s' % (self.type, self.sid)
         self.node_ref = model.Node(self.node, msg=msg)
@@ -901,6 +926,7 @@ class Load0(BaseCard):
         self.cid_ref = model.safe_coord(self.cid, self.sid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.cid = self.Cid()
         self.cid_ref = None
 
@@ -946,6 +972,7 @@ class FORCE(Load0):
     +-------+-----+------+-------+------+------+------+------+
     | FORCE |  3  |  1   |       | 100. |  0.  |  0.  |  1.  |
     +-------+-----+------+-------+------+------+------+------+
+
     """
     type = 'FORCE'
 
@@ -967,6 +994,7 @@ class FORCE(Load0):
             the coordinate system for the load
         comment : str; default=''
             a comment for the card
+
         """
         Load0.__init__(self, sid, node, mag, xyz, cid=cid, comment=comment)
 
@@ -1026,6 +1054,7 @@ class Load1(BaseCard):
             n = n2 - n1
         comment : str; default=''
             a comment for the card
+
         """
         BaseCard.__init__(self)
         if comment:
@@ -1051,6 +1080,7 @@ class Load1(BaseCard):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         node = integer(card, 2, 'node')
@@ -1071,6 +1101,7 @@ class Load1(BaseCard):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid = data[0]
         node = data[1]
@@ -1087,6 +1118,7 @@ class Load1(BaseCard):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by %s sid=%s' % (self.type, self.sid)
         self.node_ref = model.Node(self.node, msg=msg)
@@ -1097,6 +1129,7 @@ class Load1(BaseCard):
         normalize(self)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.node = self.node_id
         self.g1 = self.G1()
         self.g2 = self.G2()
@@ -1105,9 +1138,7 @@ class Load1(BaseCard):
         self.g2_ref = None
 
     def safe_cross_reference(self, model, safe_coord, debug=True):
-        """
-        .. todo:: cross reference and fix repr function
-        """
+        """.. todo:: cross reference and fix repr function"""
         return self.cross_reference(model)
         #msg = ', which is required by FORCE1 sid=%s' % self.sid
         #self.node_ref = model.Node(self.node, msg=msg)
@@ -1171,6 +1202,7 @@ class FORCE1(Load1):
     +--------+-----+----+-------+----+----+
     | FORCE1 |  6  | 13 | -2.93 | 16 | 13 |
     +--------+-----+----+-------+----+----+
+
     """
     type = 'FORCE1'
 
@@ -1191,6 +1223,7 @@ class FORCE1(Load1):
             n = n2 - n1
         comment : str; default=''
             a comment for the card
+
         """
         Load1.__init__(self, sid, node, mag, g1, g2, comment)
         #Force.__init__(self)
@@ -1228,6 +1261,7 @@ class Load2(BaseCard):
             n = (g2 - g1) x (g4 - g3)
         comment : str; default=''
             a comment for the card
+
         """
         if comment:
             self.comment = comment
@@ -1264,6 +1298,7 @@ class Load2(BaseCard):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         node = integer(card, 2, 'node')
@@ -1286,6 +1321,7 @@ class Load2(BaseCard):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid = data[0]
         node = data[1]
@@ -1304,6 +1340,7 @@ class Load2(BaseCard):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by %s sid=%s' % (self.type, self.sid)
         self.node_ref = model.Node(self.node, msg=msg)
@@ -1356,9 +1393,7 @@ class Load2(BaseCard):
         normalize(self, msgi)
 
     def safe_cross_reference(self, model, safe_coord, debug=True):
-        """
-        .. todo:: cross reference and fix repr function
-        """
+        """.. todo:: cross reference and fix repr function"""
         msg = ', which is required by %s sid=%s' % (self.type, self.sid)
         is_failed = False
         try:
@@ -1431,6 +1466,7 @@ class Load2(BaseCard):
         return self.xyz * self.mag
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.node = self.node_id
         self.g1 = self.G1()
         self.g2 = self.G2()
@@ -1517,6 +1553,7 @@ class FORCE2(Load2):
     +========+=====+===+===+====+====+====+====+
     | FORCE2 | SID | G | F | G1 | G2 | G3 | G4 |
     +--------+-----+---+---+----+----+----+----+
+
     """
     type = 'FORCE2'
     _properties = ['scaled_vector', 'node_id', 'node_ids']
@@ -1537,6 +1574,7 @@ class MOMENT(Load0):
     +--------+-----+---+-----+-----+-----+-----+-----+
     | MOMENT |  2  | 5 |  6  | 2.9 | 0.0 | 1.0 | 0.0 |
     +--------+-----+---+-----+-----+-----+-----+-----+
+
     """
     type = 'MOMENT'
 
@@ -1558,10 +1596,12 @@ class MOMENT(Load0):
             the coordinate system for the load
         comment : str; default=''
             a comment for the card
+
         """
         Load0.__init__(self, sid, node, mag, xyz, cid=cid, comment=comment)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.node = self.node_id
         self.cid = self.Cid()
         self.node_ref = None
@@ -1627,6 +1667,7 @@ class MOMENT1(Load1):
     +---------+-----+----+-------+----+----+
     | MOMENT1 |  6  | 13 | -2.93 | 16 | 13 |
     +---------+-----+----+-------+----+----+
+
     """
     type = 'MOMENT1'
 
@@ -1647,6 +1688,7 @@ class MOMENT1(Load1):
             n = n2 - n1
         comment : str; default=''
             a comment for the card
+
         """
         Load1.__init__(self, sid, node, mag, g1, g2, comment)
         #Moment.__init__(self)
@@ -1662,6 +1704,7 @@ class MOMENT2(Load2):
     +=========+=====+===+===+====+====+====+====+
     | MOMENT2 | SID | G | M | G1 | G2 | G3 | G4 |
     +---------+-----+---+---+----+----+----+----+
+
     """
     type = 'MOMENT2'
     _properties = ['scaled_vector', 'node_id', 'node_ids']
@@ -1673,6 +1716,7 @@ class GMLOAD(Load):
     """
     Defines a static concentrated force at a grid point by specification of a
     magnitude and two grid points that determine the direction.
+
     """
     type = 'GMLOAD'
 
@@ -1712,6 +1756,7 @@ class GMLOAD(Load):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         cid = integer_or_blank(card, 2, 'cid', 0)
@@ -1745,6 +1790,7 @@ class GMLOAD(Load):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by GMLOAD sid=%s' % self.sid
         self.cid_ref = model.Coord(self.Cid(), msg=msg)
@@ -1759,6 +1805,7 @@ class GMLOAD(Load):
         self.cid_ref = model.safe_coord(self.Cid(), self.sid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.cid = self.Cid()
         self.cid_ref = None
 
@@ -1802,6 +1849,7 @@ class GMLOAD(Load):
         -----------
         size : int; default=8
             the size of the card (8/16)
+
         """
         card = self.raw_fields()
         if size == 8:
@@ -1825,6 +1873,7 @@ class PLOAD(Load):
     +-------+-----+------+----+----+----+----+
     | PLOAD |  1  | -4.0 | 16 | 32 | 11 |    |
     +-------+-----+------+----+----+----+----+
+
     """
     type = 'PLOAD'
     _properties = ['node_ids', ]
@@ -1853,6 +1902,7 @@ class PLOAD(Load):
             n = 3 or 4
         comment : str; default=''
             a comment for the card
+
         """
         if comment:
             self.comment = comment
@@ -1872,6 +1922,7 @@ class PLOAD(Load):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         pressure = double(card, 2, 'pressure')
@@ -1895,6 +1946,7 @@ class PLOAD(Load):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid = data[0]
         pressure = data[1]
@@ -1912,6 +1964,7 @@ class PLOAD(Load):
         ----------
         model : BDF()
             the BDF object
+
         """
         pass
 
@@ -1919,6 +1972,7 @@ class PLOAD(Load):
         return self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def get_loads(self):
@@ -1940,6 +1994,7 @@ class PLOAD(Load):
         -----------
         size : int; default=8
             the size of the card (8/16)
+
         """
         card = self.raw_fields()
         if size == 8:
@@ -1965,6 +2020,7 @@ class PLOAD1(Load):
     +--------+-----+------+------+-------+-----+-------+-----+-------+
     | PLOAD1 | 25  | 1065 |  MY  | FRPR  | 0.2 | 2.5E3 | 0.8 | 3.5E3 |
     +--------+-----+------+------+-------+-----+-------+-----+-------+
+
     """
     type = 'PLOAD1'
     valid_types = ['FX', 'FY', 'FZ', 'FXE', 'FYE', 'FZE',
@@ -2011,6 +2067,7 @@ class PLOAD1(Load):
 
         Point Load       : x1 == x2
         Distributed Load : x1 != x2
+
         """
         if comment:
             self.comment = comment
@@ -2047,6 +2104,7 @@ class PLOAD1(Load):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         eid = integer(card, 2, 'eid')
@@ -2070,6 +2128,7 @@ class PLOAD1(Load):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid = data[0]
         eid = data[1]
@@ -2110,6 +2169,7 @@ class PLOAD1(Load):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PLOAD1 sid=%s' % self.sid
         self.eid_ref = model.Element(self.eid, msg=msg)
@@ -2118,6 +2178,7 @@ class PLOAD1(Load):
         return self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eid = self.Eid()
         self.eid_ref = None
 
@@ -2146,6 +2207,7 @@ class PLOAD1(Load):
         -----------
         size : int; default=8
             the size of the card (8/16)
+
         """
         card = self.raw_fields()
         if size == 8:
@@ -2166,6 +2228,7 @@ class PLOAD2(Load):
     +--------+-----+------+------+------+------+------+------+------+
     | PLOAD2 | SID |  P   | EID1 | THRU | EID2 |      |      |      |
     +--------+-----+------+------+------+------+------+------+------+
+
     """
     type = 'PLOAD2'
     _properties = ['element_ids', ]
@@ -2192,6 +2255,7 @@ class PLOAD2(Load):
             n < 6 or a continouus monotonic list of elements (e.g., [1, 2, ..., 1000])
         comment : str; default=''
             a comment for the card
+
         """
         if comment:
             self.comment = comment
@@ -2213,6 +2277,7 @@ class PLOAD2(Load):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         pressure = double(card, 2, 'p')
@@ -2237,6 +2302,7 @@ class PLOAD2(Load):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid = data[0]
         pressure = data[1]
@@ -2251,6 +2317,7 @@ class PLOAD2(Load):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PLOAD2 sid=%s' % self.sid
         self.eids_ref = model.Elements(self.eids, msg=msg)
@@ -2259,6 +2326,7 @@ class PLOAD2(Load):
         return self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eids = self.element_ids
         self.eids_ref = None
 
@@ -2301,6 +2369,7 @@ class PLOAD2(Load):
         -----------
         size : int; default=8
             the size of the card (8/16)
+
         """
         card = self.raw_fields()
         if size == 8:
@@ -2398,6 +2467,7 @@ class PLOAD4(Load):
     +--------+-----+-----+----+----+------+------+------+-------+
 
     .. warning:: NX does not support SORL and LDIR, MSC does
+
     """
     type = 'PLOAD4'
     _properties = ['node_ids', 'element_ids']
@@ -2426,9 +2496,11 @@ class PLOAD4(Load):
         eids : List[int, ...]
             shells : the range of element ids; must be sequential
             solids : must be length 1
-        pressures : List[float, float, float, float]
-            tri : must be length 4 (the last value should be the same as the 0th value)
-            quad : must be length 4
+        pressures : List[float, float, float, float] / float
+            float : turned into a list of length 4
+            List[float] :
+              tri : must be length 4 (the last value should be the same as the 0th value)
+              quad : must be length 4
         g1 : int/None
             only used for solid elements
         g34 : int / None
@@ -2449,6 +2521,7 @@ class PLOAD4(Load):
             a comment for the card
 
         TODO: fix the way "pressures" works
+
         """
         if nvector is None:
             nvector = np.zeros(3, dtype='float64')
@@ -2521,6 +2594,7 @@ class PLOAD4(Load):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         eid = integer(card, 2, 'eid')
@@ -2573,6 +2647,7 @@ class PLOAD4(Load):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid = data[0]
         eid = data[1]
@@ -2626,6 +2701,7 @@ class PLOAD4(Load):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PLOAD4 sid=%s' % self.sid
         if self.cid is not None:
@@ -2663,6 +2739,7 @@ class PLOAD4(Load):
             model.log.warning(msgi.rstrip())
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.cid = self.Cid()
         if self.g1 is not None:
             self.g1 = self.G1()
@@ -2815,6 +2892,7 @@ class PLOAD4(Load):
         -----------
         size : int; default=8
             the size of the card (8/16)
+
         """
         card = self.repr_fields()
         if size == 8:
@@ -2847,6 +2925,7 @@ class PLOADX1(BaseCard):
     +=========+=====+=====+====+====+====+====+=======+
     | PLOADX1 | SID | EID | PA | PB | GA | GB | THETA |
     +---------+-----+-----+----+----+----+----+-------+
+
     """
     type = 'PLOADX1'
     _properties = ['node_ids', 'nodes']
@@ -2881,6 +2960,7 @@ class PLOADX1(BaseCard):
             segment.
         comment : str; default=''
             a comment for the card
+
         """
         BaseCard.__init__(self)
         if comment:
@@ -2915,6 +2995,7 @@ class PLOADX1(BaseCard):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         sid = integer(card, 1, 'sid')
         eid = integer(card, 2, 'eid')
@@ -2938,6 +3019,7 @@ class PLOADX1(BaseCard):
             a list of fields defined in OP2 format
         comment : str; default=''
             a comment for the card
+
         """
         sid, eid, pa, pb, ga, gb, theta = data
         nids = [ga, gb]
@@ -2951,6 +3033,7 @@ class PLOADX1(BaseCard):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PLOADX1 lid=%s' % self.sid
         self.eid_ref = model.Element(self.eid, msg=msg)
@@ -2973,6 +3056,7 @@ class PLOADX1(BaseCard):
         return self.cross_reference(model)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eid = self.Eid()
         self.ga = self.Ga()
         self.gb = self.Gb()
@@ -3030,6 +3114,7 @@ def normalize(self, msg=''):
     """
     adjust the vector to a unit length
     scale up the magnitude of the vector
+
     """
     assert abs(self.mag) > 0, 'mag=%s\n%s' % (self.mag, self)
     if abs(self.mag) != 0.0:  # enforced displacement

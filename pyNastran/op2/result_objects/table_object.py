@@ -1089,7 +1089,6 @@ class ComplexTableArray(TableArray):
     def write_op2(self, op2_file, fascii, itable, new_result,
                   date, is_mag_phase=False, endian='>'):
         """writes an OP2"""
-        assert endian == b'<', endian
         import inspect
         allowed_tables = [
             'OUGV1', 'BOUGV1',

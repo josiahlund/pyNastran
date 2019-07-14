@@ -1,6 +1,7 @@
 """
 defines:
  - create_vtk_cells_of_constant_element_type(grid, elements, etype)
+
 """
 from six import integer_types
 import numpy as np
@@ -10,9 +11,7 @@ from pyNastran.gui.utils.vtk.base_utils import (
     get_numpy_idtype_for_vtk)
 
 def numpy_to_vtk_points(nodes, points=None, dtype='<f', deep=1):
-    """
-    common method to account for vtk endian quirks and efficiently adding points
-    """
+    """common method to account for vtk endian quirks and efficiently adding points"""
     assert isinstance(nodes, np.ndarray), type(nodes)
     if points is None:
         points = vtk.vtkPoints()
@@ -57,6 +56,7 @@ def create_vtk_cells_of_constant_element_type(grid, elements, etype):
     #vtkPenta().GetCellType()
     #vtkHexa().GetCellType()
     #vtkPyram().GetCellType()
+
     """
     nelements, nnodes_per_element = elements.shape
     # We were careful about how we defined the arrays, so the data
@@ -109,6 +109,7 @@ def create_vtk_cells_of_constant_element_types(grid, elements_list, etypes_list)
         etype : int
             the VTK flag as defined in
             ``create_vtk_cells_of_constant_element_type``
+
     """
     if isinstance(etypes_list, list) and len(etypes_list) == 1:
         create_vtk_cells_of_constant_element_type(grid, elements_list[0], etypes_list[0])
@@ -180,6 +181,7 @@ def extract_selection_node_from_grid_to_ugrid(grid, selection_node):
     Creates a sub-UGRID from a UGRID and a vtkSelectionNode.  In other
     words, we use a selection criteria (a definition of a subset of
     points or cells) and we create a reduced model.
+
     """
     selection = vtk.vtkSelection()
     selection.AddNode(selection_node)

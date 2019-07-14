@@ -132,6 +132,7 @@ class PELAS(SpringProperty):
             self.pelast_ref = model.pelast[self.pid]
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.pelast_ref = None
 
     def K(self):

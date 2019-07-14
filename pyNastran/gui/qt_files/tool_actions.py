@@ -29,6 +29,9 @@ class ToolActions(object):
         """exports CSVs of the requested cases"""
         if icases is None:
             icases = self.gui.result_cases.keys()
+        elif isinstance(icases, integer_types):
+            icases = [icases]
+
         for icase in icases:
             (obj, (i, name)) = self.gui.result_cases[icase]
             subcase_id = obj.subcase_id
@@ -94,6 +97,7 @@ class ToolActions(object):
             http://en.wikipedia.org/wiki/Homogeneous_coordinates
             http://www3.cs.stonybrook.edu/~qin/courses/graphics/camera-coordinate-system.pdf
             http://www.vtk.org/doc/nightly/html/classvtkTransform.html#ad58b847446d791391e32441b98eff151
+
         """
         self.settings.dim_max = dim_max
         scale = self.settings.coord_scale * dim_max
@@ -143,7 +147,7 @@ class ToolActions(object):
                 x = 'R'
                 y = 't'
                 z = 'p'
-            else:
+            else:  # pragma: no cover
                 raise RuntimeError('invalid axis type; coord_type=%r' % coord_type)
 
             xlabel = '%s%s' % (x, label)
@@ -171,6 +175,7 @@ class ToolActions(object):
     def create_text(self, position, label, text_size=18):
         """creates the lower left text actors"""
         text_actor = vtk.vtkTextActor()
+
         text_actor.SetInput(label)
         text_prop = text_actor.GetTextProperty()
         #text_prop.SetFontFamilyToArial()
@@ -193,6 +198,7 @@ class ToolActions(object):
         Min:  0.
         Subcase: 1 Subtitle:
         Label: SUBCASE 1; Static
+
         """
         if isinstance(max_value, integer_types):
             max_msg = 'Max:  %i' % max_value
@@ -240,6 +246,7 @@ class ToolActions(object):
             log the command
 
         TODO: screenshot doesn't work well with the coordinate system text size
+
         """
         fname, flt = self._get_screenshot_filename(fname)
 
@@ -422,6 +429,7 @@ class ToolActions(object):
             the name for the user points
         color : (float, float, float)
             RGB values as 0.0 <= rgb <= 1.0
+
         """
         if csv_filename in [None, False]:
             title = 'Load User Geometry'
@@ -446,6 +454,7 @@ class ToolActions(object):
         helper method for ``on_load_user_geom``
 
         A custom geometry can be the pyNastran custom form or an STL
+
         """
         if name in self.gui.geometry_actors:
             msg = 'Name: %s is already in geometry_actors\nChoose a different name.' % name
@@ -571,6 +580,7 @@ class ToolActions(object):
         .. todo:: support changing the name
         .. todo:: support changing the color
         .. todo:: support overwriting points
+
         """
         is_failed = True
         if csv_filename in [None, False]:
@@ -607,6 +617,7 @@ class ToolActions(object):
             RGB values; [0. to 1.]
         point_size : int; default=4
             the nominal point size
+
         """
         is_failed = True
         try:
@@ -645,6 +656,7 @@ class ToolActions(object):
             RGB values; [0. to 1.]
         point_size : int; default=4
             the nominal point size
+
         """
         if name in self.gui.geometry_actors:
             msg = 'Name: %s is already in geometry_actors\nChoose a different name.' % name
@@ -664,7 +676,8 @@ class ToolActions(object):
             user_points = user_points.reshape(1, npoints)
 
         # allocate grid
-        self.gui.alt_grids[name].Allocate(npoints, 1000)
+        alt_grid = self.gui.alt_grids[name]
+        alt_grid.Allocate(npoints, 1000)
 
         # set points
         points = vtk.vtkPoints()
@@ -674,11 +687,11 @@ class ToolActions(object):
             points.InsertPoint(i, *point)
             elem = vtk.vtkVertex()
             elem.GetPointIds().SetId(0, i)
-            self.gui.alt_grids[name].InsertNextCell(elem.GetCellType(), elem.GetPointIds())
-        self.gui.alt_grids[name].SetPoints(points)
+            alt_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
+        alt_grid.SetPoints(points)
 
         # create actor/mapper
-        self._add_alt_geometry(self.gui.alt_grids[name], name)
+        self._add_alt_geometry(alt_grid, name)
 
         # set representation to points
         self.gui.geometry_properties[name].representation = 'point'
@@ -690,11 +703,10 @@ class ToolActions(object):
     #---------------------------------------------------------------------------
     def _add_alt_geometry(self, grid, name, color=None, line_width=None,
                           opacity=None, representation=None):
-        """
-        NOTE: color, line_width, opacity are ignored if name already exists
-        """
+        """NOTE: color, line_width, opacity are ignored if name already exists"""
         is_pickable = self.gui.geometry_properties[name].is_pickable
         quad_mapper = vtk.vtkDataSetMapper()
+
         if name in self.gui.geometry_actors:
             alt_geometry_actor = self.gui.geometry_actors[name]
             alt_geometry_actor.GetMapper().SetInputData(grid)
@@ -811,6 +823,7 @@ def _remove_invalid_filename_characters(basename):
      / (forward slash)
 
     .. todo:: do a check for linux
+
     """
     invalid_chars = ':*?<>|/\\'
     for char in invalid_chars:

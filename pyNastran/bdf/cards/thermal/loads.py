@@ -129,6 +129,7 @@ class QVOL(ThermalLoad):
             raise
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.elements = self.element_ids
         self.elements_ref = None
 
@@ -160,6 +161,7 @@ class QVOL(ThermalLoad):
         if is_double:
             return self.comment + print_card_double(card)
         return self.comment + print_card_16(card)
+
 
 class QVECT(ThermalLoad):
     """
@@ -299,6 +301,7 @@ class QVECT(ThermalLoad):
             model.log.warning('failed cross-referencing\n%s' % str(self))
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eids = self.element_ids
         self.eids_ref = None
 
@@ -429,6 +432,7 @@ class QBDY1(ThermalLoad):
             model.log.warning('failed cross-referencing\n%s' % str(self))
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eids = self.element_ids
         self.eids_ref = None
 
@@ -563,6 +567,7 @@ class QBDY2(ThermalLoad):  # not tested
             model.log.warning('failed cross-referencing\n%s' % str(self))
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eid = self.Eid()
         self.eid_ref = None
 
@@ -705,6 +710,7 @@ class QBDY3(ThermalLoad):
             model.log.warning('failed cross-referencing\n%s' % str(self))
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eids = self.element_ids
         self.eids_ref = None
 
@@ -811,7 +817,7 @@ class QHBDY(ThermalLoad):
         #: (Integer > 0 or blank)
         self.grids = grids
 
-        assert flag in ['POINT', 'LINE', 'REV', 'AREA3', 'AREA4', 'AREA6', 'AREA8'], self
+        assert flag in ['POINT', 'LINE', 'REV', 'AREA3', 'AREA4', 'AREA6', 'AREA8'], str(self)
 
     @classmethod
     def add_card(cls, card, comment=''):
@@ -867,7 +873,17 @@ class QHBDY(ThermalLoad):
         flag = data[1]
         q0 = data[2]
         af = data[3]
-        grids = data[4:]
+        if flag == 1:
+            flag = 'POINT'
+        elif flag == 2:
+            flag = 'LINE'
+        elif flag == 5:
+            flag = 'AREA4'
+        elif flag == 9:
+            flag = 'AREA8'
+        else:
+            raise NotImplementedError('QHBDY sid=%s flag=%s data=%s' % (sid, flag, data[2:]))
+        grids = list(data[4:])
         return QHBDY(sid, flag, q0, grids, af=af, comment=comment)
 
     def get_loads(self):
@@ -883,6 +899,7 @@ class QHBDY(ThermalLoad):
             model.log.warning('failed cross-referencing\n%s' % str(self))
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):
@@ -1029,6 +1046,7 @@ class TEMP(ThermalLoad):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):
@@ -1217,6 +1235,7 @@ class TEMPD(BaseCard):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):

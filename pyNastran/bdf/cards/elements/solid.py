@@ -156,6 +156,7 @@ class SolidElement(Element):
         raise NotImplementedError('Element type=%r must implement cross_reference')
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None

@@ -251,6 +251,7 @@ class CTRAX3(AxisymmetricTri):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None  # type: Optional[List[Any]]
@@ -428,6 +429,7 @@ class CTRAX6(AxisymmetricTri):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None
@@ -621,6 +623,7 @@ class CTRIAX(AxisymmetricTri):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None  # type: Optional[List[Any]]
@@ -769,6 +772,7 @@ class CTRIAX6(TriShell):
         self.mid_ref = model.safe_material(self.mid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.mid = self.Mid()
         self.nodes_ref = None  # type: Optional[List[Any]]
@@ -1010,7 +1014,7 @@ class CQUADX(AxisymmetricQuad):
             integer_or_blank(card, 8, 'n6'),
             integer_or_blank(card, 9, 'n7'),
             integer_or_blank(card, 10, 'n8'),
-            integer_or_blank(card, 11, 'n9')
+            integer_or_blank(card, 11, 'n9'),
         ]
         theta_mcid = integer_double_or_blank(card, 12, 'theta/mcid', 0.)
         assert len(card) <= 13, 'len(CQUADX card) = %i\ncard=%s' % (len(card), card)
@@ -1043,6 +1047,7 @@ class CQUADX(AxisymmetricQuad):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None  # type: Optional[List[Any]]
@@ -1200,6 +1205,7 @@ class CQUADX4(AxisymmetricQuad):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None  # type: Optional[List[Any]]
@@ -1348,6 +1354,7 @@ class CQUADX8(AxisymmetricQuad):
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.nodes_ref = None  # type: Optional[List[Any]]

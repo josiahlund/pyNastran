@@ -10,6 +10,51 @@ Issues List:     https://github.com/SteveDoyle2/pyNastran/issues
 
 *** Not done....
 
+-----------------------v1.2.2 released 2019/6/x-----------------------
+BDF:
+ - bug fixes:
+   - Better case control SET parser (can now handle 1,THRU,10,EXCEPT,7,8,
+     which doesn't have spaces that makes parsing easier).  It's also orders
+     of magnitude faster on large problems.
+   - Fixed NDDL bug in MONPNT2
+   - Added check for DVPRELx to prevent referencing property fields when another
+     similar property is used (e.g., a DVPRELx references a PCOMPG, but the PCOMP
+     field id numbers are used to update the card).
+   - added some missing hdf5 object support
+   - fixing DEQATN bug caused by using python builtin
+   - fixed issue where CAERO1 didn't set the xyz1 and xyz4 points to arrays
+     when loading an HDF5 file
+   - caero2 now sets box ids
+   - fixed PBAR optimization treating I12 as I1; added J
+   - fixed missing variable in mass properties error message
+   - convert better handles:
+     - T1-T4 in quad shells
+     - fixed bug in CGAP x/g0
+  - bdf mirror:
+     - fixed bug where max element id is less than max rigid_element id
+     - fixed bug with shells that have blanks (e.g., CTRIA6, CQUAD8)
+     - plane is now case insensitive and auto-sorted
+     - CAERO1 now supports lspan/lchord and Cp
+     - CAERO1 handles xy plane properly now (doesn't assume it's xz)
+OP2:
+ - geom bug fixes:
+    - fixed reading bugs for QHBDY and SPCOFF
+    - better identifing duplicate property id (PBCOMP -> PBEAM)
+    - fixed CONVM error (it can be 6 or 7 fields, not only 6)
+    - fixed ACCEL key
+ - bug fixes:
+    - R1TABRG now stores response_types as strings (instead of bytes for
+      Python 3)
+    - f06 writer now writes CDAMP3/4 names correctly
+
+GUI:
+ - bug fixes:
+  - added check on highlight menu for model existance
+  - fixed import for new version download menu
+  - improved command line error message
+  - fixed support for CAEROx models without elements
+  - export_cases now supports integers
+
 -----------------------v1.2.1 released 2019/5/24-----------------------
 OP2:
  - fixed bug with OUGV1PAT table
@@ -95,8 +140,8 @@ Known issues:
 -----------------------v1.1.0 released 2018/6/26-----------------------
 This is a major release.  As in the v1.0 release, the focus has been on testing.
 
-The bigest change has been to cross-referencing.  All cross-referenced 
-objects now have an ``_ref`` attribute that is cross-referened, which 
+The bigest change has been to cross-referencing.  All cross-referenced
+objects now have an ``_ref`` attribute that is cross-referened, which
 is ``None`` if the model is not cross referenced.  Objects maintain the
 uncross-referenced form as well.  For a CQUAD4, instead of:
  ``model.elements[eid].nodes[0].nid``
@@ -149,7 +194,7 @@ BDF:
    - preliminary ZONA loading
    - added atmosphere2.make_flfacts_eas_sweep, make_flfacts_mach_sweep, and
      make_flfacts_alt_sweep with an EAS (equivalent airspeed) limiter
-   - rotate_v_wa_wb for CBAR/CBEAM to determine 
+   - rotate_v_wa_wb for CBAR/CBEAM to determine element vectors
 
   - Bug fixes:
    - more add_card documentation (e.g., add_grid, add_ctria3)
@@ -162,17 +207,17 @@ BDF:
    - fixed PBARL/PBEAML DBOX error
    - fixed PositionWRT bug
    - fixed LOAD card messing up load ids after cross referencing
-   - fixed TRIM default on aeqr (was 0.0/rigid; should be 1.0/elastic) 
+   - fixed TRIM default on aeqr (was 0.0/rigid; should be 1.0/elastic)
    - NLPCI now gets written when there are no other dynamic cards
    - fixed CBUSH cid=0 bug
    - fixed TABLED4/TABLEM4 stopping error
 
   - API changes:
-   - model.Node(nid, allow_empty_nodes=False msg='') no longer supports 
+   - model.Node(nid, allow_empty_nodes=False msg='') no longer supports
      allow_empty_nodes.  Use:
        model.EmptyNode(nid, msg='') instead for that
        model.Node(nid, msg='') is the new form
-   - model.Nodes(nid, allow_empty_nodes=False msg='') no longer supports 
+   - model.Nodes(nid, allow_empty_nodes=False msg='') no longer supports
      allow_empty_nodes.  Use:
        model.EmptyNodes(nid, msg='') instead for that
        model.Nodes(nid, msg='') is the new form
@@ -191,13 +236,13 @@ BDF:
    - LOAD cards are now stored in model.load_combinations instead of model.loads
 
   - Known bugs:
-   - dynamic loads cross-referencing is buggy; 
+   - dynamic loads cross-referencing is buggy;
      reject the cards if there is a problem
    - PBEAM defaults with ENDA are slightly incorrect.
 
 OP2:
   - New features:
-   - added model.set_additional_generalized_tables_to_read(tables) to 
+   - added model.set_additional_generalized_tables_to_read(tables) to
      create custom OP2 readers
    - added complex/average strain energy
    - save/load hdf5 support

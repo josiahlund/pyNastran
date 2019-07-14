@@ -11,7 +11,7 @@ from pyNastran.op2.test.test_op2 import get_failed_files
 from pyNastran.op2.test.op2_test import get_all_files
 from pyNastran.utils.dev import get_files_of_type
 
-s
+
 def remove_marc_files(filenames):
     """Marc files are not supported"""
     filenames2 = []

@@ -91,13 +91,24 @@ class GEOM3(GeomCommon):
         }
 
     def _read_accel(self, data, n):
-        """ACCEL"""
+        """
+        Record - ACCEL(7401,74,601)
+
+        Word Name Type Description
+        1 SID     I Load set identification number
+        2 CID     I Coordinate system identification number
+        3 N(3)   RS Components of a vector coordinate system defined by CID
+        6 DIR CHAR1 Component direction of acceleration variation
+        7 LOCi   RS Location along direction DIR in coordinate system
+        8 VALi   RS The load scale factor associated with location LOCi
+        Words 7 through 8 repeat until (-1,-1) occurs.
+        """
         self.log.info('skipping ACCEL in GEOM3')
         return len(data)
 
     def _read_accel1(self, data, n):
         """
-        ACCEL1(7401,74,601)
+        ACCEL1(7501,75,602)
 
         1 SID    I Load set identification number
         2 CID    I Coordinate system identification number
@@ -238,23 +249,19 @@ class GEOM3(GeomCommon):
                 self.binary_debug.write('  LOAD=%s\n' % str(out))
             Si = [si]
             L1 = [l1]
-            #print(Si, L1)
             while 1:
                 edata = data[n:n+8]
                 n += 8
                 (si, l1) = struct_fi.unpack(edata)
-                siTest, = self.struct_i.unpack(edata[0:4])
-                #print(si, siTest, l1)
+                si_test, = self.struct_i.unpack(edata[0:4])
 
-                if [siTest, l1] == [-1, -1]:
+                if [si_test, l1] == [-1, -1]:
                     break
                 Si.append(si)
                 L1.append(l1)
                 if self.is_debug_file:
                     self.binary_debug.write('       [%s,%s]\n' % (si, l1))
-                #print(Si, L1)
 
-            data_in = [sid, s, Si, L1]
             load = LOAD(sid, s, Si, L1)
             self._add_load_combination_object(load)
             count += 1
@@ -523,10 +530,30 @@ class GEOM3(GeomCommon):
         return n, loads
 
     def _read_ploadx(self, data, n):
+        """
+        Record - PLOADX(7001,70,278)
+        This record is obsolete
+
+        Word Name Type Description
+        1 SID   I Load set identification number
+        2 P(2) RS Pressure
+        4 G(3)  I Grid point identification numbers
+        """
         self.log.info('skipping PLOADX in GEOM3')
         return len(data)
 
     def _read_ploadx1(self, data, n):
+        """
+        Record - PLOADX1(7309,73,351)
+
+        Word Name Type Description
+        1 SID    I Load set identification number
+        2 EID    I Element identification number
+        3 PA    RS Surface traction at grid point GA
+        4 PB    RS Surface traction at grid point GB
+        5 G(2)   I Corner grid point identification numbers
+        7 THETA RS Angle between surface traction and inward normal
+        """
         ntotal = 28  # 7*4
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'2i2f iif')
@@ -642,6 +669,16 @@ class GEOM3(GeomCommon):
         return n
 
     def _read_qhbdy(self, data, n):
+        """
+        (4309,43,233)
+
+        Word Name Type Description
+        1 SID   I Load set identification number
+        2 FLAG  I Face type
+        3 Q0   RS Magnitude of thermal flux into face
+        4 AF   RS Area factor
+        5 G(8)  I Grid point identification numbers
+        """
         self.log.info('skipping QHBDY in GEOM3')
         return len(data)
 
@@ -692,6 +729,15 @@ class GEOM3(GeomCommon):
         return n
 
     def _read_sload(self, data, n):
+        """
+        Record - PLOADX(7001,70,278)
+        This record is obsolete
+
+        Word Name Type Description
+        1 SID   I Load set identification number
+        2 P(2) RS Pressure
+        4 G(3)  I Grid point identification numbers
+        """
         ntotal =  12  # 3*4
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'2i f')

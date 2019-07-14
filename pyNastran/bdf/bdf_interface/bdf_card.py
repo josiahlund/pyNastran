@@ -76,6 +76,7 @@ class BDFCard(object):
         -------
         msg : str
             the string representation of the card
+
         """
         #return str(self.card)
         return '%r' % self.card
@@ -110,6 +111,7 @@ class BDFCard(object):
         -------
         value : int/float/str
             the values on the ith-jth fields
+
         """
         if defaults is None:
             defaults = []
@@ -145,6 +147,7 @@ class BDFCard(object):
         -------
         value : int/float/str/None
             the value on the ith field
+
         """
         if i < self.nfields and self.card[i] is not None and self.card[i] is not '':
             return self.card[i]

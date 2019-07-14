@@ -2,6 +2,7 @@
 defines GuiQtCommon
 
 This file defines functions related to the result updating that are VTK specific
+
 """
 # coding: utf-8
 # pylint: disable=C0111
@@ -114,6 +115,7 @@ class GuiQtCommon(GuiAttributes):
         case : int; default=None
             selects the icase
             None : defaults to self.icase+1
+
         """
         #print('-----------------')
         #print('real-cycle_results(case=%r)' % case)
@@ -424,6 +426,7 @@ class GuiQtCommon(GuiAttributes):
         case : int; default=None
             selects the icase
             None : defaults to self.icase+1
+
         """
         self.icase = icase
         is_valid, data = self._update_vtk_fringe(icase)
@@ -599,6 +602,7 @@ class GuiQtCommon(GuiAttributes):
         case : int; default=None
             selects the icase
             None : defaults to self.icase+1
+
         """
         self.icase = icase
         is_valid, (unused_grid_result, unused_name, unused_name_str, data) = self._get_disp_data(
@@ -717,6 +721,7 @@ class GuiQtCommon(GuiAttributes):
             the result cases to delete
         ask : bool; default=True
             TODO: does nothing...
+
         """
         for icase in icases_to_delete:
             if icase not in self.case_keys:
@@ -741,6 +746,7 @@ class GuiQtCommon(GuiAttributes):
         -------
         form : List[tuple]
             the form data
+
         """
         return []
 
@@ -778,6 +784,7 @@ class GuiQtCommon(GuiAttributes):
             show the command when we're doing in the log
         show_msg : bool; default=True
             ???
+
         """
         _update_icase = (
             self.icase != self.icase_fringe and self.icase_fringe is not None or
@@ -1077,6 +1084,7 @@ class GuiQtCommon(GuiAttributes):
             the nominal state
         deflected_xyz : (nnodes, 3) float ndarray
             the deflected state
+
         """
         #print('update_grid_by_icase_scale_phase')
         (obj, (i, res_name)) = self.result_cases[icase]
@@ -1103,6 +1111,7 @@ class GuiQtCommon(GuiAttributes):
             force scale factor; ??? scale
         phase : float; default=0.0
             phase angle (degrees); unused for real results
+
         """
         #print('update_grid_by_icase_scale_phase')
         (obj, (i, res_name)) = self.result_cases[icase]
@@ -1434,8 +1443,9 @@ class GuiQtCommon(GuiAttributes):
             try:
                 actors = self.label_actors[icase]
             except KeyError:
+                keys = list(self.label_actors.keys())
                 msg = 'Cant find label_actors for icase=%r; keys=%s' % (
-                    icase, self.label_actors.keys())
+                    icase, keys)
                 self.log.error(msg)
                 continue
             for actor in actors:
@@ -1444,6 +1454,8 @@ class GuiQtCommon(GuiAttributes):
         if count and show_msg:
             # yes the ) is intentionally left off because it's already been added
             self.log_command('show_labels(%s)' % names)
+
+
 
     def create_alternate_vtk_grid(self, name, color=None, line_width=5, opacity=1.0, point_size=1,
                                   bar_scale=0.0, representation=None, display=None, is_visible=True,
@@ -1482,10 +1494,12 @@ class GuiQtCommon(GuiAttributes):
         ugrid : vtk.vtkUnstructuredGrid(); default=None
             the grid object; one will be created that you can fill
             if None is passed in
+
         """
         if ugrid is None:
             ugrid = vtk.vtkUnstructuredGrid()
         self.alt_grids[name] = ugrid
+
         self.geometry_properties[name] = AltGeometry(
             self, name, color=color,
             line_width=line_width, opacity=opacity,
@@ -1522,6 +1536,7 @@ class GuiQtCommon(GuiAttributes):
             can you pick a node/cell on this actor
         follower_nodes : List[int]
             the nodes that are brought along with a deflection
+
         """
         self.alt_grids[name] = vtk.vtkUnstructuredGrid()
         if name_duplicate_from == 'main':
@@ -1558,6 +1573,7 @@ class GuiQtCommon(GuiAttributes):
             p1     p2
             |      |
            1+------+2
+
         """
         shift = 1.1
         dshift = (shift - 1) / 2.
@@ -1612,6 +1628,7 @@ class GuiQtCommon(GuiAttributes):
         This is used by the shear/moment/torque tool.
 
             p1------p2
+
         """
         points = np.asarray(points)
 

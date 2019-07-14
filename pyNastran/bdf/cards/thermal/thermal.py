@@ -205,6 +205,7 @@ class CHBDYE(ThermalElement):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     @property
@@ -477,6 +478,7 @@ class CHBDYG(ThermalElement):
         self.nodes_ref = model.EmptyNodes(self.nodes, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.nodes_ref = None
 
@@ -782,6 +784,7 @@ class CHBDYP(ThermalElement):
         self.ce_ref = model.safe_coord(self.ce, self.pid, xref_errors, msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.nodes = self.node_ids
         self.pid = self.Pid()
         self.ce = self.Ce()
@@ -1041,6 +1044,7 @@ class PCONV(ThermalProperty):
         self.ce_ref = model.Coord(self.ce, msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.ce = self.Ce()
         self.ce_ref = None
 
@@ -1193,6 +1197,7 @@ class PCONVM(ThermalProperty):
         #pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):
@@ -1335,6 +1340,7 @@ class PHBDY(ThermalProperty):
         #pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def raw_fields(self):
@@ -1506,6 +1512,7 @@ class CONV(ThermalBC):
             assert self.eid_ref.type in ['CHBDYG', 'CHBDYE', 'CHBDYP']
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.eid_ref = None
 
     def Eid(self):

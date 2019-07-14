@@ -482,13 +482,13 @@ class TestLoads(unittest.TestCase):
             fm = -case.data[0, :3, :].sum(axis=0)
             assert len(fm) == 6, fm
             if not allclose(forces1[0], fm[0]):
-                model.log.errror('subcase=%-2i Fx f=%s fexpected=%s face=%s' % (
+                model.log.error('subcase=%-2i Fx f=%s fexpected=%s face=%s' % (
                     isubcase, forces1.tolist(), fm.tolist(), face))
             if not allclose(forces1[1], fm[1]):
-                model.log.errror('subcase=%-2i Fy f=%s fexpected=%s face=%s' % (
+                model.log.error('subcase=%-2i Fy f=%s fexpected=%s face=%s' % (
                     isubcase, forces1.tolist(), fm.tolist(), face))
             if not allclose(forces1[2], fm[2]):
-                model.log.errror('subcase=%-2i Fz f=%s fexpected=%s face=%s' % (
+                model.log.error('subcase=%-2i Fz f=%s fexpected=%s face=%s' % (
                     isubcase, forces1.tolist(), fm.tolist(), face))
             # if not allclose(moments1[0], fm[3]):
                 # print('%i Mx m=%s fexpected=%s' % (isubcase, moments1, fm))

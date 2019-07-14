@@ -147,7 +147,14 @@ class ForceObject(BaseElement):
         elif self.analysis_code == 7:  # pre-buckling
             field5 = self.loadIDs[itime] # load set number
         elif self.analysis_code == 8:  # post-buckling
-            field5 = self.lsdvmns[itime] # load set number
+            if hasattr(self, 'lsdvmns'):
+                field5 = self.lsdvmns[itime] # load set number
+            elif hasattr(self, 'loadIDs'):
+                field5 = self.loadIDs[itime]
+            else:  # pragma: no cover
+                print(self.get_stats())
+                raise NotImplementedError('cant find lsdvmns or loadIDs on analysis_code=8')
+
             if hasattr(self, 'eigns'):
                 field6 = self.eigns[itime]
             elif hasattr(self, 'eigrs'):
@@ -648,9 +655,9 @@ class RealDamperForceArray(RealSpringDamperForceArray):
         elif self.element_type == 21:  # CDAMP2
             msg = ['                              F O R C E S   I N   S C A L A R   D A M P E R S        ( C D A M P 2 )\n']
         elif self.element_type == 22:  # CDAMP3
-            msg = ['                              F O R C E S   I N   S C A L A R   D A M P E R S        ( C D A M P 2 )\n']
+            msg = ['                              F O R C E S   I N   S C A L A R   D A M P E R S        ( C D A M P 3 )\n']
         elif self.element_type == 23:  # CDAMP4
-            msg = ['                              F O R C E S   I N   S C A L A R   D A M P E R S        ( C D A M P 2 )\n']
+            msg = ['                              F O R C E S   I N   S C A L A R   D A M P E R S        ( C D A M P 4 )\n']
         else:
             msg = 'element_name=%s element_type=%s' % (self.element_name, self.element_type)
             raise NotImplementedError(msg)

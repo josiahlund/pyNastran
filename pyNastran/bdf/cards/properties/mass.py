@@ -554,6 +554,7 @@ class NSMADD(BaseCard):
         self.sets_ref = nsms
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.sets = self.nsm_ids
         self.sets_ref = None
 
@@ -658,6 +659,7 @@ class PMASS(Property):
         pass
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         pass
 
     def _verify(self, xref):

@@ -471,6 +471,12 @@ class EPT(GeomCommon):
         PBEAM(5402,54,262) - the marker for Record 14
         .. todo:: add object
         """
+        cross_section_type_map = {
+            0 : 'variable',
+            1 : 'constant',
+            2 : '???',
+        }
+
         struct1 = Struct(self._endian + b'4if')
         struct2 = Struct(self._endian + b'16f')
         struct3 = Struct(self._endian + b'16f')
@@ -498,6 +504,10 @@ class EPT(GeomCommon):
                        'ccf must be in [0, 1, 2]\n' % tuple(data_in))
                 raise ValueError(msg)
 
+            cross_section_type = cross_section_type_map[ccf]
+            #print('cross_section_type = %s' % cross_section_type)
+
+            is_pbcomp = False
             for i in range(11):
                 edata = data[n:n+64]
                 if len(edata) != 64:
@@ -513,6 +523,12 @@ class EPT(GeomCommon):
                 elif soi == 1.0:
                     so_str = 'YES'
                 else:
+                    if soi < 0.:
+                        msg = 'PBEAM pid=%s i=%s x/xb=%s soi=%s; soi not in 0.0 or 1.0; assuming PBCOMP & dropping' % (
+                            pid, i, xxb, soi)
+                        self.log.error(msg)
+                        is_pbcomp = True
+
                     so_str = str(soi)
                     #msg = 'PBEAM pid=%s i=%s x/xb=%s soi=%s; soi not in 0.0 or 1.0' % (
                         #pid, i, xxb, soi)
@@ -549,6 +565,8 @@ class EPT(GeomCommon):
                                             tuple(endpack)))
             data_in.append(endpack)
 
+            if is_pbcomp:
+                continue
             if pid in self.properties:
                 if self.properties[pid].type == 'PBCOMP':
                     continue
