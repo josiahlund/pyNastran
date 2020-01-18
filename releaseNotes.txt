@@ -10,7 +10,7 @@ Issues List:     https://github.com/SteveDoyle2/pyNastran/issues
 
 *** Not done....
 
------------------------v1.2.2 released 2019/6/x-----------------------
+-----------------------v1.2.2 released 2020/1/x-----------------------
 BDF:
  - bug fixes:
    - Better case control SET parser (can now handle 1,THRU,10,EXCEPT,7,8,
@@ -22,20 +22,25 @@ BDF:
      field id numbers are used to update the card).
    - added some missing hdf5 object support
    - fixing DEQATN bug caused by using python builtin
-   - fixed issue where CAERO1 didn't set the xyz1 and xyz4 points to arrays
-     when loading an HDF5 file
-   - caero2 now sets box ids
-   - fixed PBAR optimization treating I12 as I1; added J
    - fixed missing variable in mass properties error message
+   - aero
+     - fixed issue where CAERO1 didn't set the xyz1 and xyz4 points to arrays
+       when loading an HDF5 file
+     - caero2 now sets box ids
+   - elements/properties
+     - added I12, J to PBEAM updater; fixed error message
+     - fixed Area calculation for PBARL/CHAN, HAT1, DBOX
+     - fixed PBAR optimization treating I12 as I1; added J
    - convert better handles:
      - T1-T4 in quad shells
      - fixed bug in CGAP x/g0
-  - bdf mirror:
+   - bdf mirror:
      - fixed bug where max element id is less than max rigid_element id
      - fixed bug with shells that have blanks (e.g., CTRIA6, CQUAD8)
      - plane is now case insensitive and auto-sorted
      - CAERO1 now supports lspan/lchord and Cp
      - CAERO1 handles xy plane properly now (doesn't assume it's xz)
+     - fixing bug in set_param
 OP2:
  - geom bug fixes:
     - fixed reading bugs for QHBDY and SPCOFF

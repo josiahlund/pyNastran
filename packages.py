@@ -194,12 +194,12 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         import cpylog
         iver = int_version('cpylog', cpylog.__version__)
         all_reqs['cpylog'] = str_version(iver)
-        if iver <= [1, 0, 2]:
+        if iver <= [1, 0, 2] or iver >= [1, 3]:
             print("cpylog.__version__ = %r != '1.0.2'" % cpylog.__version__)
-            all_reqs['cpylog'] = '>= 1.0.2'
-            install_requires.append('cpylog >= 1.0.2')
+            all_reqs['cpylog'] = '>= 1.0.2, <1.3'
+            install_requires.append('cpylog >= 1.0.2,<1.3')
     except ImportError:
-        install_requires.append('cpylog >= 1.0.2')  # 1.0.2 used
+        install_requires.append('cpylog >= 1.0.2,<1.3')  # 1.0.2 used
 
 
     try:
@@ -207,7 +207,6 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         iver = int_version('docopt', docopt.__version__)
         all_reqs['docopt'] = str_version(iver)
         if iver != [0, 6, 2]:
-        #if docopt.__version__ != '0.6.2':
             print("docopt.__version__ = %r != '0.6.2'" % docopt.__version__)
             all_reqs['docopt'] = '== 0.6.2'
             install_requires.append('docopt == 0.6.2')
