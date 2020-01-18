@@ -1,757 +1,3 @@
-# pylint: disable=C0103,R0914,R0902,R0913
-"""
-All bar properties are defined in this file.  This includes:
- *   PBAR
- *   PBARL
- *   PBEAM3
- *   PBEND
- *   PBRSECT
-
-All bars are LineProperty objects.
-Multi-segment beams are IntegratedLineProperty objects.
-
-"""
-from __future__ import (nested_scopes, generators, division, absolute_import,
-                        print_function, unicode_literals)
-from itertools import count
-from typing import List, Tuple, Union, Any
-from six import integer_types, string_types
-from numpy import pi, array
-import numpy as np
-
-from pyNastran.bdf.field_writer_8 import set_blank_if_default
-from pyNastran.bdf.cards.base_card import Property
-from pyNastran.bdf.bdf_interface.assign_type import (
-    integer, double, double_or_blank, string, string_or_blank,
-    blank, integer_or_double, #integer_or_blank,
-)
-from pyNastran.utils.mathematics import integrate_unit_line, integrate_positive_unit_line
-from pyNastran.bdf.field_writer_8 import print_card_8
-from pyNastran.bdf.field_writer_16 import print_card_16
-from pyNastran.bdf.bdf_interface.bdf_card import BDFCard
-from pyNastran.bdf.bdf_interface.utils import to_fields
-from pyNastran.utils.numpy_utils import float_types
-
-
-def Iyy_beam(b, h):
-    """gets the Iyy for a solid beam"""
-    return 1 / 12. * b * h ** 3
-
-
-def I_beam(b, h):
-    # type: (float, float) -> Tuple[float, float, float]
-    """gets the Iyy, Izz, Iyz for a solid beam"""
-    f = 1 / 12. * b * h
-    Iyy = f * h * h  # 1/12.*b*h**3
-    Izz = f * b * b  # 1/12.*h*b**3
-    Iyz = 0.
-    return (Iyy, Izz, Iyz)
-
-
-def I_beam_offset(b, h, y, z):
-    # type: (float, float, float, float) -> Tuple[float, float, float]
-    A = b * h
-    f = 1. / 12. * A
-
-    Iyy = f * h * h  # 1/12.*b*h**3
-    Izz = f * b * b  # 1/12.*h*b**3
-    Iyz = 0.
-
-    Iyy += A * y * y
-    Izz += A * z * z
-    Iyz += A * y * z
-    return (Iyy, Izz, Iyz)
-
-
-def get_inertia_rectangular(sections):
-    """
-    Calculates the moment of inertia for a section about the CG.
-
-    Parameters
-    ----------
-    sections : [[b,h,y,z]_1,...]
-        [[b,h,y,z]_1,...] y,z is the centroid
-        (x in the direction of the beam, y right, z up)
-
-    Returns
-    -------
-    interia_parameters : List[Area, Iyy, Izz, Iyz]
-        the inertia parameters
-
-    .. seealso:: http://www.webs1.uidaho.edu/mindworks/Machine_Design/Posters/PDF/Moment%20of%20Inertia.pdf
-    """
-    As = []
-    Ax = 0.
-    Ay = 0.
-    for section in sections:
-        (b, h, x, y) = section
-        A = b * h
-        As.append(A)
-        Ax += A * x
-        Ay += A * y
-
-    xcg = Ax / A
-    ycg = Ay / A
-    Axx = 0.
-    Ayy = 0.
-    Axy = 0.
-    for (i, section) in enumerate(sections):
-        (b, h, x, y) = section
-        #A = b*h
-        #As.append(A)
-        Axx += As[i] * (x - xcg) ** 2
-        Ayy += As[i] * (y - ycg) ** 2
-        Axy += As[i] * (x - xcg) * (y - ycg)
-    Ixx = Axx / A
-    Iyy = Ayy / A
-    Ixy = Axy / A
-    return (A, Ixx, Iyy, Ixy)
-
-
-def _IAreaL(prop, dim):
-    # type: (Any, List[float]) -> Tuple[float, float, float, float]
-    beam_type = prop.beam_type
-    if beam_type == 'ROD':
-        R = dim[0]
-        A = pi * R ** 2
-        Iyy = A * R ** 2 / 4.
-        Izz = Iyy
-        Iyz = 0.
-    elif beam_type == 'TUBE':
-        R1 = dim[0]
-        R2 = dim[1]
-        A1 = pi * R1 ** 2
-        Iyy1 = A1 * R1 ** 2 / 4.
-        A2 = pi * R2 ** 2
-        Iyy2 = A2 * R2 ** 2 / 4.
-        A = A1 - A2
-        Iyy = Iyy1 - Iyy2
-        Izz = Iyy
-        Iyz = 0.
-    elif beam_type == 'TUBE2':
-        R1 = dim[0]
-        t = dim[1]
-        R2 = R1 - t
-        A1 = pi * R1 ** 2
-        Iyy1 = A1 * R1 ** 2 / 4.
-        A2 = pi * R2 ** 2
-        Iyy2 = A2 * R2 ** 2 / 4.
-        A = A1 - A2
-        Iyy = Iyy1 - Iyy2
-        Izz = Iyy
-        Iyz = 0.
-
-    elif beam_type == 'I':
-        # |  ------------
-        # |  |    A     | d5
-        # |  ------------
-        # |     >| |<--d3
-        # |      |B|           "I" beam
-        # | d1   | |
-        # |      | |
-        # |   ----------
-        # |   |   C    |  d5
-        # |   ----------
-        sections = []
-        h1 = dim[5]  # d2
-        w1 = dim[2]
-        y1 = dim[0] / 2. - h1
-        sections.append([w1, h1, 0., y1])
-
-        h3 = dim[4]
-        w3 = dim[1]
-        #y3 = -dim[0] / 2. + h3
-        sections.append([w3, h3, 0., y1])
-
-        h2 = dim[0] - h1 - h3
-        w2 = dim[3]  # d1
-        sections.append([w2, h2, 0., 0.])
-
-        (A, Iyy, Izz, Iyz) = get_inertia_rectangular(sections)
-        assert Iyz == 0.
-
-    elif beam_type == 'BAR':
-        #: *-------*
-        #: |       |
-        #: |  BAR  |h1
-        #: |       |
-        #: *-------*
-        #:    w1
-        #: I_{xx}=\frac{bh^3}{12}
-        #: I_{yy}=\frac{hb^3}{12}
-        h1 = dim[1]
-        w1 = dim[0]
-        A = h1 * w1
-        Iyy = 1 / 12. * w1 * h1 ** 3
-        Izz = 1 / 12. * h1 * w1 ** 3
-        Iyz = 0.  #: .. todo:: is the Ixy of a bar 0 ???
-
-    else:
-        msg = 'beam_type=%s is not supported for %s class...' % (
-            beam_type, prop.type)
-        raise NotImplementedError(msg)
-    return (A, Iyy, Izz, Iyz)
-
-class LineProperty(Property):
-    def __init__(self):
-        self.beam_type = None
-        self.A = None
-        self.i1 = None
-        self.i2 = None
-        self.i12 = None
-        self.j = None
-        self.nsm = None
-        Property.__init__(self)
-        self.mid_ref = None
-
-    #def D_bending(self):
-        #pass
-
-    #def D_axial(self):
-        #pass
-
-    #def D_thermal(self):
-        #pass
-
-    #def D_shear(self):
-        #pass
-
-    def Area(self):
-        # type: () -> float
-        """gets area"""
-        return self.A
-
-    def Nsm(self):
-        # type: () -> float
-        """gets nonstructural mass per unit length"""
-        return self.nsm
-
-    def J(self):
-        # type: () -> float
-        """gets J"""
-        return self.j
-
-    def I11(self):
-        # type: () -> float
-        """gets I11"""
-        return self.i1
-
-    def I22(self):
-        # type: () -> float
-        """gets I22"""
-        return self.i2
-
-    def Rho(self):
-        # type: () -> float
-        """gets the material density"""
-        return self.mid_ref.rho
-
-    def E(self):
-        # type: () -> float
-        """gets the material Young's ratio"""
-        return self.mid_ref.E
-
-    def G(self):
-        # type: () -> float
-        """gets the material Shear ratio"""
-        return self.mid_ref.G
-
-    def Nu(self):
-        # type: () -> float
-        """gets the material Poisson's ratio"""
-        return self.mid_ref.nu
-
-def I1_I2_I12(prop, dim):
-    r"""
-    ::
-
-      BAR
-          2
-          ^
-          |
-      *---|--*
-      |   |  |
-      |   |  |
-      |h  *-----------> 1
-      |      |
-      |   b  |
-      *------*
-
-    .. math:: I_1 = \frac{1}{12} b h^3
-
-    .. math:: I_2 = \frac{1}{12} h b^3
-    """
-    if prop.beam_type == 'ROD':
-        R = dim[0]
-        A = pi * R ** 2
-        I1 = A * R ** 2 / 4.
-        I2 = I1
-        I12 = 0.
-    elif prop.beam_type == 'BAR':
-        I1 = 1 / 12. * dim[0] * dim[1] ** 3
-        I2 = 1 / 12. * dim[1] * dim[0] ** 3
-        I12 = 0.
-    else:
-        msg = 'I1_I2_I12; beam_type=%s is not supported for %s class...' % (
-            prop.beam_type, prop.type)
-        raise NotImplementedError(msg)
-    return(I1, I2, I12)
-
-def _bar_areaL(class_name, beam_type, dim, prop):
-    # type: (str, str, List[float], Any) -> float
-    """
-    Area(x) method for the PBARL and PBEAML classes (pronounced **Area-L**)
-
-    Parameters
-    ----------
-    dim : List[float]
-        a list of the dimensions associated with **beam_type**
-
-    Returns
-    -------
-    Area : float
-        Area of the given cross section defined by **self.beam_type**
-
-    Notes
-    -----
-    internal method
-    """
-    if beam_type == 'ROD':
-        # This is a circle if you couldn't tell...
-        #   __C__
-        #  /     \
-        # |       |
-        # F       D
-        # |       |
-        #  \     /
-        #   \_E_/
-        #
-        # Radius = dim1
-        A = pi * dim[0] ** 2
-    elif beam_type == 'TUBE':
-        r_outer, r_inner = dim
-        A = pi * (r_outer ** 2 - r_inner ** 2)
-        assert r_outer > r_inner, 'TUBE; r_outer=%s r_inner=%s' % (r_outer, r_inner)
-    elif beam_type == 'TUBE2':
-        r_outer, thick = dim
-        r_inner = r_outer - thick
-        assert r_outer > r_inner, 'TUBE2; r_outer=%s r_inner=%s' % (r_outer, r_inner)
-        A = pi * (r_outer ** 2 - r_inner ** 2)
-
-    #I = (DIM3*DIM6)+(DIM2*DIM5) + ((DIM1-(DIM5+DIM6))*DIM4)
-    elif beam_type == 'I':
-        # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
-        #  <----d3---->
-        #
-        #  1----------2      ^
-        #  |    A     |  d6  |
-        # 12-11---4---3      |
-        #     |   |          |
-        #     |   |          |  d1
-        #     | B | <--- d4  |
-        #     |   |          |
-        #  9-10---5---6      |
-        #  |    C     |  d5  |
-        #  8----------7      v
-        #
-        #  <----d2---->
-        #
-        #
-        # h1 = hA = d6
-        # h2 = hB = d1 - d6 - d5
-        # h3 = hC = d5
-        # w1 = wA = d3
-        # w2 = wB = d4
-        # w3 = wC = d5
-        # A = A1 + A2 + A3
-        dim1, dim2, dim3, dim4, dim5, dim6 = dim
-
-        h = dim1
-        a = dim2
-        b = dim3
-        tw = dim4
-        ta = dim5
-        tb = dim6
-        hw = h - (ta + tb)
-        hf = h - 0.5 * (ta + tb)
-        assert hw > 0, 'hw=%s' % hw
-        assert hf > 0, 'hf=%s' % hf
-
-        A = ta * a + hw * tw + b * tb
-        #yc = (0.5 * hw * (hw + ta)*tw + hf*tb*b) / A
-        #ys = tb * hf * b**3/(tb * b**3 + ta * a**a)
-        #yna = yc - ys
-        #i1 = (
-        #    1/12 * (h*tb**3 + a*ta**3 + tw*hw**3)
-        #    + (hf-yc)**2*b*tb+yc**2*a*ta
-        #    + (yc - 0.5*(hw+ta))**2*hw*tw
-        #)
-        #i2 = (b**3 * tb + ta * a**3 + hw*tw**3)/12.
-        #i12 = 0.
-        #j = 1/3 * (tb**3*b + ta**3*a + tw**3*hf)
-
-        assert dim1 > dim5+dim6, 'I; required: dim1 > dim5+dim6; dim1=%s dim5=%s dim6=%s\n%s' % (dim1, dim5, dim6, prop)
-        #THE SUM OF THE FLANGE THICKNESSES,DIM5 + DIM6,
-        #CAN NOT BE GREATER THAT THE WEB HEIGHT, DIM1.
-
-    #I1 = (DIM2*DIM3)+((DIM4-DIM3)*(DIM1+DIM2))
-    elif beam_type == 'I1':
-        #
-        #  d1/2   d2  d1/2
-        #  <---><---><--->
-        #
-        #  1--------------2     ^
-        #  |      A       |     |
-        # 12---11---4-----3     |
-        #       |   |        ^  |
-        #       |   |        |  |  d4
-        #       | B |     d3 |  |
-        #       |   |        v  |
-        #  9----10---5----6     |
-        #  |      C       |     |
-        #  8--------------7     v
-        #
-        #  <----d2---->
-        #
-        #
-        # h1 = hA = (d4 - d3) / 2
-        # h2 = hB = d3
-        #
-        # w1 = wA = d1 + d2
-        # w2 = d2
-        #
-        # A3 = A1
-        # A = A1 + A2 + A3
-        w1 = dim[0] + dim[1]
-        h1 = (dim[3] - dim[2]) / 2.
-
-        w2 = dim[1]
-        h2 = dim[2]
-
-        A = 2. * (h1 * w1) + h2 * w2
-
-    elif beam_type == 'L':
-        # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
-        #
-        #  D4
-        # F---C      ^
-        # |   |      |
-        # | 2 |      |
-        # |   |      | D2
-        # +---+---+  |
-        # |1   D3 |  |
-        # E-------D  v
-        #
-        # <------> D1
-        #
-        (dim1, dim2, dim3, dim4) = dim
-        t1 = dim3
-        t2 = dim4
-        b = dim1 - 0.5 * t2
-        h = dim2 - 0.5 * t1
-        h2 = dim2 - t1
-        #b1 = dim1 - t2
-        A = (b + 0.5 * t2) * t1 + h2 * t2
-        #yc = t2*h2 * (h2 + t1) / (2 * A)
-        #zc = t1*b1 * (b1 + t2) / (2 * A)
-        #i1 = (
-        #    t1 ** 3 * (b + 0.5 * t2) / 12. +
-        #    t1 * (b + 0.5 * t2) * yc ** 2 +
-        #    t2 * h ** 3 / 12 +
-        #    h2 * t2 * (0.5 * (h2 + t1) - yc) ** 2
-        #)
-        #i2 = (
-        #    t2 ** 3 * h2 / 12 +
-        #    t1*(b + 0.5 * t2) ** 3 / 12 +
-        #    t1*(b + 0.5 * t2) * (0.5 * b1 - zc) ** 2  # zc is z2 in the docs...
-        #)
-        #i12 = (
-        #    zc * yc * t1 * t2
-        #    - b1 * t1 * yc * (0.5 * (b1 + t2) - zc)
-        #    - h2 * t2 * zc * (0.5 * (h2 + t1) - yc)
-        #)
-        #j = 1/3 * (t1**3*b + t2**3 * h)
-        #k1 = h2 * t2 / A
-        #k2 = b1 * t1 / A
-        #yna = yc
-        #zna = zc
-
-    #CHAN = 2*(DIM1*DIM4) + (DIM2-(2*DIM4))*DIM3
-    elif beam_type == 'CHAN':
-        #
-        # +-+----+   ^  ^
-        # | |    |   |  | d4
-        # | +----+   |  v
-        # | |        |
-        # | |<-- d3  |
-        # | |        | d2
-        # | |        |
-        # | +----+   |
-        # | |    |   |
-        # +-+----+   v
-        #
-        # <--d1-->
-        #
-
-        dim1, dim2, dim3, dim4 = dim
-        tweb = dim3
-        tf = dim4
-
-        bf = dim1
-        d = dim2 - 2 * tf
-
-        # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
-        tw = dim3
-        tf = dim4
-        #b = dim1 - 0.5 * tw
-        h = dim2 - tf
-        bf = dim1 - tw
-        #hw = dim2 - 2 * tf
-
-        #A = 2 * tf * bf + (h + tf) * tweb  # I think tt is tf...
-        #zc = bf * tf * (bf + tw) / A
-        #zs = b**2 * tf / (2 * b * tw + h * tf / 3)
-        #i1 = (
-            #h ** 2 * tf * bf / 2
-            #+ bf * tf ** 3 / 6
-            #+ (h + tf) ** 3 * tw / 12
-        #)
-        #i2 = (
-            #(h + tf) * tw**3/12
-            #+ bf**3 * tf / 6
-            #+ 0.5 * (bf + tw) ** 2 * bf * tf
-            #- zc ** 2 * A
-        #)
-        #j = (2 * b * tf **3 + h * tw ** 3) / 3
-
-        # warping coefficient for the cross section relative to the shear center
-        #iw = tf * b**3 * h**2 / 12 * (2 * tw * h + 3 * tf * b) / (tw * h + 6 * tf * b)
-        #k1 = tw * hw / A
-        #k2 = 2 * tf * bf / A
-        #zna = zc + zs
-        hweb = dim2 - 2 * tf
-        A1 = 2 * tf * bf + hweb * tweb
-
-        #A2 = 2. * bf * tf + (dim2 - 2. * dim4) * tweb
-        A2 = 2. * tf * bf + (dim2 - 2. * dim4) * tweb
-        A0 = A1
-        assert np.allclose(A0, A2), 'A0=%s A1=%s A2=%s' % (A0, A2, A2)
-        assert np.allclose(A1, A2), 'A0=%s A1=%s A2=%s' % (A0, A1, A2)
-        A = A1
-
-    #CHAN1 = DIM2*DIM3 + (DIM4-DIM3)*(DIM1+DIM2)
-    elif beam_type == 'CHAN1':
-        h2 = dim[2]
-        w2 = dim[1]
-
-        h1 = dim[3] - h2
-        w1 = dim[0] + w2
-        A = h1 * w1 + h2 * w2
-        dim1, dim2, dim3, dim4 = dim
-        A2 = dim2 * dim3 + (dim4 - dim3) * (dim1 + dim2)
-        assert np.allclose(A, A2), 'A=%s A2=%s' % (A, A2)
-
-    #CHAN2 = 2*(DIM1*DIM3)+((DIM4-(2*DIM1))*DIM2)
-    elif beam_type == 'CHAN2':
-        #  d1        d1
-        # <-->      <-->
-        # +--+      +--+        ^
-        # |  |      |  |        |
-        # |  |      |  |        | d3
-        # +--+------+--+  ^     |
-        # |            |  | d2  |
-        # +------------+  v     v
-        #
-        # <-----d4----->
-        #
-        dim1, dim2, dim3, dim4 = dim
-        hupper = dim3 - dim2
-        hlower = dim2
-        wlower = dim4
-        wupper = dim1
-        A = 2 * hupper * wupper + hlower * wlower
-
-        h2 = dim2
-        w2 = dim4
-
-        h1 = dim3 - h2
-        w1 = dim1 * 2
-        A2 = h1 * w1 + h2 * w2
-        A3 = 2 * dim1 * dim3 + (dim4 - 2 * dim1) * dim2
-        assert np.allclose(A, A2), 'A=%s A2=%s A3=%s' % (A, A2, A3)
-        assert np.allclose(A, A3), 'A=%s A2=%s A3=%s' % (A, A2, A3)
-
-    #T = (DIM1*DIM3)+((DIM2-DIM3)*DIM4)
-    elif beam_type == 'T':
-        # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
-        #           ^ y
-        #           |
-        #           |
-        # ^    +-----------+ ^
-        # | d3 |           | |  ----> z
-        # v    +---+  +----+ |
-        #          |  |      |
-        #          |  |      | d2
-        #          |  |      |
-        #          |  |      |
-        #          +--+      v
-        #
-        #          <--> d4
-        #
-        dim1, dim2, dim3, dim4 = dim
-        d = dim1
-        tf = dim3
-        tw = dim4
-        h = dim2 - 0.5 * tf
-        hw = dim2 - tf
-        h1 = dim[2]
-        w1 = dim[0]
-
-        A = d*tf + hw*tw
-        #yna = hw*tw*(hw+tf)/(2*A)
-        #i1 = (
-        #    (d*tf**3 + tw*hw**3) / 12. +
-        #    hw*tw*(yna + 0.5 * (hw +tf))**2 + d*tf*yna**2
-        #)
-        #i2 = (tf*d**3 + hw*tw**3)/12.
-        #i12 = 0.
-        #j = 1/3 * (tf**3*d + tw**3 * h)
-
-    #T1 = (DIM1*DIM3)+(DIM2*DIM4)
-    elif beam_type == 'T1':
-        h1 = dim[0]
-        w1 = dim[2]
-
-        h2 = dim[3]
-        w2 = dim[1]
-        A = h1 * w1 + h2 * w2
-
-    #T2 = (DIM1*DIM3)+((DIM2-DIM3)*DIM4)
-    elif beam_type == 'T2':
-        h1 = dim[3]
-        w1 = dim[1]
-
-        h2 = h1 - dim[2]
-        w2 = dim[0]
-        A = h1 * w1 + h2 * w2
-
-    #BOX = 2*(DIM1*DIM3)+2*((DIM2-(2*DIM3))*DIM4)
-    elif beam_type == 'BOX':
-        #
-        # +----------+ ^     ^
-        # |          | | d3  |
-        # |  +----+  | v     |
-        # |  |    |  |       |  d2
-        # |  +----+  |       |
-        # |          |       |
-        # +----------+       v
-        #          <-> d4
-        # <----d1---->
-        #
-        dim1, dim2, dim3, dim4 = dim
-        #h1 = dim3
-        #w1 = dim1
-
-        #h2 = dim2 - 2 * h1
-        #w2 = dim4
-        assert dim1 > 2.*dim4, 'BOX; required: dim1 > 2*dim4; dim1=%s dim4=%s\n%s' % (dim1, dim4, prop)
-        assert dim2 > 2.*dim3, 'BOX; required: dim2 > 2*dim3; dim2=%s dim3=%s\n%s' % (dim2, dim3, prop)
-        #A = 2 * (h1 * w1 + h2 * w2)
-
-        # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
-        b = dim1
-        h = dim2
-        t1 = dim3
-        t2 = dim4
-        bi = b - 2 * t2
-        hi = h - 2 * t1
-        A = b * h - bi * hi
-        #i1 = (b*h**3 * bi*hi**3) / 12.
-        #i2 = (h*b**3 * hi*bi**3) / 12.
-        #i12 = 0.
-        #j = (2*t2*t1*(b-t2)**2*(h-t1)**2)/(b*t2+h*t1-t2**2-t1**2)
-
-    #BOX1 = (DIM2*DIM6)+(DIM2*DIM5)+((DIM1-DIM5-DIM6)*DIM3)+((DIM1-DIM5-DIM6)*DIM4)
-    elif beam_type == 'BOX1':
-        h1 = dim[2]  # top
-        w1 = dim[0]
-
-        h2 = dim[3]  # btm
-        A1 = (h1 + h2) * w1
-
-        h3 = dim[1] - h1 - h2  # left
-        w3 = dim[5]
-
-        w4 = dim[4]  # right
-        A2 = h3 * (w3 + w4)
-        A = A1 + A2
-
-    #BAR   = DIM1*DIM2
-    elif beam_type == 'BAR':
-        #per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
-        # <------> D1
-        #
-        # F------C  ^
-        # |      |  |
-        # |      |  | D2
-        # |      |  |
-        # E------D  v
-        dim1, dim2 = dim
-        b = dim1
-        h = dim2
-        A = b * h
-        #i1 = b*h**3/12.
-        #i2 = b**3*h/12.
-        #i12 = 0.
-        #J = b*h**3*(1/3. - 0.21*h/b*(1-h**4/(12*b**4)))
-
-    #CROSS = (DIM2*DIM3)+2*((0.5*DIM1)*DIM4)
-    elif beam_type == 'CROSS':
-        h1 = dim[2]
-        w1 = dim[1]
-
-        h2 = dim[3]
-        w2 = dim[0]
-        A = h1 * w1 + h2 * w2
-
-    #H = 2*((0.5*DIM2)*DIM3)+(DIM1*DIM4)
-    elif beam_type == 'H':
-        h1 = dim[2]
-        w1 = dim[1]
-
-        h2 = dim[3]
-        w2 = dim[0]
-        A = h1 * w1 + h2 * w2
-
-    #Z = (DIM2*DIM3)+((DIM4-DIM3)*(DIM1+DIM2))
-    elif beam_type == 'Z':
-        #dim1, dim2, dim3, dim4 = dim
-        h2 = dim[2]
-        w2 = dim[1]
-
-        h1 = dim[3] - h2
-        w1 = dim[0]
-        A = h1 * w1 + h2 * w2
-
-    #HEXA = ((DIM2-(2*DIM1))*DIM3)+(DIM3*DIM1)
-    elif beam_type == 'HEXA':
-        #     _______
-        #   /        \     ^
-        #  /          \    |
-        # *            *   |  d3
-        #  \          /    |
-        #   \        /     |
-        #    \______/      v
-        #           |d1|
-        # <-----d2---->
-        #
-        dim1, dim2, dim3 = dim
-        hbox = dim3
-        wbox = dim2
-        wtri = dim1
-        A = hbox * wbox - 2. * wtri * hbox
-        #print('hbox=%s wbox=%s hbox*wbox=%s 2*wtri*hbox=%s A=%s' % (
-            #hbox, wbox, hbox*wbox, 2*wtri*hbox, A))
 
     #HAT = (DIM2*DIM3)+2*((DIM1-DIM2)*DIM2)+2*(DIM2*DIM4)
     elif beam_type == 'HAT':
@@ -1268,6 +514,7 @@ class PBARL(LineProperty):
     +-------+------+------+-------+------+------+------+------+------+
     |       | DIM9 | etc. |  NSM  |      |      |      |      |      |
     +-------+------+------+-------+------+------+------+------+------+
+
     """
     type = 'PBARL'
     _properties = ['Type', 'valid_types']
@@ -1350,6 +597,7 @@ class PBARL(LineProperty):
            - Type = BOX1
            - Type = HAT, HAT1
            - Type = DBOX
+
         """
         LineProperty.__init__(self)
         if comment:
@@ -1409,6 +657,7 @@ class PBARL(LineProperty):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         pid = integer(card, 1, 'pid')
         mid = integer(card, 2, 'mid')
@@ -1451,11 +700,13 @@ class PBARL(LineProperty):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PBARL mid=%s' % self.mid
         self.mid_ref = model.Material(self.mid, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
 
@@ -1647,64 +898,23 @@ class PBARL(LineProperty):
 
     def J(self):
         # type: () -> float
-        if self.beam_type in ['ROD']:
-            r = self.dim[0]
-            Ixx = pi * r**4 / 4.
-            Iyy = Ixx
-            unused_Ixy = 0.
-        elif self.beam_type in ['TUBE']:
-            rout, rin = self.dim
-            #rin = rout - 2*t
-            Ixx = pi * (rout**4 - rin**4) / 4.
-            Iyy = Ixx
-            unused_Ixy = 0.
-        elif self.beam_type in ['TUBE2']:
-            rout, t = self.dim
-            rin = rout - 2*t
-            Ixx = pi * (rout**4 - rin**4) / 4.
-            Iyy = Ixx
-            unused_Ixy = 0.
-        elif self.beam_type in ['BOX']:
-            (d1, d2, d3, d4) = self.dim
-            hout = d2
-            wout = d1
-            hin = d2 - 2. * d3
-            win = d1 - 2. * d4
-            points, unused_Area = self._points('BAR', [hout, wout])
-            yi = points[0, :-1]
-            yip1 = points[0, 1:]
-            xi = points[1, :-1]
-            xip1 = points[1, 1:]
+        beam_type = self.beam_type
+        if beam_type == 'ROD':
+            A, I1, I2, I12 = rod_section(self.type, beam_type, self.dim, self)
+        elif beam_type == 'TUBE':
+            A, I1, I2, I12 = tube_section(self.type, beam_type, self.dim, self)
+        elif beam_type == 'TUBE2':
+            A, I1, I2, I12 = tube2_section(self.type, beam_type, self.dim, self)
+        elif beam_type == 'BOX':
+            A, I1, I2, I12 = box_section(self.type, beam_type, self.dim, self)
 
-            #: .. seealso:: http://en.wikipedia.org/wiki/Area_moment_of_inertia
-            ai = xi*yip1 - xip1*yi
-            Ixx1 = 1/12 * sum((yi**2 + yi * yip1 + yip1**2)*ai)
-            Iyy1 = 1/12 * sum((xi**2 + xi * xip1 + xip1**2)*ai)
-            #Ixy1 = 1/24*sum((xi*yip1 + 2*xi*yi + 2*xip1*yip1 + xip1*yi)*ai)
-
-            points, unused_Area = self._points('BAR', [hin, win])
-            yi = points[0, :-1]
-            yip1 = points[0, 1:]
-            xi = points[1, :-1]
-            xip1 = points[1, 1:]
-
-            #: .. seealso:: http://en.wikipedia.org/wiki/Area_moment_of_inertia
-            ai = xi*yip1 - xip1*yi
-            Ixx2 = 1/12*sum((yi**2 + yi*yip1+yip1**2)*ai)
-            Iyy2 = 1/12*sum((xi**2 + xi*xip1+xip1**2)*ai)
-            #Ixy2 = 1/24*sum((xi*yip1 + 2*xi*yi + 2*xip1*yip1 + xip1*yi)*ai)
-
-            Ixx = Ixx1 - Ixx2
-            Iyy = Iyy1 - Iyy2
-            #Ixy = Ixy1 - Ixy2
-
-        #elif self.beam_type in ['BAR']:
+        #elif beam_type in ['BAR']:
             #assert len(self.dim) == 2, 'dim=%r' % self.dim
             #b, h = self.dim
-            #(Ix, Iy, Ixy) = self.I1_I2_I12()
+            #(A, Ix, Iy, Ixy) = self.A_I1_I2_I12()
             #J = Ix + Iy
-        elif self.beam_type in ['BAR', 'CROSS', 'HEXA', 'T2', 'H']:
-            points, unused_Area = self._points(self.beam_type, self.dim)
+        elif beam_type in ['BAR', 'CROSS', 'HEXA', 'T2', 'H']:
+            points, unused_Area = self._points(beam_type, self.dim)
             yi = points[0, :-1]
             yip1 = points[0, 1:]
 
@@ -1713,10 +923,10 @@ class PBARL(LineProperty):
 
             #: .. seealso:: http://en.wikipedia.org/wiki/Area_moment_of_inertia
             ai = xi*yip1 - xip1*yi
-            Ixx = 1/12 * sum((yi**2 + yi*yip1+yip1**2)*ai)
-            Iyy = 1/12 * sum((xi**2 + xi*xip1+xip1**2)*ai)
-            #Ixy = 1/24*sum((xi*yip1 + 2*xi*yi + 2*xip1*yip1 + xip1*yi)*ai)
-        elif self.beam_type == 'I':
+            I1 = 1/12 * sum((yi**2 + yi*yip1+yip1**2)*ai)
+            I2 = 1/12 * sum((xi**2 + xi*xip1+xip1**2)*ai)
+            #I12 = 1/24*sum((xi*yip1 + 2*xi*yi + 2*xip1*yip1 + xip1*yi)*ai)
+        elif beam_type == 'I':
             # http://www.efunda.com/designstandards/beams/SquareIBeam.cfm
             # d - outside height
             # h - inside height
@@ -1730,18 +940,18 @@ class PBARL(LineProperty):
             (d, b1, b2, t, s1, s2) = self.dim
             if b1 != b2:
                 msg = 'J for beam_type=%r dim=%r on PBARL b1 != b2 is not supported' % (
-                    self.beam_type, self.dim)
+                    beam_type, self.dim)
                 raise NotImplementedError(msg)
             if s1 != s2:
                 msg = 'J for beam_type=%r dim=%r on PBARL s1 != s2 is not supported' % (
-                    self.beam_type, self.dim)
+                    beam_type, self.dim)
                 raise NotImplementedError(msg)
             h = d - b1 - b2
             s = s1
             b = b1
-            Ixx = (b*d**3-h**3*(b-t)) / 12.
-            Iyy = (2.*s*b**3 + h*t**3) / 12.
-        #elif self.beam_type == 'T': # test
+            I1 = (b*d**3-h**3*(b-t)) / 12.
+            I2 = (2.*s*b**3 + h*t**3) / 12.
+        #elif beam_type == 'T': # test
             # http://www.amesweb.info/SectionalPropertiesTabs/SectionalPropertiesTbeam.aspx
             # http://www.amesweb.info/SectionalPropertiesTabs/SectionalPropertiesTbeam.aspx
             # d - outside height
@@ -1754,11 +964,11 @@ class PBARL(LineProperty):
             #(b, d, s, t) = self.dim
             #if b1 != b2:
                 #msg = 'J for beam_type=%r dim=%r on PBARL b1 != b2 is not supported' % (
-                    #self.beam_type, self.dim)
+                    #beam_type, self.dim)
                 #raise NotImplementedError(msg)
             #if s1 != s2:
                 #msg = 'J for beam_type=%r dim=%r on PBARL s1 != s2 is not supported' % (
-                    #self.beam_type, self.dim)
+                    #beam_type, self.dim)
                 #raise NotImplementedError(msg)
             #h = d - b1 - b2
             #s = s1
@@ -1766,11 +976,11 @@ class PBARL(LineProperty):
 
             # http://www.engineersedge.com/material_science/moment-inertia-gyration-6.htm
             #y = d**2*t+s**2*(b-t)/(2*(b*s+h*t))
-            #Ixx = (t*y**3 + b*(d-y)**3 - (b-t)*(d-y-s)**3)/3.
-            #Iyy = t**3*(h-s)/12. + b**3*s/12.
+            #I1 = (t*y**3 + b*(d-y)**3 - (b-t)*(d-y-s)**3)/3.
+            #I2 = t**3*(h-s)/12. + b**3*s/12.
             #A = b*s + h*t
 
-        elif self.beam_type == 'C':
+        elif beam_type == 'C':
             # http://www.efunda.com/math/areas/squarechannel.cfm
             # d - outside height
             # h - inside height
@@ -1781,14 +991,14 @@ class PBARL(LineProperty):
             h = d - 2 * s
             #cx = (2.*b**2*s + h*t**2)/(2*b*d - 2*h*(b-t))
             #cy = d / 2.
-            Ixx = (b * d**3 - h **3 * (b-t)) / 12.
-            #Iyx = (2.*s*b**3 + h*t**3)/3 - A*cx**2
-        else:
-            msg = 'J for beam_type=%r dim=%r on PBARL is not supported' % (self.beam_type, self.dim)
+            I1 = (b * d**3 - h **3 * (b-t)) / 12.
+            #I12 = (2.*s*b**3 + h*t**3)/3 - A*cx**2
+        else:  # pragma: no cover
+            msg = 'J for beam_type=%r dim=%r on PBARL is not supported' % (beam_type, self.dim)
             raise NotImplementedError(msg)
 
         #: .. seealso:: http://en.wikipedia.org/wiki/Perpendicular_axis_theorem
-        J = Ixx + Iyy
+        J = I1 + I2
         return J
 
     def I22(self):
