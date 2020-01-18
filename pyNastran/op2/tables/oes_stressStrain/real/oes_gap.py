@@ -26,6 +26,10 @@ class NonlinearGapStressArray(OES_Object):
     def is_complex(self):
         return False
 
+    @property
+    def nnodes_per_element(self):
+        return 1
+
     def _reset_indices(self):
         self.itotal = 0
         self.ielement = 0
@@ -105,7 +109,7 @@ class NonlinearGapStressArray(OES_Object):
             self.data_frame.columns.names = ['Static']
             self.data_frame.index.names = ['ElementID', 'Item']
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         assert self.is_sort1 == table.is_sort1
         self._eq_header(table)
         if not np.array_equal(self.data, table.data):

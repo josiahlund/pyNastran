@@ -1,3 +1,9 @@
+"""
+defines:
+ - print_bad_path(path)
+ - object_attributes(obj, mode='public', keys_to_skip=None)
+ - object_methods(obj, mode='public', keys_to_skip=None)
+"""
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import
 from types import MethodType, FunctionType
@@ -59,6 +65,13 @@ def b(string):
                 #print('key=%r is dropped?' % key)
     #return dict_out
 
+def remove_files(filenames):
+    """remvoes a series of files; quietly continues if the file can't be removed"""
+    for filename in filenames:
+        try:
+            os.remove(filename)
+        except OSError:
+            pass
 
 def is_binary_file(filename):
     # type: (str) -> bool
@@ -119,6 +132,7 @@ def print_bad_path(path):
     msg : str
         string with informations whether access to parts of the path
         is possible
+
     """
     #raw_path = path
     if len(path) > 255:
@@ -130,15 +144,15 @@ def print_bad_path(path):
             res.append(path)
         msg = {True: 'passed', False: 'failed'}
         return '\n'.join(['%s: %s' % (msg[os.path.exists(i)], i[4:]) for i in res])
-    else:
-        path = os.path.abspath(path)
-        npath = os.path.dirname(path)
-        res = [path]
-        while path != npath:
-            path, npath = npath, os.path.dirname(npath)
-            res.append(path)
-        msg = {True: 'passed', False: 'failed'}
-        return '\n'.join(['%s: %s' % (msg[os.path.exists(i)], i) for i in res])
+
+    path = os.path.abspath(path)
+    npath = os.path.dirname(path)
+    res = [path]
+    while path != npath:
+        path, npath = npath, os.path.dirname(npath)
+        res.append(path)
+    msg = {True: 'passed', False: 'failed'}
+    return '\n'.join(['%s: %s' % (msg[os.path.exists(i)], i) for i in res])
 
 def _filename(filename):
     # type: (str) -> str
@@ -151,29 +165,34 @@ def _filename(filename):
         return '\\\\?\\' + filename
     return filename
 
-def __object_attr(obj, mode, keys_to_skip, attr_type):
+def __object_attr(obj, mode, keys_to_skip, attr_type, filter_properties: bool=False):
     """list object attributes of a given type"""
     #print('keys_to_skip=%s' % keys_to_skip)
     keys_to_skip = [] if keys_to_skip is None else keys_to_skip
     test = {
         'public':  lambda k: (not k.startswith('_') and k not in keys_to_skip),
-        'private': lambda k: (k.startswith('_') and not k.startswith('__') and k not in keys_to_skip),
+        'private': lambda k: (k.startswith('_') and not k.startswith('__')
+                              and k not in keys_to_skip),
         'both': lambda k: (not k.startswith('__') and k not in keys_to_skip),
         'all':  lambda k: (k not in keys_to_skip),
     }
 
     if not mode in test:
-        print('Wrong mode! Accepted modes: public, private, both, all.')
-        return None
+        raise ValueError('Wrong mode! Accepted modes: public, private, both, all.')
     check = test[mode]
 
     out = []
-    for k in dir(obj):
-        if k in keys_to_skip:
+    obj_type = type(obj)
+    for key in dir(obj):
+        if key in keys_to_skip:
             continue
         try:
-            if check(k) and attr_type(getattr(obj, k)):
-                out.append(k)
+            if filter_properties:
+                if check(key) and attr_type(getattr(obj, key)) and not isinstance(getattr(obj_type, key, None), property):
+                    out.append(key)
+            else:
+                if check(key) and attr_type(getattr(obj, key)):
+                    out.append(key)
         except:
             pass
     out.sort()
@@ -209,6 +228,21 @@ def object_methods(obj, mode='public', keys_to_skip=None):
     """
     return __object_attr(obj, mode, keys_to_skip, lambda x: isinstance(x, MethodType))
 
+def object_stats(obj, mode='public',
+                 keys_to_skip=None,
+                 filter_properties=False):
+    """Prints out an easy to read summary of the object"""
+    msg = '%s:\n' % obj.__class__.__name__
+    attrs = object_attributes(
+        mode=mode, keys_to_skip=keys_to_skip,
+        filter_properties=filter_properties)
+
+    for name in sorted(attrs):
+        #if short and '_ref' in name:
+            #continue
+        value = getattr(obj, name)
+        msg += '  %-6s : %r\n' % (name, value)
+    return msg
 
 def object_attributes(obj, mode='public', keys_to_skip=None):
     # type: (object, str, Optional[List[str]]) -> List[str]
@@ -228,6 +262,8 @@ def object_attributes(obj, mode='public', keys_to_skip=None):
         * 'all' - all attributes that are defined for the object
     keys_to_skip : List[str]; default=None -> []
         names to not consider to avoid deprecation warnings
+    filter_properties: bool: default=False
+        filters the @property objects
 
     Returns
     -------

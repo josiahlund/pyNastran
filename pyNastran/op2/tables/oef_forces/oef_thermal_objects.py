@@ -27,6 +27,16 @@ class Real1DHeatFluxArray(BaseElement):
         if not is_sort1:
             raise NotImplementedError('SORT2')
 
+    @property
+    def is_real(self):
+        """is the result real?"""
+        return True
+
+    @property
+    def is_complex(self):
+        """is the result complex?"""
+        return False
+
     def _reset_indices(self):
         self.itotal = 0
         self.ielement = 0
@@ -281,7 +291,7 @@ class RealHeatFluxVU3DArray(BaseElement):
             self.data_frame.columns.names = ['Static']
         self.data_frame.index.names = ['ElementID', 'Parent', 'Item']
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         self._eq_header(table)
         assert self.is_sort1 == table.is_sort1
         if not np.array_equal(self.element_parent, table.element_parent):
@@ -758,7 +768,7 @@ class RealConvHeatFluxArray(BaseElement):  # 107-CHBDYE 108-CHBDYG 109-CHBDYP
             self.data_frame.columns.names = ['Static']
         self.data_frame.index.names = ['ElementID', 'Node', 'Item']
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         self._eq_header(table)
         assert self.is_sort1 == table.is_sort1
         if not np.array_equal(self.data, table.data):
@@ -881,6 +891,20 @@ class RealChbdyHeatFluxArray(BaseElement):  # 107-CHBDYE 108-CHBDYG 109-CHBDYP
 
         if not is_sort1:
             raise NotImplementedError('SORT2')
+
+    @property
+    def is_real(self):
+        """is the result real?"""
+        return True
+
+    @property
+    def is_complex(self):
+        """is the result complex?"""
+        return False
+
+    @property
+    def nnodes_per_element(self):
+        return 1
 
     def _reset_indices(self):
         self.itotal = 0
@@ -1066,10 +1090,12 @@ class RealHeatFluxVUShellArray(BaseElement):
 
     @property
     def is_real(self):
+        """is the result real?"""
         return True
 
     @property
     def is_complex(self):
+        """is the result complex?"""
         return False
 
     def data_type(self):
@@ -1160,7 +1186,7 @@ class RealHeatFluxVUShellArray(BaseElement):
         #[xgrad, ygrad, zgrad, xflux, yflux, zflux]
         self.data = np.zeros((nx, ny, 6), self.data_type())
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         assert self.is_sort1 == table.is_sort1
         is_nan = (self.nonlinear_factor is not None and
                   np.isnan(self.nonlinear_factor) and

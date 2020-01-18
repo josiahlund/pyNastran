@@ -521,9 +521,7 @@ class OES(OP2Common):
 
     #@_print_obj_name_on_crash
     def _read_oes_4_sort(self, data, ndata):
-        """
-        Reads OES1 subtable 4
-        """
+        """Reads OES1 subtable 4 for NX/MSC/Autodesk/Optistruct"""
         #if self.num_wide == 146:
             #assert self.num_wide != 146
             #assert ndata != 146, self.code_information()

@@ -330,6 +330,7 @@ class EPT(GeomCommon):
         PBARL(9102,91,52) - the marker for Record 12
         TODO: buggy
         It's possible to have a PBARL and a PBAR at the same time.
+        NSM is at the end of the element.
         """
         valid_types = {
             "ROD": 1,
@@ -810,7 +811,7 @@ class EPT(GeomCommon):
         return n, props
 
     def _read_pbush_msc(self, data, n):
-        """PBUSH(1402,14,37)"""
+        """PBUSH(1402,14,37) - 23 fields"""
         ntotal = 92  # 23*4
         struct1 = Struct(self._endian + b'i22f')
         nentries = (len(data) - n) // ntotal
@@ -856,7 +857,7 @@ class EPT(GeomCommon):
 
         22 TYPED  I  Damper data type: 0=Null, 1=Table, 2=Equation
         23 IDTD   I  TABLEDi or DEQATN entry identification number for tension compression
-        24 IDTD   I  DEQATN entry identification number for compression
+        24 IDCD   I  DEQATN entry identification number for compression
         25 IDTDV  I  DEQATN entry identification number for scale factor versus velocity
         26 IDCDV  I  DEQATN entry identification number for force versus velocity
 
@@ -876,7 +877,7 @@ class EPT(GeomCommon):
         38 UC     RS Ultimate compression
         """
         type_map = {
-            0 : None,
+            0 : None,  # NULL
             1 : 'EQUAT',
             2 : 'TABLE',
         }
@@ -1165,6 +1166,17 @@ class EPT(GeomCommon):
         return n, props
 
     def _read_pconvm(self, data, n):  # 26
+        """Record 24 -- PCONVM(2902,29,420)
+
+        1 PID    I Property identification number
+        2 MID    I Material identification number
+        3 FORM   I Type of formula used for free convection
+        4 FLAG   I Flag for mass flow convection
+        5 COEF  RS Constant coefficient used for forced convection
+        6 EXPR  RS Reynolds number convection exponent
+        7 EXPPI RS Prandtl number convection exponent into the working fluid
+        8 EXPPO RS Prandtl number convection exponent out of the working fluid
+        """
         self.log.info('skipping PCONVM in EPT')
         return len(data)
 
@@ -1294,7 +1306,7 @@ class EPT(GeomCommon):
 
     def _read_pgap(self, data, n):
         """
-        PGAP(3201,32,55) - the marker for Record 42
+        PGAP(2102,21,121) - the marker for Record 42
         """
         ntotal = 44
         struct_i10f = Struct(self._endian + b'i10f')
@@ -1547,6 +1559,20 @@ class EPT(GeomCommon):
         return len(data)
 
     def _read_pval(self, data, n):
+        """
+        PVAL(10201,102,400)
+
+        Word Name Type Description
+        1 ID       I p-value set identification number
+        2 POLY1    I Polynomial order in 1 direction of the CID system
+        3 POLY2    I Polynomial order in 2 direction of the CID system
+        4 POLY3    I Polynomial order in 2 direction of the CID system
+        5 CID      I Coordinate system identification number
+        6 TYPE CHAR4 Type of set provided: "SET" or "ELID"
+        7 TYPEID   I SET identification number or element identification
+                     number with this p-value specification.
+        Words 1 through 7 repeat until End of Record
+        """
         self.log.info('skipping PVAL in EPT')
         return len(data)
 

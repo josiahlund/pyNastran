@@ -66,7 +66,7 @@ class LAMA(OP2Common):
         if self.read_mode == 1:
             return ndata
 
-        ntotal = 4 * 6
+        ntotal = 24 # 4 * 6
         nmodes = ndata // ntotal
         n = 0
         #assert self.isubcase != 0, self.isubcase
@@ -95,7 +95,7 @@ class LAMA(OP2Common):
         if self.read_mode == 1:
             return ndata
 
-        ntotal = 4 * 7
+        ntotal = 28 # 4 * 7
         nmodes = ndata // ntotal
         n = 0
         #assert self.isubcase != 0, self.isubcase
@@ -157,7 +157,6 @@ class LAMA(OP2Common):
         """parses the Real Eigenvalues Table 4 Data"""
         if self.read_mode == 1:
             return ndata
-        #self.show_data(data)
         nmodes = ndata // 28
         n = 0
         ntotal = 28

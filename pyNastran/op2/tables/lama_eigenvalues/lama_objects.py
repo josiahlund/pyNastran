@@ -29,7 +29,7 @@ class RealEigenvalues(BaseScalarObject):
         self.generalized_stiffness = np.zeros(nmodes, dtype='float32')
         self.data_frame = None
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         return True
 
     def get_stats(self, short=False):
@@ -397,7 +397,7 @@ class ComplexEigenvalues(BaseScalarObject):
 
         self.data_frame = None
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         return True
 
     def get_stats(self, short=False):
@@ -685,7 +685,7 @@ class BucklingEigenvalues(BaseScalarObject):
         self.generalized_stiffness = np.zeros(nmodes, dtype='float32')
         self.data_frame = None
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         return True
 
     def get_stats(self, short=False):
@@ -775,15 +775,3 @@ class BucklingEigenvalues(BaseScalarObject):
                 imode, order, eigr, omega, freq, mass, stiff))
         f06_file.write(page_stamp % page_num)
         return page_num
-
-    #def __repr__(self):
-        #msg = '%-7s %15s %15s %10s %10s %10s\n' % (
-            #'RootNum', 'ExtractionOrder', 'Eigenvalue', '', 'Cycles', 'Damping')
-        #msg += '%-7s %15s %15s %10s\n' % ('', '', 'Real', 'Imaginary')
-        #for root_num, extract_order in sorted(self.extraction_order.items())):
-            #eigenvalue = self.eigenvalues[root_num]
-            #cycle = self.cycles[root_num]
-            #damping = self.damping[root_num]
-            #msg += '%-7s %15s %15s %10s %10s %10s\n' % (
-                #root_num, extract_order, eigenvalue[0], eigenvalue[1], cycle, damping)
-        #return msg

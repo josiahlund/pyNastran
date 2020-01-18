@@ -81,7 +81,7 @@ class FortranFormat(object):
 
         """
         op2_reader = self.op2_reader
-        datai = b''
+        #datai = b''
         n = 0
         if self.read_mode == 2:
             self.ntotal = 0
@@ -183,6 +183,7 @@ class FortranFormat(object):
         ----------
         record_len : int
             the length of the record block
+
         """
         if not(hasattr(self, 'obj') and self.obj is not None):
             return
@@ -227,7 +228,7 @@ class FortranFormat(object):
         ]
         msg = ''
         if hasattr(self, 'words'):
-            if not len(self.words) in [0, 28]:
+            if len(self.words) not in [0, 28]:
                 msg = 'table_name=%r len(self.words)=%s words=%s' % (
                     self.table_name, len(self.words), self.words)
                 raise RuntimeError(msg)

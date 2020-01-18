@@ -114,12 +114,12 @@ def is_mcid(elem):
 def check_theta(elem):
     theta = getattr(elem, 'theta_mcid', None)
     if theta is None:
-        return 0.
+        theta = 0.
     elif isinstance(theta, float):
-        return theta
+        pass
     elif isinstance(theta, integer_types):
         raise ValueError('MCID is accepted by this function')
-
+    return theta
 
 def angle2vec(v1, v2):
     """

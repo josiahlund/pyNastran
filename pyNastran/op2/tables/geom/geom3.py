@@ -151,7 +151,7 @@ class GEOM3(GeomCommon):
         ntotal = 28  # 7*4
         nentries = (len(data) - n) // ntotal
         s = Struct(self._endian + b'iiiffff')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             out = s.unpack(data[n:n + 28])
             (sid, g, cid, f, n1, n2, n3) = out
             if self.is_debug_file:
@@ -169,7 +169,7 @@ class GEOM3(GeomCommon):
         ntotal = 20  # 5*4
         s = Struct(self._endian + b'iifii')
         nentries = (len(data) - n) // ntotal
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 20]
             out = s.unpack(edata)
             (sid, g, f, n1, n2) = out
@@ -188,7 +188,7 @@ class GEOM3(GeomCommon):
         ntotal = 28  # 7*4
         s = Struct(self._endian + b'iif4i')
         nentries = (len(data) - n) // ntotal
-        for i in range(nentries):
+        for unused_i in range(nentries):
             out = s.unpack(data[n:n + 28])
             (sid, g, f, n1, n2, n3, n4) = out
             if self.is_debug_file:
@@ -218,7 +218,7 @@ class GEOM3(GeomCommon):
         ntotal = 28  # 7*4
         s = Struct(self._endian + b'ii4fi')
         nentries = (len(data) - n) // ntotal
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 28]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -291,7 +291,7 @@ class GEOM3(GeomCommon):
         ntotal = 20  # 5*4
         struct_5i = Struct(self._endian + b'5i')
         nentries = (len(data) - n) // ntotal
-        for i in range(nentries):
+        for unused_i in range(nentries):
             out = struct_5i.unpack(data[n:n + ntotal])
             (sid, darea, load_id, temperature_id, undef) = out
             if self.is_debug_file:
@@ -308,7 +308,7 @@ class GEOM3(GeomCommon):
         ntotal = 28
         s = Struct(self._endian + b'3i4f')
         nentries = (len(data) - n) // 28  # 7*4
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 28]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -327,7 +327,7 @@ class GEOM3(GeomCommon):
         ntotal = 20  # 5*4
         nentries = (len(data) - n) // ntotal
         s = Struct(self._endian + b'iifii')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 20]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -346,7 +346,7 @@ class GEOM3(GeomCommon):
         ntotal = 28  # 7*4
         nentries = (len(data) - n) // ntotal
         s = Struct(self._endian + b'iif4i')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 28]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -366,7 +366,7 @@ class GEOM3(GeomCommon):
         ntotal = 24  # 6*4
         s = Struct(self._endian + b'i f 4i')
         nentries = (len(data) - n) // ntotal
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 24]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -385,7 +385,7 @@ class GEOM3(GeomCommon):
         ntotal = 32  # 8*4
         s = Struct(self._endian + b'4i4f')
         nentries = (len(data) - n) // ntotal
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 32]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -404,7 +404,7 @@ class GEOM3(GeomCommon):
         ntotal = 12  # 3*4
         nentries = (len(data) - n) // ntotal
         struct_ifi = Struct('ifi')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 12]
             out = struct_ifi.unpack(edata)
             if self.is_debug_file:
@@ -417,13 +417,11 @@ class GEOM3(GeomCommon):
         return n
 
     def _read_pload3(self, data, n):
-        """
-        PLOAD3(7109,71,255) - the marker for Record 19
-        """
+        """PLOAD3(7109,71,255) - the marker for Record 19"""
         ntotal = 20  # 5*4
         nentries = (len(data) - n) // ntotal
         s = Struct('if3i')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 20]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -467,7 +465,7 @@ class GEOM3(GeomCommon):
         assert (len(data) - n) % ntotal == 0
         loads = []
         s = Struct('2i 4f 3i 3f 8s 8s')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 64]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -511,7 +509,7 @@ class GEOM3(GeomCommon):
         assert (len(data) - n) % ntotal == 0
         loads = []
         s = Struct('2i 4f 3i 3f')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 48]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -557,7 +555,7 @@ class GEOM3(GeomCommon):
         ntotal = 28  # 7*4
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'2i2f iif')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 28]
             out = struc.unpack(edata)
             if self.is_debug_file:
@@ -577,7 +575,7 @@ class GEOM3(GeomCommon):
         ntotal = 12  # 3*4
         nentries = (len(data) - n) // ntotal
         struct_ifi = Struct('ifi')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 12]
             out = struct_ifi.unpack(edata)
             if self.is_debug_file:
@@ -596,7 +594,7 @@ class GEOM3(GeomCommon):
         ntotal = 40  # 10*4
         nentries = (len(data) - n) // ntotal
         struct_2i8f = Struct('ii8f')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 40]
             out = struct_2i8f.unpack(edata)
             if self.is_debug_file:
@@ -615,7 +613,7 @@ class GEOM3(GeomCommon):
         ntotal = 16  # 4*4
         nentries = (len(data) - n) // ntotal
         struct_if2i = Struct('ifii')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 16]
             out = struct_if2i.unpack(edata)
             (sid, q0, cntrlnd, eid) = out
@@ -633,7 +631,7 @@ class GEOM3(GeomCommon):
         ntotal = 12  # 3*4
         nentries = (len(data) - n) // ntotal
         struct_2if = Struct('iif')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 12]
             out = struct_2if.unpack(edata)
             if self.is_debug_file:
@@ -656,7 +654,7 @@ class GEOM3(GeomCommon):
         ntotal = 8  # 2*4
         nentries = (len(data) - n) // ntotal
         struct_if = Struct('if')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + ntotal]
             out = struct_if.unpack(edata)
             if self.is_debug_file:
@@ -700,7 +698,7 @@ class GEOM3(GeomCommon):
         ntotal =  16  # 4*4
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'if2i')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + ntotal]
             out = struc.unpack(edata)
             if self.is_debug_file:
@@ -716,7 +714,7 @@ class GEOM3(GeomCommon):
         ntotal =  40  # 10*4
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'3i 4f ifi')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + ntotal]
             out = struc.unpack(edata)
             if self.is_debug_file:
@@ -741,7 +739,7 @@ class GEOM3(GeomCommon):
         ntotal =  12  # 3*4
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'2i f')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + ntotal]
             out = struc.unpack(edata)
             if self.is_debug_file:
@@ -765,7 +763,7 @@ class GEOM3(GeomCommon):
         ntotal =  24  # 6*4
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'2i 4f')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + ntotal]
             out = struc.unpack(edata)
             if self.is_debug_file:

@@ -103,7 +103,7 @@ class GEOM1(GeomCommon):
         """
         struct_6i = Struct(self._endian + b'6i')
         nentries = (len(data) - n) // 24
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 24]  # 6*4
             out = struct_6i.unpack(edata)
             (cid, one, two, g1, g2, g3) = out
@@ -124,7 +124,7 @@ class GEOM1(GeomCommon):
         """
         struct_6i = Struct(self._endian + b'6i')
         nentries = (len(data) - n) // 24
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 24]  # 6*4
             out = struct_6i.unpack(edata)
             (cid, one1, one2, g1, g2, g3) = out
@@ -145,7 +145,7 @@ class GEOM1(GeomCommon):
         """
         struct_6i = Struct(self._endian + b'6i')
         nentries = (len(data) - n) // 24
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 24]  # 6*4
             out = struct_6i.unpack(edata)
             (cid, three, one, g1, g2, g3) = out
@@ -166,7 +166,7 @@ class GEOM1(GeomCommon):
         """
         s = Struct(self._endian + b'4i9f')
         nentries = (len(data) - n) // 52
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 52]  # 13*4
             out = s.unpack(edata)
             (cid, two1, two2, rid, a1, a2, a3, b1, b2, b3, c1, c2, c3) = out
@@ -187,7 +187,7 @@ class GEOM1(GeomCommon):
         """
         nentries = (len(data) - n) // 52
         s = Struct(self._endian + b'4i9f')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 52]  # 13*4
             (cid, one, two, rid, a1, a2, a3, b1, b2, b3, c1,
              c2, c3) = s.unpack(edata)
@@ -210,7 +210,7 @@ class GEOM1(GeomCommon):
         """
         s = Struct(self._endian + b'4i9f')
         nentries = (len(data) - n) // 52
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 52]  # 13*4
             out = s.unpack(edata)
             (cid, sixty5, eight, rid, a1, a2, a3, b1, b2, b3, c1, c2, c3) = out
@@ -230,7 +230,7 @@ class GEOM1(GeomCommon):
         """
         struct_4i = Struct(self._endian + b'4i')
         nentries = (len(data) - n) // 16
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 16]  # 4*4
             out = struct_4i.unpack(edata)
             (cid, n1, n2, n3) = out
@@ -248,7 +248,7 @@ class GEOM1(GeomCommon):
         ntotal = 32
         nentries = (len(data) - n) // ntotal
         nfailed = 0
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 32]
             out = s.unpack(edata)
             (nid, cp, x1, x2, x3, cd, ps, seid) = out
@@ -280,7 +280,7 @@ class GEOM1(GeomCommon):
         """(5301,53,4) - the marker for Record 27"""
         struct_2i = Struct(self._endian + b'2i')
         nentries = (len(data) - n) // 8
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 8]  # 2*4
             out = struct_2i.unpack(edata)
             # (nid, seid) = out
@@ -298,7 +298,7 @@ class GEOM1(GeomCommon):
         """
         s = Struct(self._endian + b'2i3f')
         nentries = (len(data) - n) // 20
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 20]  # 5*4
             out = s.unpack(edata)
             # (nid, cid, x1, x2, x3) = out
@@ -313,7 +313,7 @@ class GEOM1(GeomCommon):
     #def _read_cmass2(self, data, n):
         #struct_i4fi = Struct(self._endian + b'if4i')
         #nentries = (len(data) - n) // 24
-        #for i in range(nentries):
+        #for unused_i in range(nentries):
             #edata = data[n:n + 24]  # 6*4
             #out = struct_i4fi.unpack(edata)
             ## (eid, mass, g1, g2, c1, c2) = out
@@ -333,7 +333,7 @@ class GEOM1(GeomCommon):
         """CVISC(3901,39,50) - the marker for Record 105"""
         struct_4i = Struct(self._endian + b'4i')
         nentries = (len(data) - n) // 16
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 16]  # 4*4
             out = struct_4i.unpack(edata)
             if self.is_debug_file:
@@ -386,14 +386,18 @@ class GEOM1(GeomCommon):
         """
         structi = Struct(self._endian + b'4if3i')
         nentries = (len(data) - n) // 32 # 4*8
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 32]  # 4*8
             out = structi.unpack(edata)
             (seid, superelement_type, rseid, method, tol, loc, media, unit) = out
             if superelement_type == 1:
                 superelement_type = 'PRIMARY'
+            elif superelement_type == 5:
+                superelement_type = 'EXTOP2'
             elif superelement_type == 6:
                 superelement_type = 'MIRROR'
+            elif superelement_type == 7:
+                superelement_type = 'FRFOP2'
 
             if loc == 1:
                 loc = 'YES'
@@ -408,7 +412,8 @@ class GEOM1(GeomCommon):
             if self.is_debug_file:
                 self.binary_debug.write('  SEBULK=%s\n' % str(out))
             #media,
-            sebulk = self.add_sebulk(seid, superelement_type, rseid, method=method, tol=tol, loc=loc, unitno=unit)
+            sebulk = self.add_sebulk(seid, superelement_type, rseid,
+                                     method=method, tol=tol, loc=loc, unitno=unit)
             sebulk.validate()
             n += 32
         self.increase_card_count('SEBULK', nentries)
@@ -429,7 +434,7 @@ class GEOM1(GeomCommon):
         """
         structi = Struct(self._endian + b'7i')
         nentries = (len(data) - n) // 28 # 4*7
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 28]
             out = structi.unpack(edata)
             (seid, ga1, ga2, ga3, gb1, gb2, gb3) = out
@@ -465,7 +470,7 @@ class GEOM1(GeomCommon):
         struct2i_3f = Struct(self._endian + b'2i3f') # 20
 
         nentries = (len(data) - n) // 28 # 4*7
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata1 = data[n:n + 8]  # 4*2
             edata2 = data[n+8:n + 28]  # 4*7
             out = struct2i.unpack(edata1)
@@ -492,7 +497,7 @@ class GEOM1(GeomCommon):
         structi = Struct(self._endian + b'i14s') # 18
         structi = Struct(self._endian + b'i56s') # 60
         nentries = (len(data) - n) // 60 # 4+18
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n + 60]
             out = structi.unpack(edata)
             (seid, label) = out

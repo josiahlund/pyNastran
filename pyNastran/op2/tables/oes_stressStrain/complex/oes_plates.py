@@ -126,6 +126,16 @@ class ComplexTriaxStressArray(OES_Object):
         self.itotal += 1
 
 class ComplexPlateArray(OES_Object):
+    r"""
+       ELEMENT      FIBER                                     - STRESSES IN ELEMENT  COORDINATE SYSTEM -
+          ID.       DISTANCE              NORMAL-X                       NORMAL-Y                      SHEAR-XY               VON MISES
+    0     101  -5.000000E-01  -8.152692E-01 /  0.0           -1.321875E+00 /  0.0           -3.158517E+00 /  0.0            5.591334E+00
+                5.000000E-01   1.728573E+00 /  0.0           -7.103837E+00 /  0.0            2.856040E+00 /  0.0            9.497519E+00
+
+    floats = (1011,
+              -0.5, -0.8152692, 0.0, -1.321874, 0.0, -3.158516, 0.0, 5.591334,
+               0.5,  1.7285730, 0.0, -7.103837, 0.0,  2.856039, 0.0, 9.497518)
+    """
     def __init__(self, data_code, is_sort1, isubcase, dt):
         OES_Object.__init__(self, data_code, isubcase, apply_data_code=False)   ## why???
         self.element_node = None

@@ -814,7 +814,7 @@ class ComplexStrainEnergyArray(BaseElement):
             ## remove empty rows
             #self.data_frame = self.data_frame[self.data_frame.ElementID != 0]
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         return self.assert_equal(table)
 
     def assert_equal(self, table, rtol=1.e-5, atol=1.e-8):
@@ -840,7 +840,7 @@ class ComplexStrainEnergyArray(BaseElement):
                 raise ValueError(msg)
 
 
-        if not np.array_equal(self.data, table.data):
+        if not np.array_equal(self.data, table.data):  # pragma: no cover
             msg = 'table_name=%r class_name=%s\n' % (self.table_name, self.__class__.__name__)
             msg += '%s\n' % str(self.code_information())
             i = 0

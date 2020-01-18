@@ -34,6 +34,10 @@ class RealCompositePlateArray(OES_Object):
     def is_complex(self):
         return False
 
+    @property
+    def nnodes_per_element(self):
+        return 1
+
     def _reset_indices(self):
         self.itotal = 0
         self.ielement = 0
@@ -125,7 +129,7 @@ class RealCompositePlateArray(OES_Object):
             self.data_frame.columns.names = ['Static']
             self.data_frame.index.names = ['ElementID', 'Layer', 'Item']
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         assert self.is_sort1 == table.is_sort1
         self._eq_header(table)
         if not np.array_equal(self.element_layer, table.element_layer):
@@ -322,10 +326,10 @@ class RealCompositePlateArray(OES_Object):
             ovm = self.data[itime, :, 8]
 
             for eid, layer, o11i, o22i, t12i, t1zi, t2zi, anglei, majori, minori, ovmi in zip(
-                eids, layers, o11, o22, t12, t1z, t2z, angle, major, minor, ovm):
+                    eids, layers, o11, o22, t12, t1z, t2z, angle, major, minor, ovm):
 
                 [o11i, o22i, t12i, t1zi, t2zi, majori, minori, ovmi] = write_floats_12e([
-                 o11i, o22i, t12i, t1zi, t2zi, majori, minori, ovmi])
+                    o11i, o22i, t12i, t1zi, t2zi, majori, minori, ovmi])
                 f06_file.write('0 %8s %4s  %12s %12s %12s   %12s %12s  %6.2F %12s %12s %s\n'
                                % (eid, layer, o11i, o22i, t12i, t1zi, t2zi, anglei, majori, minori, ovmi))
             f06_file.write(page_stamp % page_num)
@@ -382,7 +386,6 @@ class RealCompositePlateArray(OES_Object):
             raise NotImplementedError('SORT2')
 
         op2_ascii.write('nelements=%i\n' % nelements)
-
         ntimes = self.data.shape[0]
 
         for itime in range(ntimes):
@@ -424,7 +427,7 @@ class RealCompositePlateArray(OES_Object):
                 op2.write(pack('2i 9f', *data))
 
                 [o11i, o22i, t12i, t1zi, t2zi, majori, minori, ovmi] = write_floats_12e([
-                 o11i, o22i, t12i, t1zi, t2zi, majori, minori, ovmi])
+                    o11i, o22i, t12i, t1zi, t2zi, majori, minori, ovmi])
                 op2_ascii.write('0 %8s %4s  %12s %12s %12s   %12s %12s  %6.2F %12s %12s %s\n'
                                 % (eid, layer, o11i, o22i, t12i, t1zi, t2zi, anglei, majori, minori, ovmi))
 

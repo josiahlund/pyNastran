@@ -7,11 +7,11 @@ import unittest
 import numpy as np
 
 import pyNastran
-from pyNastran.utils import is_binary_file, object_methods, object_attributes
+from pyNastran.utils import is_binary_file, object_methods, object_attributes, print_bad_path
 from pyNastran.utils.dev import list_print
 from pyNastran.utils.mathematics import (
     get_abs_max, get_max_index, get_min_index, get_abs_index,
-    is_list_ranged)
+    is_list_ranged, gauss)
 from pyNastran.utils.dev import get_files_of_type
 
 
@@ -45,8 +45,35 @@ class B1(A1):
 
 class TestUtils(unittest.TestCase):
 
+    def test_gauss(self):
+        """tests ``gauss``"""
+        gauss(1)
+        gauss(2)
+        gauss(3)
+        gauss(4)
+        gauss(5)
+        with self.assertRaises(NotImplementedError):
+            gauss(6)
+
+    def test_print_bad_path(self):
+        """tests ``print_bad_path``"""
+        # passed: C:\work
+        with open('junk_good.txt', 'w'):
+            pass
+        bad = print_bad_path('junk_bad.txt')
+        good = print_bad_path('junk_good.txt')
+        assert bad.count('failed') == 1, bad
+        assert good.count('failed') == 0, good
+        os.remove('junk_good.txt')
+
     def test_get_files_of_type(self):
         """tests the get_files_of_type function"""
+        model_path = os.path.join('some_incorrect_path')
+        files = get_files_of_type(
+            model_path, extension='.op2', max_size=1.0,
+            limit_file='no_dig.txt')
+        assert len(files) == 0, files
+
         model_path = os.path.join(PKG_PATH, '..', 'models')
         op2_files = get_files_of_type(model_path, extension='.op2', max_size=100.,
                                       limit_file='no_dig.txt')
@@ -90,6 +117,12 @@ class TestUtils(unittest.TestCase):
         assert np.array_equal(min_values, [4.0, 2.1, 3.0, 5.0, 2.1]), min_values
         assert np.array_equal(max_values, [4.1, 2.2, 3.1, 5.1, 2.2]), max_values
         assert np.array_equal(abs_values, [4.1, 2.2, 3.1, 5.1, 2.2]), abs_values
+
+        min_values = np.array([-1.1, -1.0, -1., 0.0, 4.1])
+        max_values = np.array([-1.0, +0.9, 1.1, 0.2, 4.2])
+        abs_values = np.array([-1.1, -1.0, 1.1, 0.2, 4.2])
+        abs_max = get_abs_max(min_values, max_values)
+        assert np.allclose(abs_max, abs_values), abs_max - abs_values
 
     def test_is_binary(self):
         """tests if a file is binary"""

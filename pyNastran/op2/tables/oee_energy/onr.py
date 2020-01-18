@@ -105,7 +105,6 @@ class ONR(OP2Common):
             self.format_code = 1
             self.sort_bits[0] = 0 # real
             prefix = 'RANCONS.'
-
         else:
             raise NotImplementedError(self.table_name)
         self.data_code['sort_bits'] = self.sort_bits

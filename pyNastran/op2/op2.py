@@ -11,7 +11,7 @@ Defines the main OP2 class.  Defines:
    - build_dataframe()
    - combine_results(combine=True)
    - create_objects_from_matrices()
-   - object_attributes(mode='public', keys_to_skip=None)
+   - object_attributes(mode='public', keys_to_skip=None, filter_properties=False)
    - object_methods(mode='public', keys_to_skip=None)
    - print_subcase_key()
    - read_op2(op2_filename=None, combine=True, build_dataframe=None,
@@ -39,86 +39,15 @@ from pyNastran.op2.result_objects.monpnt import MONPNT1, MONPNT3
 
 from pyNastran.f06.errors import FatalError
 from pyNastran.op2.errors import SortCodeError, DeviceCodeError, FortranMarkerError
-#from pyNastran.op2.op2_interface.op2_writer import OP2Writer
 #from pyNastran.op2.op2_interface.op2_f06_common import Op2F06Attributes
 from pyNastran.op2.op2_interface.op2_scalar import OP2_Scalar
 from pyNastran.op2.op2_interface.transforms import (
     transform_displacement_to_global, transform_gpforce_to_globali)
 from pyNastran.utils import check_path
-
 if PY2:
     FileNotFoundError = IOError
 
 
-def read_op2(op2_filename=None, combine=True, subcases=None,
-             exclude_results=None, include_results=None,
-             log=None, debug=True, debug_file=None, build_dataframe=None,
-             skip_undefined_matrices=True, mode=None, encoding=None):
-    """
-    Creates the OP2 object without calling the OP2 class.
-
-    Parameters
-    ----------
-    op2_filename : str (default=None -> popup)
-        the op2_filename
-    combine : bool; default=True
-        True : objects are isubcase based
-        False : objects are (isubcase, subtitle) based;
-                will be used for superelements regardless of the option
-    subcases : List[int, ...] / int; default=None->all subcases
-        list of [subcase1_ID,subcase2_ID]
-    exclude_results / include_results : List[str] / str; default=None
-        a list of result types to exclude/include
-        one of these must be None
-    build_dataframe : bool (default=None -> True if in iPython, False otherwise)
-        builds a pandas DataFrame for op2 objects
-    skip_undefined_matrices : bool; default=False
-         True : prevents matrix reading crashes
-    debug : bool; default=False
-        enables the debug log and sets the debug in the logger
-    log : Log()
-        a logging object to write debug messages to
-        (.. seealso:: import logging)
-    mode : str; default=None -> 'msc'
-        the version of the Nastran you're using
-        {nx, msc, optistruct}
-    debug_file : str; default=None (No debug)
-        sets the filename that will be written to
-    encoding : str
-        the unicode encoding (default=None; system default)
-
-    Returns
-    -------
-    model : OP2()
-        an OP2 object
-
-    .. todo:: creates the OP2 object without all the read methods
-
-    .. note :: this method will change in order to return an object that
-               does not have so many methods
-
-    """
-    model = OP2(log=log, debug=debug, debug_file=debug_file, mode=mode)
-    model.set_subcases(subcases)
-    model.include_exclude_results(exclude_results=exclude_results,
-                                  include_results=include_results)
-
-    model.read_op2(op2_filename=op2_filename, build_dataframe=build_dataframe,
-                   skip_undefined_matrices=skip_undefined_matrices, combine=combine,
-                   encoding=encoding)
-    ## TODO: this will go away when OP2 is refactored
-    ## TODO: many methods will be missing, but it's a start...
-    ## doesn't support F06 writer
-    #obj = Op2F06Attributes()
-    #attr_names = object_attributes(obj, mode="public", keys_to_skip=None)
-    #for attr_name in attr_names:
-        #attr = getattr(model, attr_name)
-        #setattr(obj, attr_name, attr)
-    #obj.get_op2_stats()
-    return model
-
-
-#class OP2(OP2_Scalar, OP2Writer):
 class OP2(OP2_Scalar):
     _properties = ['is_real', 'is_complex', 'is_random',
                    '_sort_method', 'is_sort1', 'is_sort2',
@@ -160,6 +89,7 @@ class OP2(OP2_Scalar):
             self.h5_file.close()
 
     def object_attributes(self, mode='public', keys_to_skip=None):
+                          filter_properties=False):
         # type: (str, Optional[List[str]]) -> List[str]
         """
         List the names of attributes of a class as strings. Returns public
@@ -189,7 +119,8 @@ class OP2(OP2_Scalar):
         my_keys_to_skip = [
             'object_methods', 'object_attributes',
         ]
-        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+                                 filter_properties=filter_properties)
 
     def object_methods(self, mode='public', keys_to_skip=None):
         # type: (str, Optional[List[str]]) -> List[str]
@@ -287,6 +218,8 @@ class OP2(OP2_Scalar):
             # model.displacements
             adict = self.get_result(table_type)
             bdict = op2_model.get_result(table_type)
+            if adict is None and bdict is None:
+                continue
 
             # check number of subcases
             if len(adict) != len(bdict):
@@ -417,7 +350,8 @@ class OP2(OP2_Scalar):
                 'include_results=%r\n' % (exclude_results, include_results)
             )
             raise RuntimeError(msg)
-        elif exclude_results:
+
+        if exclude_results:
             self.remove_results(exclude_results)
         elif include_results:
             self.set_results(include_results)
@@ -493,7 +427,9 @@ class OP2(OP2_Scalar):
             'modal_effective_mass',
             'modal_effective_weight',
         ]
-        for key in object_attributes(self, mode="all", keys_to_skip=keys_to_skip):
+        keys = object_attributes(self, mode="all", keys_to_skip=keys_to_skip,
+                                 filter_properties=True)
+        for key in keys:
             if key.startswith('__') and key.endswith('__'):
                 continue
 
@@ -510,69 +446,6 @@ class OP2(OP2_Scalar):
         #self.case_control_deck = CaseControlDeck(self.case_control_lines, log=self.log)
         self.log.debug('done loading!')
 
-    #def _set_ask_vectorized(self, ask=False):
-        #"""
-        #Enables vectorization
-
-        #The code will degenerate to dictionary based results when
-        #a result does not support vectorization.
-
-        #Vectorization is always True here.
-
-        #Parameters
-        #----------
-        #ask: bool
-            #Do you want to see a GUI of result types.
-
-        #+--------+---------------+---------+------------+
-        #| Case # | Vectorization |  Ask    | Read Modes |
-        #+========+===============+=========+============+
-        #|    1   | True          |  True   |  1, 2      |
-        #+--------+---------------+---------+------------+
-        #|    2   | True          |  False  |  1, 2      |
-        #+--------+---------------+---------+------------+
-        #|    3   | False         |  True   |  1, 2      |
-        #+--------+---------------+---------+------------+
-        #|    4   | False         |  False  |  0         |
-        #+--------+---------------+---------+------------+
-
-        #Definitions
-        #===========
-          #Vectorization - A storage structure that allows for faster read/access
-                          #speeds and better memory usage, but comes with a more
-                          #difficult to use data structure.
-
-                          #It limits the node IDs to all be integers (e.g. element
-                          #centroid).  Composite plate elements (even for just CTRIA3s)
-                          #with an inconsistent number of layers will have a more
-                          #difficult data structure.
-          #Scanning   - a quick check used to figure out how many results to process
-                      #that takes almost no time
-          #Reading    - process the op2 data
-          #Build      - call the __init__ on a results object (e.g. RealDisplacementArray)
-          #Start Over - Go to the start of the op2 file
-          #Ask        - launch a GUI dialog to let the user click which results to load
-
-        #Read Mode Definitions
-        #=====================
-          #0.   The default OP2 dictionary based-approach with no asking GUI (removed)
-          #1.   The first read of a result to get the shape of the data
-          #2.   The second read of a result to get the results
-
-        #Cases
-        #======
-          #1.   Scan the block to get the size, build the object (read_mode=1),
-               #ask the user, start over, fill the objects (read_mode=2).
-               #Degenerate to read_mode=0 when read_mode=2 cannot be used based
-               #upon the value of ask.
-          #2.   Same as case #1, but don't ask the user.
-               #Scan the block to get the size, build the object (read_mode=1),
-               #start over, fill the objects (read_mode=2).
-          #3.   Scan the block to get the object types (read_mode=1), ask the user,
-               #build the object & fill it (read_mode=2)
-          #4.   Read the block to get the size, build the object & fill it (read_mode=0; removed)
-        #"""
-        #self.ask = ask
 
     @property
     def is_geometry(self):
@@ -706,8 +579,9 @@ class OP2(OP2_Scalar):
 
         """
         # TODO: sorter = uniques.argsort()
-        #C:\Anaconda\lib\site-packages\pandas\core\algorithms.py:198: DeprecationWarning: unorderable dtypes;
-            #returning scalar but in the future this will be an error
+        #C:\Anaconda\lib\site-packages\pandas\core\algorithms.py:198:
+        #    DeprecationWarning: unorderable dtypes;
+        #    returning scalar but in the future this will be an error
 
         no_sort2_classes = ['RealEigenvalues', 'ComplexEigenvalues', 'BucklingEigenvalues']
         result_types = self.get_table_types()
@@ -717,7 +591,8 @@ class OP2(OP2_Scalar):
                 if hasattr(matrix, 'build_dataframe'):
                     matrix.build_dataframe()
                 else:
-                    self.log.warning('pandas: build_dataframe is not supported for key=%s type=%s' % (key, str(type(matrix))))
+                    self.log.warning('pandas: build_dataframe is not supported for key=%s type=%s' % (
+                        key, str(type(matrix))))
                     raise NotImplementedError()
                     #continue
 
@@ -737,6 +612,7 @@ class OP2(OP2_Scalar):
                     try:
                         obj.build_dataframe()
                         obj.object_methods()
+                        assert obj.data_frame is not None
                     except MemoryError:
                         raise
                     except:
@@ -748,6 +624,8 @@ class OP2(OP2_Scalar):
                     #self.log.warning(obj)
                     self.log.warning('build_dataframe is not supported for %s - SORT2' % class_name)
                     continue
+
+                # SORT1
                 try:
                     obj.build_dataframe()
                 except MemoryError:
@@ -778,6 +656,7 @@ class OP2(OP2_Scalar):
             the path to the an hdf5 file
         combine : bool; default=True
             runs the combine routine
+
         """
         check_path(hdf5_filename, 'hdf5_filename')
         from pyNastran.op2.op2_interface.hdf5_interface import load_op2_from_hdf5_file
@@ -886,7 +765,7 @@ class OP2(OP2_Scalar):
                 continue
             result = self.get_result(result_type)
             case_keys = sorted(result.keys())
-            unique_isubcases = []
+            # unique_isubcases = []  # List[int]
             for case_key in case_keys:
                 #print('case_key =', case_key)
                 if isinstance(case_key, tuple):
@@ -986,8 +865,8 @@ class OP2(OP2_Scalar):
                     if not hasattr(res1, 'combine'):
                         self.log.info("res=%s has no method combine" % res1.__class__.__name__)
                         continue
-                    else:
-                        self.log.info("res=%s has combine" % res1.__class__.__name__)
+
+                    self.log.info("res=%s has combine" % res1.__class__.__name__)
                     res2 = result[key2]
                     del result[key1]
                     del result[key2]
@@ -1040,10 +919,17 @@ class OP2(OP2_Scalar):
 
     def get_key_order(self):
         # type: () -> List[int, int, int, int, int, str]
+        """
+        Returns
+        -------
+        keys3 : List[int, int, int, int, int, str]
+            the keys in order
+        """
         keys = []
         table_types = self.get_table_types()
+        skip_tables = ['gpdt', 'eqexin']
         for table_type in sorted(table_types):
-            if table_type in ['gpdt', 'eqexin']:
+            if table_type in skip_tables:
                 continue
             result_type_dict = self.get_result(table_type)
             #if result_type_dict is None: # gpdt, eqexin
@@ -1275,119 +1161,76 @@ class OP2(OP2_Scalar):
                 transform_gpforce_to_globali(subcase, result,
                                              nids_all, nids_transform,
                                              icd_transform, coords, xyz_cid0, self.log)
-
         self.log.debug('-----------')
-        return
 
 
-def main():  # pragma: no cover
-    """testing new ideas"""
-    pkg_path = pyNastran.__path__[0]
+def read_op2(op2_filename=None, combine=True, subcases=None,
+             exclude_results=None, include_results=None,
+             log=None, debug=True, debug_file=None, build_dataframe=None,
+             skip_undefined_matrices=True, mode=None, encoding=None):
+    """
+    Creates the OP2 object without calling the OP2 class.
 
-    # we don't want the variable name to get picked up by the class
-    _op2_filename = os.path.join(pkg_path, '..', 'models',
-                                 'sol_101_elements', 'solid_shell_bar.op2')
+    Parameters
+    ----------
+    op2_filename : str (default=None -> popup)
+        the op2_filename
+    combine : bool; default=True
+        True : objects are isubcase based
+        False : objects are (isubcase, subtitle) based;
+                will be used for superelements regardless of the option
+    subcases : List[int, ...] / int; default=None->all subcases
+        list of [subcase1_ID,subcase2_ID]
+    exclude_results / include_results : List[str] / str; default=None
+        a list of result types to exclude/include
+        one of these must be None
+    build_dataframe : bool (default=None -> True if in iPython, False otherwise)
+        builds a pandas DataFrame for op2 objects
+    skip_undefined_matrices : bool; default=False
+         True : prevents matrix reading crashes
+    debug : bool; default=False
+        enables the debug log and sets the debug in the logger
+    log : Log()
+        a logging object to write debug messages to
+        (.. seealso:: import logging)
+    mode : str; default=None -> 'msc'
+        the version of the Nastran you're using
+        {nx, msc, optistruct}
+    debug_file : str; default=None (No debug)
+        sets the filename that will be written to
+    encoding : str
+        the unicode encoding (default=None; system default)
 
-    model = read_op2(_op2_filename)
-    isubcase = 1
+    Returns
+    -------
+    model : OP2()
+        an OP2 object
 
-    # ============displacement================
-    # same for velocity/acceleration/mpc forces/spc forces/applied load
-    # maybe not temperature because it's only 1 result...
-    displacement = model.displacements[isubcase]
-    data = displacement.data
-    grid_type = model.displacements[isubcase].grid_type
+    .. todo:: creates the OP2 object without all the read methods
 
-    # t1, t2, t3, r1, r2, r3
-    assert displacement.ntimes == 1, displacement.ntimes
+    .. note :: this method will change in order to return an object that
+               does not have so many methods
 
-    # get all the nodes for element 1
-    inode1 = data.getNodeIndex([1])    # [itransient, node, t1/t2]
-    unused_datai = data[0, inode1, :]
-    unused_grid_typei = grid_type[inode1]
+    """
+    model = OP2(log=log, debug=debug, debug_file=debug_file, mode=mode)
+    model.set_subcases(subcases)
+    model.include_exclude_results(exclude_results=exclude_results,
+                                  include_results=include_results)
 
-    # ============solid stress=================
-    # same for solid strain
-    solid_stress = model.ctetra_stress[isubcase]
-    data = solid_stress.data
-    cid = model.ctetra_stress[isubcase].cid
+    model.read_op2(op2_filename=op2_filename, build_dataframe=build_dataframe,
+                   skip_undefined_matrices=skip_undefined_matrices, combine=combine,
+                   encoding=encoding)
+    ## TODO: this will go away when OP2 is refactored
+    ## TODO: many methods will be missing, but it's a start...
+    ## doesn't support F06 writer
+    #obj = Op2F06Attributes()
+    #attr_names = object_attributes(obj, mode="public", keys_to_skip=None)
+    #for attr_name in attr_names:
+        #attr = getattr(model, attr_name)
+        #setattr(obj, attr_name, attr)
+    #obj.get_op2_stats()
+    return model
 
-    # oxx, oyy, ozz, txy, tyz, txz
-    assert solid_stress.ntimes == 1, solid_stress.ntimes
-
-    # get the indexs for cid, element 1
-    ielem1 = solid_stress.getElementPropertiesIndex([1])  # element-specific properties
-    unused_datai = cid[ielem1]
-
-    # get all the nodes for element 1
-    ielem1 = solid_stress.getElementIndex([1])
-    # [itransient, elem*node, oxx/oyy, etc.]
-    datai = data[0, ielem1, :]
-
-    # get all the nodes for element 1
-    ielem1 = solid_stress.getElementIndex([1])
-    # [itransient, elem*node, oxx/oyy, etc.]
-    datai = data[0, ielem1, :]
-
-    # get all the nodes for element 4 and 5
-    ielem45 = solid_stress.getElementIndex([[1, 4, 5]])
-    datai = data[0, ielem45, :]
-
-    # get the index for element 1, centroid
-    ielem1_centroid = solid_stress.getElementNodeIndex([[1, 0]])
-    datai = data[0, ielem1_centroid, :]
-
-    # get the index for element 1, node 1
-    ielem1_node1 = solid_stress.getElementNodeIndex([[1, 1]])
-    datai = data[0, ielem1_node1, :]
-
-    # get the index for element 1, node 1 and element 1, node 2
-    ielem1_node12 = solid_stress.getElementNodeIndex([[1, 1],
-                                                      [1, 2],])
-    datai = data[0, ielem1_node12, :]
-
-    # ============plate stress=================
-    # same for plate strain
-    plate_stress = model.cquad4_stress[isubcase]
-    data = plate_stress.data
-
-    # oxx, oyy, ozz, txy, tyz, txz
-    assert plate_stress.ntimes == 1, plate_stress.ntimes
-
-    # get all the nodes for element 1
-    ielem1 = plate_stress.getElementIndex([1])
-    # [itransient, elem*node, oxx/oyy, etc.]
-    datai = plate_stress[0, ielem1, :]
-
-    # ========composite plate stress============
-    # same for plate strain
-    comp_plate_stress = model.cquad4_composite_stress[isubcase]
-    data = comp_plate_stress.data
-    cid = model.cquad4_stress[isubcase].cid
-
-    # get the indexs for cid, element 1
-    ielem1 = comp_plate_stress.getElementPropertiesIndex([1])  # element-specific properties
-    datai = cid[ielem1]
-
-    # oxx, oyy, ozz, txy, tyz, txz
-    assert comp_plate_stress.ntimes == 1, comp_plate_stress.ntimes
-
-    # get all the nodes/layers for element 1
-    ielem1 = comp_plate_stress.getElementIndex([1])
-    # [itransient, elem*node*layer, oxx/oyy, etc.]
-    datai = data[0, ielem1, :]
-
-    # get all the layers for element 1, centroid, and all the layers
-    ielem1_centroid = solid_stress.getElementNodeIndex([[1, 0]])
-    datai = data[0, ielem1_centroid, :]
-
-    # get the index for element 1, centroid, layer 0
-    ielem1_centroid_layer = solid_stress.getElementNodeLayerIndex([[1, 0, 0]])
-    datai = data[0, ielem1_centroid_layer, :]
-
-    # get the index for element 1, layer 0, and all the nodes
-    ielem1_layer = solid_stress.getElementLayerIndex([[1, 0]])
-    datai = data[0, ielem1_layer, :]
 
 def _create_hdf5_info(h5_file, op2_model):
     """exports the h5 info group"""
@@ -1399,5 +1242,3 @@ def _create_hdf5_info(h5_file, op2_model):
     from pyNastran.op2.op2_interface.hdf5_interface import create_info_group
     create_info_group(h5_file, op2_model)
 
-if __name__ == '__main__':  # pragma: no cover
-    main()

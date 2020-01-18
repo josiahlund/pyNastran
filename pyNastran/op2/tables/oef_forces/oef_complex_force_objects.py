@@ -23,6 +23,10 @@ class ComplexForceObject(ForceObject):
     def is_complex(self):
         return True
 
+    @property
+    def nnodes_per_element(self):
+        return 1
+
 
 class ComplexRodForceArray(ComplexForceObject):
     def __init__(self, data_code, is_sort1, isubcase, dt):
@@ -83,7 +87,7 @@ class ComplexRodForceArray(ComplexForceObject):
         self.data_frame.columns.names = column_names
         self.data_frame.index.names = ['ElementID', 'Item']
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         self._eq_header(table)
         assert self.is_sort1 == table.is_sort1
         if not np.array_equal(self.data, table.data):
@@ -322,6 +326,10 @@ class ComplexCShearForceArray(BaseElement):
     @property
     def is_complex(self):
         return True
+
+    @property
+    def nnodes_per_element(self):
+        return 1
 
     def _reset_indices(self):
         self.itotal = 0
@@ -875,6 +883,14 @@ class ComplexViscForceArray(BaseElement):
         else:
             raise NotImplementedError('SORT2')
 
+    @property
+    def is_real(self):
+        return False
+
+    @property
+    def is_complex(self):
+        return True
+
     def _reset_indices(self):
         self.itotal = 0
         self.ielement = 0
@@ -1116,7 +1132,7 @@ class ComplexPlateForceArray(ComplexForceObject):
         self.data_frame.columns.names = column_names
         self.data_frame.index.names = ['ElementID', 'Item']
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         assert self.is_sort1 == table.is_sort1
         self._eq_header(table)
         if not np.array_equal(self.data, table.data):
@@ -1796,7 +1812,7 @@ class ComplexCBarForceArray(ComplexForceObject):
         self.data_frame.columns.names = column_names
         self.data_frame.index.names = ['ElementID', 'Item']
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         assert self.is_sort1 == table.is_sort1
         self._eq_header(table)
         if not np.array_equal(self.data, table.data):
@@ -2153,7 +2169,7 @@ class ComplexCBeamForceArray(ComplexForceObject):
         self.data_frame.index.names = ['ElementID', 'Location', 'Item']
         #print(self.data_frame)
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         return self.assert_equal(table)
 
     def assert_equal(self, table, rtol=1.e-5, atol=1.e-8):
@@ -2438,7 +2454,7 @@ class ComplexCBeamForceArray(ComplexForceObject):
                             0., 0., 0., 0., 0., 0., 0.,
                             0., 0., 0., 0., 0., 0., 0.]
                     #print('***adding %s\n' % (10-icount))
-                    for i in range(10 - icount):
+                    for unused_i in range(10 - icount):
                         op2.write(struct2.pack(*data))
                         nwide += len(data)
 
@@ -2486,6 +2502,16 @@ class ComplexCBendForceArray(BaseElement):  # 69-CBEND
             pass
         else:
             raise NotImplementedError('SORT2')
+
+    @property
+    def is_real(self):
+        """is the result real?"""
+        return False
+
+    @property
+    def is_complex(self):
+        """is the result complex?"""
+        return True
 
     def _reset_indices(self):
         self.itotal = 0
@@ -3540,7 +3566,7 @@ class ComplexCBeamForceVUArray(BaseElement):  # 191-VUBEAM
         #self.data_frame = self.data_frame.reset_index().replace({'NodeID': {0:'CEN'}}).set_index(['ElementID', 'NodeID', 'Location'])
         #print(self.data_frame)
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         assert self.is_sort1 == table.is_sort1
         self._eq_header(table)
         if not np.array_equal(self.data, table.data):
@@ -3759,6 +3785,13 @@ class ComplexForceVU_2DArray(BaseElement):  # 189-VUQUAD,190-VUTRIA
         #else:
             #assert dt is not None
             #self.add = self.add_sort2
+
+    @property
+    def is_real(self):
+        return False
+    @property
+    def is_complex(self):
+        return True
 
     def _reset_indices(self):
         self.itotal = 0

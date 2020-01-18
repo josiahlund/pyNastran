@@ -70,7 +70,7 @@ class MPT(GeomCommon):
         """
         nmaterials = (len(data) - n) // 64
         s = Struct(self._endian + b'i2f4ifi7f')
-        for i in range(nmaterials):
+        for unused_i in range(nmaterials):
             edata = data[n:n+64]
             out = s.unpack(edata)
             (mid, T0, exp, form, tidkp, tidcp, tidcs, thresh,
@@ -108,7 +108,7 @@ class MPT(GeomCommon):
         s = Struct(self._endian + b'i15fi')
         nmaterials = (len(data) - n) // ntotal
         nbig_materials = 0
-        for i in range(nmaterials):
+        for unused_i in range(nmaterials):
             edata = data[n:n+68]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -155,7 +155,7 @@ class MPT(GeomCommon):
         """
         s = Struct(self._endian + b'i10f')
         nmaterials = (len(data) - n) // 44
-        for i in range(nmaterials):
+        for unused_i in range(nmaterials):
             out = s.unpack(data[n:n+44])
             (mid, k, cp, rho, h, mu, hgen, refenth, tch, tdelta, qlat) = out
             mat = MAT4.add_op2_data(out)
@@ -170,7 +170,7 @@ class MPT(GeomCommon):
         """
         s = Struct(self._endian + b'i9f')
         nmaterials = (len(data) - n) // 40
-        for i in range(nmaterials):
+        for unused_i in range(nmaterials):
             out = s.unpack(data[n:n+40])
             (mid, k1, k2, k3, k4, k5, k6, cp, rho, hgen) = out
             if self.is_debug_file:
@@ -237,12 +237,20 @@ class MPT(GeomCommon):
     def _read_mat10(self, data, n):
         """
         MAT10(2801,28,365) - record 9
+
+        Word Name Type Description
+        1 MID   I Material identification number
+        2 BULK RS Bulk modulus
+        3 RHO  RS Mass density
+        4 C    RS Speed of sound
+        5 GE   RS Structural damping coefficient
+
         """
         ntotal = 20  # 5*4
         s = Struct(self._endian + b'i4f')
         nmaterials = (len(data) - n) // ntotal
         assert nmaterials > 0, nmaterials
-        for i in range(nmaterials):
+        for unused_i in range(nmaterials):
             edata = data[n:n+20]
             out = s.unpack(edata)
             (mid, bulk, rho, c, ge) = out
@@ -264,7 +272,7 @@ class MPT(GeomCommon):
         struc = Struct(self._endian + b'i 15f 16i')
         nmaterials = (len(data) - n) // ntotal
         assert nmaterials > 0, nmaterials
-        for i in range(nmaterials):
+        for unused_i in range(nmaterials):
             edata = data[n:n+ntotal]
 
             out = struc.unpack(edata)
@@ -286,7 +294,7 @@ class MPT(GeomCommon):
         s = Struct(self._endian + b'i 15f 4s 4s 4s 4s')
         nmaterials = (len(data) - n) // ntotal
         assert nmaterials > 0, nmaterials
-        for i in range(nmaterials):
+        for unused_i in range(nmaterials):
             edata = data[n:n+80]
             out = s.unpack(edata)
             (mid, e1, e2, e3, nu12, nu13, nu23, g12, g13, g23,
@@ -401,7 +409,7 @@ class MPT(GeomCommon):
         ntotal = 44  # 11*4
         s = Struct(self._endian + b'3ifiiff3i')
         nmaterials = (len(data) - n) // ntotal
-        for i in range(nmaterials):
+        for unused_i in range(nmaterials):
             edata = data[n:n+44]
             out = s.unpack(edata)
             (mid, tid, Type, h, yf, hr, limit1, limit2, a, bmat, c) = out
@@ -424,7 +432,7 @@ class MPT(GeomCommon):
         s = Struct(self._endian + b'12i')
         ntotal = 48 # 12*4
         ncards = (len(data) - n) // ntotal
-        for i in range(ncards):
+        for unused_i in range(ncards):
             edata = data[n:n + ntotal]
             out = s.unpack(edata)
             if self.is_debug_file:
@@ -494,7 +502,7 @@ class MPT(GeomCommon):
         return len(data)
 
     def _read_matt11(self, data, n):
-        self.log.info('skipping MATT11 in MPT')
+        self.log.warning('skipping MATT11 in MPT')
         return len(data)
 
 # MBOLT
@@ -529,7 +537,7 @@ class MPT(GeomCommon):
 
             nfields = (ndata - n) // 4
             npacks = nfields // ndata_per_pack
-            for ipack in range(npacks):
+            for unused_ipack in range(npacks):
                 edata = data[n:n+nstr_per_pack]
                 pack = list(struct_i_nf.unpack(edata))
                 packs.append(pack)
@@ -552,7 +560,7 @@ class MPT(GeomCommon):
         ntotal = 76  # 19*4
         s = Struct(self._endian + b'iif5i3f3iffiff')
         nentries = (len(data) - n) // ntotal
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+76]
             out = s.unpack(edata)
             #(sid,ninc,dt,kMethod,kStep,maxIter,conv,intOut,epsU,epsP,epsW,
@@ -573,7 +581,7 @@ class MPT(GeomCommon):
         ntotal = 88  # 19*4
         s = Struct(self._endian + b'iif5i3f3if3i4f')
         nentries = (len(data) - n) // ntotal
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+88]
             out = s.unpack(edata)
             #(sid,ndt,dt,no,kMethod,kStep,maxIter,conv,epsU,epsP,epsW,

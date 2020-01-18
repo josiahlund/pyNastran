@@ -13,7 +13,7 @@ def run_nastran(bdf_filename, nastran_cmd='nastran', keywords=None,
     ----------
     bdf_filename : string
         Filename of the Nastran .bdf file
-    keywords : dict/list of strings, optional
+    keywords : str/dict/list of strings, optional
         Default keywords are `'scr=yes'`, `'bat=no'`, `'old=no'`, and `'news=no'`
     run : bool; default=True
         let's you disable actually running Nastran to test out code/get the call arguments
@@ -29,7 +29,9 @@ def run_nastran(bdf_filename, nastran_cmd='nastran', keywords=None,
         the nastran commands that go into subprocess
     """
     if keywords is None:
-        keywords_list = ['scr=yes', 'bat=no', 'old=no','news=no'] # 'mem=1024mb',
+        keywords_list = ['scr=yes', 'bat=no', 'old=no', 'news=no'] # 'mem=1024mb',
+    elif isinstance(keywords, str):
+        keywords_list = keywords.split()
     else:
         if isinstance(keywords, (list, tuple)):
             keywords_list = keywords

@@ -344,13 +344,13 @@ class OQG(OP2Common):
         """
         if self.table_name in [b'OQG1', b'OQG2', b'OQGV1', b'OQP1']:
             pass
-        else:
+        else:  # pragma: no cover
             msg = 'spc_forces; table_name=%s' % self.table_name
             raise NotImplementedError(msg)
 
         if self.thermal == 0:
             self._setup_op2_subcase('SPCFORCES')
-            if self.table_name in [b'OQG1']:
+            if self.table_name in [b'OQG1', b'OQG2']:
                 result_name = 'spc_forces'
             #elif self.table_name in [b'OQGV1']:
                 #result_name = 'spc_forces_v'
@@ -406,7 +406,7 @@ class OQG(OP2Common):
             result_name = 'mpc_forces_RAQCONS'
         elif self.table_name == b'RAQEATC':
             result_name = 'mpc_forces_RAQEATC'
-        else:
+        else:  # pragma: no cover
             msg = 'mpc_forces; table_name=%s' % self.table_name
             raise NotImplementedError(msg)
 
@@ -641,7 +641,6 @@ class OQG(OP2Common):
                 #assert self.table_name in [b''], 'self.table_name=%r' % self.table_name
                 #result_name = 'psd.mpc_forces'
             else:
-                print(self.table_code)
                 raise RuntimeError(self.code_information())
         else:
             raise RuntimeError(self.code_information())
@@ -671,7 +670,6 @@ class OQG(OP2Common):
                 #assert self.table_name in [b''], 'self.table_name=%r' % self.table_name
                 #result_name = 'psd.mpc_forces'
             else:
-                print(self.table_code)
                 raise RuntimeError(self.code_information())
         else:
             raise RuntimeError(self.code_information())

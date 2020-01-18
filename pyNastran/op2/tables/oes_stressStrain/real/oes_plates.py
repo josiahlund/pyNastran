@@ -35,6 +35,24 @@ class RealPlateArray(OES_Object):
     def is_complex(self):
         return False
 
+    @property
+    def nnodes_per_element(self):
+        if self.element_type in [33, 74, 83, 227, 228]:
+            nnodes_per_element = 1
+        elif self.element_type == 144:
+            nnodes_per_element = 5
+        elif self.element_type == 64:  # CQUAD8
+            nnodes_per_element = 5
+        elif self.element_type == 82:  # CQUADR
+            nnodes_per_element = 5
+        elif self.element_type == 70:  # CTRIAR
+            nnodes_per_element = 4
+        elif self.element_type == 75:  # CTRIA6
+            nnodes_per_element = 4
+        else:
+            raise NotImplementedError('name=%r type=%s' % (self.element_name, self.element_type))
+        return nnodes_per_element
+
     def _reset_indices(self):
         self.itotal = 0
         self.ielement = 0
@@ -58,20 +76,8 @@ class RealPlateArray(OES_Object):
         assert self.nelements > 0, 'nelements=%s' % self.nelements
         assert self.ntotal > 0, 'ntotal=%s' % self.ntotal
         #self.names = []
-        if self.element_type in [33, 74]:
-            nnodes_per_element = 1
-        elif self.element_type == 144:
-            nnodes_per_element = 5
-        elif self.element_type == 64:  # CQUAD8
-            nnodes_per_element = 5
-        elif self.element_type == 82:  # CQUADR
-            nnodes_per_element = 5
-        elif self.element_type == 70:  # CTRIAR
-            nnodes_per_element = 4
-        elif self.element_type == 75:  # CTRIA6
-            nnodes_per_element = 4
-        else:
-            raise NotImplementedError('name=%r type=%s' % (self.element_name, self.element_type))
+
+        nnodes_per_element = self.nnodes_per_element
 
         #print('nnodes_per_element[%s, %s] = %s' % (
             #self.isubcase, self.element_type, nnodes_per_element))
@@ -275,13 +281,15 @@ class RealPlateArray(OES_Object):
             minor_principal = self.data[itime, :, 6]
             ovm = self.data[itime, :, 7]
 
+            is_linear = self.element_type in {33, 74, 227, 228, 83}
+            is_bilinear = self.element_type in {64, 70, 75, 82, 144}
             for (i, eid, nid, fdi, oxxi, oyyi, txyi, anglei, major, minor, ovmi) in zip(
                  count(), eids, nids, fiber_dist, oxx, oyy, txy, angle, major_principal, minor_principal, ovm):
                 [fdi, oxxi, oyyi, txyi, major, minor, ovmi] = write_floats_13e(
                     [fdi, oxxi, oyyi, txyi, major, minor, ovmi])
                 ilayer = i % 2
                 # tria3
-                if self.element_type in [33, 74]:  # CQUAD4, CTRIA3
+                if is_linear:  # CQUAD4, CTRIA3, CTRIAR linear, CQUADR linear
                     if ilayer == 0:
                         f06_file.write('0  %6i   %-13s     %-13s  %-13s  %-13s   %8.4f   %-13s   %-13s  %s\n' % (
                             eid, fdi, oxxi, oyyi, txyi, anglei, major, minor, ovmi))
@@ -289,7 +297,7 @@ class RealPlateArray(OES_Object):
                         f06_file.write('   %6s   %-13s     %-13s  %-13s  %-13s   %8.4f   %-13s   %-13s  %s\n' % (
                             '', fdi, oxxi, oyyi, txyi, anglei, major, minor, ovmi))
 
-                elif self.element_type in [64, 70, 75, 82, 144]:  # CQUAD8, CTRIAR, CTRIA6, CQUADR, CQUAD4
+                elif is_bilinear:  # CQUAD8, CTRIAR, CTRIA6, CQUADR, CQUAD4
                     # bilinear
                     if nid == 0 and ilayer == 0:  # CEN
                         f06_file.write('0  %8i %8s  %-13s  %-13s %-13s %-13s   %8.4f  %-13s %-13s %s\n' % (
@@ -300,7 +308,7 @@ class RealPlateArray(OES_Object):
                     elif ilayer == 1:
                         f06_file.write('   %8s %8s  %-13s  %-13s %-13s %-13s   %8.4f  %-13s %-13s %s\n\n' % (
                             '', '', fdi, oxxi, oyyi, txyi, anglei, major, minor, ovmi))
-                else:
+                else:  # pragma: no cover
                     msg = 'element_name=%s self.element_type=%s' % (
                         self.element_name, self.element_type)
                     raise NotImplementedError(msg)
@@ -507,24 +515,14 @@ class RealPlateStrainArray(RealPlateArray, StrainObject):
         StrainObject.__init__(self, data_code, isubcase)
 
     def get_headers(self):
-        if self.is_fiber_distance:
-            fiber_dist = 'fiber_distance'
-        else:
-            fiber_dist = 'fiber_curvature'
-
-        if self.is_von_mises:
-            ovm = 'von_mises'
-        else:
-            ovm = 'max_shear'
+        fiber_dist = 'fiber_distance' if self.is_fiber_distance else 'fiber_curvature'
+        ovm = 'von_mises' if self.is_von_mises else 'max_shear'
         headers = [fiber_dist, 'exx', 'eyy', 'exy', 'angle', 'emax', 'emin', ovm]
         return headers
 
 
 def _get_plate_msg(self):
-    if self.is_von_mises:
-        von_mises = 'VON MISES'
-    else:
-        von_mises = 'MAX SHEAR'
+    von_mises = 'VON MISES' if self.is_von_mises else 'MAX SHEAR'
 
     if self.is_stress:
         if self.is_fiber_distance:

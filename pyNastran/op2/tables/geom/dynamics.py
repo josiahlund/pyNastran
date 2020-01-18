@@ -96,7 +96,7 @@ class DYNAMICS(GeomCommon):
         nentries = (len(data) - n) // ntotal
         self.increase_card_count('DAREA', nentries)
         struc = Struct(self._endian + b'3if')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+ntotal]
             out = struc.unpack(edata)
             #(sid,p,c,a) = out
@@ -119,7 +119,7 @@ class DYNAMICS(GeomCommon):
         nentries = (len(data) - n) // ntotal
         self.increase_card_count('DELAY', nentries)
         struc = Struct(self._endian + b'3if')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+ntotal]
             out = struc.unpack(edata)
             sid, nodes, components, delays = out
@@ -190,7 +190,7 @@ class DYNAMICS(GeomCommon):
         nentries = (len(data) - n) // ntotal
         self.increase_card_count('DPHASE', nentries)
         struc = Struct(self._endian + b'3if')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+ntotal]
             out = struc.unpack(edata)
             sid, nodes, components, delays = out
@@ -209,7 +209,7 @@ class DYNAMICS(GeomCommon):
         nentries = (len(data) - n) // ntotal
         self.increase_card_count('EIGB', nentries)
         struc = Struct(self._endian + b'i8s ff 3i i 8s 4i')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+ntotal]
             #self.show_data(edata[44:])
             # int, 8s, 2f, 3i, i, 8s, 4i
@@ -496,9 +496,9 @@ class DYNAMICS(GeomCommon):
                 self.binary_debug.write('  EIGRL=%s\n' % str(out))
             options = []
             values = []
-            eigrl = self.add_eigrl(sid, v1=v1, v2=v2, nd=nd, msglvl=msglvl,
-                                   maxset=maxset, shfscl=shfscl,
-                                   norm=norm, options=options, values=values)
+            self.add_eigrl(sid, v1=v1, v2=v2, nd=nd, msglvl=msglvl,
+                           maxset=maxset, shfscl=shfscl,
+                           norm=norm, options=options, values=values)
             #print(eigrl)
             if nums == 538976288:
                 n = len(data)
@@ -600,7 +600,7 @@ class DYNAMICS(GeomCommon):
         ntotal = 24 # 4*6
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'i 2f 4s if')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+ntotal]
             out = struc.unpack(edata)
             sid, f1, f2, freq_type, nef, bias = out
@@ -1121,7 +1121,7 @@ class DYNAMICS(GeomCommon):
         #self.show_data(data[n:], 'if')
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'5i 3f')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+ntotal]
             out = struc.unpack(edata)
             sid, darea, delayi, load_type, tid, delayr, us0, vs0 = out
@@ -1163,7 +1163,7 @@ class DYNAMICS(GeomCommon):
         ntotal = 52
         nentries = (len(data) - n) // ntotal
         struc = Struct(self._endian + b'4i 7f 2f')
-        for i in range(nentries):
+        for unused_i in range(nentries):
             edata = data[n:n+ntotal]
             out = struc.unpack(edata)
             sid, darea, delayi, load_type, t1, t2, freq, p, c, growth, delayr, us0, vs0 = out
@@ -1182,7 +1182,15 @@ class DYNAMICS(GeomCommon):
         return n
 
     def _read_tstep(self, data, n):
-        """TSTEP(8307,83,142) - Record 38"""
+        """TSTEP(8307,83,142) - Record 38
+
+        Word Name Type Description
+        1 SID  I Set identification number
+        2 N    I Number of time steps of value DTi
+        3 DT  RS Time increment
+        4 NO   I Skip factor for output
+        Words 2 through 4 repeat until (-1,-1,-1) occurs
+        """
         self.log.info('skipping TSTEP in DYNAMICS\n')
         if self.is_debug_file:
             self.binary_debug.write('skipping TSTEP in DYNAMICS\n')

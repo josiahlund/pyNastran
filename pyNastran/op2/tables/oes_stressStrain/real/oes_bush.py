@@ -26,6 +26,10 @@ class RealBushArray(OES_Object):
     def is_complex(self):
         return False
 
+    @property
+    def nnodes_per_elements(self):
+        return 1
+
     def _reset_indices(self):
         self.itotal = 0
         if self.table_name not in ['OESRMS2', 'OESNO2', 'OSTRRMS2', 'OSTRNO2']:
@@ -206,13 +210,12 @@ class RealBushArray(OES_Object):
             rz = self.data[itime, :, 5]
 
             for eid, txi, tyi, tzi, rxi, ryi, rzi in zip(
-                eids, tx, ty, tz, rx, ry, rz):
-
+                    eids, tx, ty, tz, rx, ry, rz):
                 vals = [txi, tyi, tzi, rxi, ryi, rzi]
                 vals2 = write_floats_13e(vals)
                 [txi, tyi, tzi, rxi, ryi, rzi] = vals2
                 f06_file.write('0                   %8i     %-13s %-13s %-13s %-13s %-13s %s\n' % (
-                        eid, txi, tyi, tzi, rxi, ryi, rzi))
+                    eid, txi, tyi, tzi, rxi, ryi, rzi))
             f06_file.write(page_stamp % page_num)
             page_num += 1
         if self.nonlinear_factor in (None, np.nan):
@@ -340,6 +343,7 @@ class RealBushStressArray(RealBushArray, StressObject):
             '                  ELEMENT-ID        STRESS-TX     STRESS-TY     STRESS-TZ    STRESS-RX     STRESS-RY     STRESS-RZ \n',
         ]
         return msg
+
 
 class RealBushStrainArray(RealBushArray, StrainObject):
     def __init__(self, data_code, is_sort1, isubcase, dt):

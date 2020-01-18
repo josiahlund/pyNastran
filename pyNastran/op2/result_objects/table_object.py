@@ -76,6 +76,11 @@ SORT2_TABLE_NAME_MAP = {
 
     #'OUG2' : 'OUG1',
     'OUGV2' : 'OUGV1',
+    'OQG2' : 'OQG1',
+    'OQMG2' : 'OQMG1',
+    'OPG2' : 'OPG1',
+    'OPNL2' : 'OPNL1',
+    'OUXY2' : 'OUXY1',
 }
 def append_sort1_sort2(data1, data2, to_sort1=True):
     """
@@ -123,7 +128,7 @@ class TableArray(ScalarObject):  # displacement style table
         self.ntotal = 0
         self._nnodes = 0  # result specific
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         return self.assert_equal(table)
 
     def assert_equal(self, table, rtol=1.e-5, atol=1.e-8):
@@ -437,7 +442,6 @@ class TableArray(ScalarObject):  # displacement style table
         #print(self.get_stats())
         #print(self.node_gridtype)
         #print(self.data.shape)
-        #aaa
         self.sort_method = 1
         self.sort_bits[1] = 0
         bit0, bit1, bit2 = self.sort_bits

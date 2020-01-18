@@ -16,10 +16,6 @@ class RealRodArray(OES_Object):
 
         self.nelements = 0  # result specific
 
-        #if is_sort1:
-            #self.add_new_eid = self.add_new_eid_sort1
-        #else:
-            #raise NotImplementedError('SORT2')
 
     @property
     def is_real(self):
