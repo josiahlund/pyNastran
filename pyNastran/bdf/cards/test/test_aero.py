@@ -51,9 +51,10 @@ class TestAero(unittest.TestCase):
     """
 
     def test_aestat_1(self):
-        bdf = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         lines = ['AESTAT  502     PITCH']
-        card = bdf._process_card(lines)
+        card = model._process_card(lines)
         card = BDFCard(card)
 
         size = 8
@@ -104,7 +105,8 @@ class TestAero(unittest.TestCase):
         #Di = [0., 15., 30., 45.]
         #aefact_delta = AEFACT(aefact_sid, Di)
 
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         data = ['AELIST', 75, 1001, 'THRU', 1075, 1101, 'THRU', 1109, 1201, 1202]
         model.add_card(data, data[0], COMMENT_BAD, is_list=True)
 
@@ -309,7 +311,8 @@ class TestAero(unittest.TestCase):
         card = ['AESURFS', aesid, label, None, list1, None, list2]
         bdf_card = BDFCard(card, has_none=True)
 
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         model.add_card(bdf_card, 'AESURFS', comment='aesurfs',
                        is_list=True, has_none=True)
         aesurfs = AESURFS(aesid, label, list1, list2, comment='aesurfs')
@@ -443,6 +446,8 @@ class TestAero(unittest.TestCase):
 
     def test_caero1_1(self):
         """checks the CAERO1/PAERO1/AEROS/AEFACT card"""
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         eid = 1
         pid = 10
         cp = 4
@@ -456,8 +461,6 @@ class TestAero(unittest.TestCase):
         p4 = [2., 3., 4.]
         x43 = 1.
 
-        log = SimpleLogger(level='warning')
-        model = BDF(log=log)
         caero1a = CAERO1.add_card(BDFCard(['CAERO1', eid, pid, cp, nspan, nchord, lspan, lchord,
                                            igid, ] + p1 + [x12] + p4 + [x43]))
         caero1a.validate()
@@ -678,7 +681,8 @@ class TestAero(unittest.TestCase):
         spline.validate()
         spline.write_card(size=8, is_double=False)
         spline.raw_fields()
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         model.splines[eid] = spline
 
         pid = 10
@@ -786,7 +790,8 @@ class TestAero(unittest.TestCase):
         ids = [7, 13]
         set_obj = SET1(sid, ids, is_skin=False, comment='set card')
 
-        model = BDF(log=None)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         model._add_coord_object(coord)
         model._add_caero_object(caero2)
         model._add_set_object(set_obj)
@@ -1093,7 +1098,8 @@ class TestAero(unittest.TestCase):
         fields = ['PAERO3', 2001, 15, 1, None, 0., 65., None, None,
                   78., 65., 108., 65., 82., 97.5, 112., 97.5,
                   86., 130., 116., 130.]
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         model.add_card(fields, fields[0])
         paero = model.paeros[2001]
         assert paero.npoints == 8, paero.npoints
@@ -1129,7 +1135,8 @@ class TestAero(unittest.TestCase):
 
     def test_caero4_1(self):
         """checks the CAERO4/PAERO4"""
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         pid = 1001
         docs = []
         caocs = []
@@ -1207,7 +1214,8 @@ class TestAero(unittest.TestCase):
 
     def test_caero5_1(self):
         """checks the CAERO5/PAERO5"""
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         pid = 6001
         caoci = [0., 0.5, 1.0]
         paero5 = model.add_paero5(pid, caoci,
@@ -1300,7 +1308,8 @@ class TestAero(unittest.TestCase):
    # def test_spline2_1(self):
     def test_spline3(self):
         """checks the SPLINE3 card"""
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         eid = 100
         pid = 10
         igid = 1
@@ -1369,7 +1378,8 @@ class TestAero(unittest.TestCase):
 
     def test_spline4(self):
         """checks the SPLINE4 card"""
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         eid = 1
         caero = 10
         aelist = 11
@@ -1426,7 +1436,8 @@ class TestAero(unittest.TestCase):
 
     def test_spline5(self):
         """checks the SPLINE5 card"""
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         eid = 1
         caero = 10
         aelist = 11
@@ -1516,8 +1527,7 @@ class TestAero(unittest.TestCase):
         aesurf1.validate()
         aesurf2.validate()
         log = SimpleLogger(level='warning')
-
-        model = BDF(debug=False, log=log)
+        model = BDF(log=log)
         model._add_coord_object(coord)
         model._add_aesurf_object(aesurf1)
 
@@ -1710,7 +1720,8 @@ class TestAero(unittest.TestCase):
         """tests the flutter sweeps"""
         alts = np.linspace(-10000., 50000.)[::-1]
 
-        model = BDF()
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         sid = 70
         method = 'PKNL'
         density = 71
@@ -1799,7 +1810,8 @@ class TestAero(unittest.TestCase):
 
     def test_mkaero2(self):
         """checks the MKAERO2 card"""
-        model = BDF()
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         machs = [0.5, 0.75, 0.8]
         reduced_freqs = [0.1, 0.2, 0.3]
         mkaero = model.add_mkaero2(machs, reduced_freqs, comment='mkaero2')
@@ -2039,7 +2051,8 @@ class TestAero(unittest.TestCase):
         wg = 50.
         x0 = 3.
         V = 42.
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         gust = model.add_gust(sid, dload, wg, x0, V=V, comment='gust load')
         gust.validate()
         gust.write_card()
@@ -2052,7 +2065,8 @@ class TestAero(unittest.TestCase):
 
     def test_csschd(self):
         """checks the CSSCHD card"""
-        model = BDF(debug=None)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         sid = 5
         aesid = 50
         lalpha = 12
@@ -2137,7 +2151,8 @@ class TestAero(unittest.TestCase):
             csshcd3.validate()
 
     def test_monpnt(self):
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
         name = 'test'
         label = 'test2'
         axes = '123'
@@ -2169,7 +2184,6 @@ class TestAero(unittest.TestCase):
         model.cross_reference()
         model._verify_bdf(xref=True)
         model.uncross_reference()
-
         save_load_deck(model)
 
     def test_bah_plane_bdf(self):
@@ -2188,7 +2202,8 @@ class TestAero(unittest.TestCase):
 
     def test_rotord(self):
         """tests the ROTORD"""
-        model = BDF(debug=False)
+        log = SimpleLogger(level='warning')
+        model = BDF(log=log)
 
         sid = 42
         rstart = 3.14

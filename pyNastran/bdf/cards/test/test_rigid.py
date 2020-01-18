@@ -51,6 +51,7 @@ class TestRigid(unittest.TestCase):
         card = bdf._process_card(lines)
         card = BDFCard(card)
         rbe = RBE2.add_card(card)
+        rbe.write_card(size=16)
         fields = rbe.raw_fields()
         msg = print_card_8(fields).rstrip()
         #print(msg)

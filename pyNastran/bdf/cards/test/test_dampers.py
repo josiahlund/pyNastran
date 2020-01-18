@@ -34,7 +34,8 @@ class TestDampers(unittest.TestCase):
 
     def test_damper_02(self):
         """tests CDAMP1, CDAMP2, PDAMP, PDAMPT, GRID"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid = 1
         pid = 2
         nids = [3, 4]
@@ -74,7 +75,8 @@ class TestDampers(unittest.TestCase):
 
     def test_damper_03(self):
         """tests the CDAMP4, PDAMP, CDAMP4, SPOINT"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid = 3
         pid = 2
         s1 = 3
@@ -233,7 +235,7 @@ class TestDampers(unittest.TestCase):
 
     def test_pbusht(self):
         """tests CBUSH, PBUSH, PBUSHT"""
-        model = BDF(debug=True, log=None, mode='msc')
+        model = BDF(debug=False, log=None, mode='msc')
         model.add_grid(10, [0., 0., 0.])
         model.add_grid(11, [0., 0., 0.])
 
@@ -266,7 +268,8 @@ class TestDampers(unittest.TestCase):
 
     def test_pdamp(self):
         """PDAMP"""
-        model = BDF()
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid1 = 10
         eid2 = 20
         eid3 = 30

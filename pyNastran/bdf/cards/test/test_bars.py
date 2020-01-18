@@ -182,7 +182,8 @@ class TestBars(unittest.TestCase):
         nids = [10, 20]
         x = None
         g0 = 30
-        model.add_cbar(eid, pid, nids, x, g0, comment='cbar')
+        cbar = model.add_cbar(eid, pid, nids, x, g0, comment='cbar')
+        cbar.write_card_16(is_double=False)
 
         E = 1.0e7
         G = None
@@ -622,6 +623,7 @@ class TestBars(unittest.TestCase):
         x = None
         g0 = 4
         cbeam3 = model.add_cbeam3(eid, pid, nids, x, g0, wa=None, wb=None, wc=None, tw=None, s=None, comment='cbeam3')
+        cbeam3.raw_fields()
 
         A = 1.
         iz = 2.
@@ -649,6 +651,88 @@ class TestBars(unittest.TestCase):
         model.pop_parse_errors()
         model.pop_xref_errors()
         assert pbeam3 == model.properties[pid]
+
+    def test_bar_area(self):
+        """tests the PBARL"""
+        model = BDF(log=None, debug=False)
+        mid = 40
+        group = 'group'
+        nsm = 0.0
+
+        shape_dims_area = [
+            # name, dims, area, i1
+            ('ROD', [2.], 4. * np.pi, 0.),
+            ('TUBE', [5., 1.], 24. * np.pi, 0.),
+            ('BAR', [2., 3.], 6., 0.),
+            ('BOX', [2., 3., 0.5, 0.5], 4., 0.),
+
+            ('L', [2., 3., 1., 1.], 4., 0.),
+            ('CHAN', [10., 10., 1., 1.], 28., None),
+            ('CHAN1', [9., 0.1, 8., 10.], 19., None),
+            ('CHAN2', [1, 1., 9., 10.], 26., None),
+
+            # new
+            ('I', [1., 1., 1., 0.1, 0.1, 0.1], 0.28, None),
+            ('I1', [0.1, 1., 0.5, 1.], 1.05, None),
+            ('H', [1.0, 0.1, 1.0, 0.1], 0.2, None),
+
+            ('Z', [0.5, 0.5, 0.5, 1.], 0.75, None),
+            ('Z', [0.8, 0.5, 0.5, 1.], 0.90, None),
+            ('Z', [0.5, 0.8, 0.5, 1.], 1.05, None),
+            ('Z', [0.5, 0.5, 0.8, 1.], 0.60, None),
+            ('Z', [0.5, 0.5, 0.5, 2.], 1.75, None),
+
+            ('CHAN', [1., 1., 0.1, 0.1], 0.28, None),
+            ('CHAN1', [0.5, 0.5, 0.5, 1.], 0.75, None),
+            ('CHAN2', [0.1, 0.1, 1., 1.], 0.28, None),
+            ('CROSS', [0.1, 0.1, 1., 0.1], 0.11, None),
+            ('HEXA', [0.1, 1., 1.], 0.90, None),
+            ('HEXA', [0.2, 1., 1.], 0.80, None),
+            ('HEXA', [0.1, 2., 1.], 1.90, None),
+            ('HEXA', [0.1, 1., 2.], 1.80, None),
+
+            ('HAT', [1., 0.1, 1., 0.1], 0.30, None),
+            ('HAT', [2., 0.1, 1., 0.1], 0.50, None),
+            ('HAT', [1., 0.2, 1., 0.1], 0.56, None),
+            ('HAT', [1., 0.1, 2., 0.1], 0.40, None),
+            ('HAT', [1., 0.1, 1., 0.2], 0.32, None),
+
+            ('HAT1', [3., 1., 1., 0.1, 0.1], 0.76, None),
+            ('HAT1', [3., 2., 1., 0.1, 0.1], 0.96, None),
+            ('HAT1', [3., 1., 2., 0.1, 0.1], 0.76, None),
+            ('HAT1', [3., 1., 1., 0.2, 0.1], 1.18, None),
+            ('HAT1', [3., 1., 1., 0.1, 0.2], 1.04, None),
+
+            ('T', [10., 10., 3., 0.5], 33.5, None),
+            ('T2', [10., 5., 0.5, 2.0], 14., None), #  ball,hall,tflange,tweb
+
+            ('T', [1., 1., 0.1, 0.1], 0.19, None),
+            ('T1', [1., 1., 0.1, 0.1], 0.20, None),
+            ('T2', [1., 1., 0.1, 0.1], 0.19, None),
+
+            ('DBOX', [2., 1., 1., 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, ], 0.64, None),
+            ('DBOX', [2., 2., 1., 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, ], 0.94, None),
+            ('DBOX', [2., 1., 2., 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, ], 0.64, None),
+
+            ('DBOX', [2., 1., 1., 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, ], 0.72, None),
+            ('DBOX', [2., 1., 1., 0.1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, ], 0.72, None),
+            ('DBOX', [2., 1., 1., 0.1, 0.1, 0.2, 0.1, 0.1, 0.1, 0.1, ], 0.72, None),
+            ('DBOX', [2., 1., 1., 0.1, 0.1, 0.1, 0.2, 0.1, 0.1, 0.1, ], 0.725, None),
+            ('DBOX', [2., 1., 1., 0.1, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1, ], 0.725, None),
+            ('DBOX', [2., 1., 1., 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1, ], 0.725, None),
+            ('DBOX', [2., 1., 1., 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, ], 0.725, None),
+        ]
+        pid = 1
+        for bar_type, dims, areai, i1 in shape_dims_area:
+            pbarl = PBARL(pid, mid, bar_type, dims, group=group, nsm=nsm, comment='comment')
+            pbarl.validate()
+            area2 = pbarl.Area()
+            if i1 is not None:
+                pbarl.I1()
+                pbarl.I2()
+                pbarl.I12()
+            assert np.allclose(areai, area2), 'bar_type=%r dims=%s area=%s area_expected=%s' % (bar_type, dims, area2, areai)
+            pid += 1
 
 if __name__ == '__main__':  # pragma: no cover
     unittest.main()

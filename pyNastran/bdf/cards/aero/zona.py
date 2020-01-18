@@ -60,7 +60,7 @@ class ZONA(object):
         self.pafoil = {}
         #self.aeroz = {}
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None, filter_properties=False):
         # type: (str, Optional[List[str]]) -> List[str]
         """
         List the names of attributes of a class as strings. Returns public
@@ -89,7 +89,8 @@ class ZONA(object):
         my_keys_to_skip = [
             'log', 'model',
         ]
-        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+                                 filter_properties=filter_properties)
 
     def object_methods(self, mode='public', keys_to_skip=None):
         # type: (str, Optional[List[str]]) -> List[str]

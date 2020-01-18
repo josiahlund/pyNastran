@@ -469,6 +469,8 @@ class CompositeShellProperty(Property):
 
         Parameters
         ----------
+        rhos : List[float]
+            the densities of each ply
         iply : str/int; default='all'
             the mass per area of the :math:`i^{th}` ply
         method : str
@@ -554,7 +556,8 @@ class CompositeShellProperty(Property):
 
     def get_mass_per_area_structure(self, rhos):
         r"""
-        Gets the Mass/Area for the property structure only.
+        Gets the Mass/Area for the property structure only
+        (doesn't consider nsm).
 
         .. math:: \frac{m}{A} = \sum(\rho t)
 
@@ -563,6 +566,8 @@ class CompositeShellProperty(Property):
 
         Parameters
         ----------
+        rhos : List[float]
+            the densities of each ply
 
         """
         nplies = len(self.thicknesses)
@@ -574,6 +579,7 @@ class CompositeShellProperty(Property):
 
         ksym = 2. if self.is_symmetrical() else 1.
         return ksym * mass_per_area
+
 
 class PCOMP(CompositeShellProperty):
     """
@@ -965,6 +971,17 @@ class PCOMP(CompositeShellProperty):
             #self.souts[i] = sout
             #i += 1
 
+    def get_z0_z1_zmean(self):
+        thicknesses = self.get_thicknesses()
+        csum = np.cumsum(thicknesses)
+        z0 = self.z0 + np.hstack([0., csum[:-1]])
+        z1 = self.z0 + csum
+        #dz = z1 - z0
+        #dzsquared = z1 ** 2 - z0 ** 2
+        #zcubed = z1 ** 3 - z0 ** 3
+        zmeans = (z0 + z1) / 2.
+        return z0, z1, zmeans
+
     def get_ABD_matrices(self, theta_offset=0.):
         """
         Gets the ABD matrix
@@ -979,15 +996,11 @@ class PCOMP(CompositeShellProperty):
         thicknesses = self.get_thicknesses()
         thetad = self.get_thetas()
         theta = np.radians(thetad)
+        assert len(mids) == len(thicknesses)
+        assert len(mids) == len(thetad)
+        z0, z1, zmeans = self.get_z0_z1_zmean()
 
-        csum = np.cumsum(thicknesses)
-        z0 = self.z0 + np.hstack([0., csum[:-1]])
-        z1 = self.z0 + csum
-        #dz = z1 - z0
-        #dzsquared = z1 ** 2 - z0 ** 2
-        #zcubed = z1 ** 3 - z0 ** 3
         assert len(z0) == len(z1)
-        zmeans = (z0 + z1) / 2.
         # A11 A12 A16
         # A12 A22 A26
         # A16 A26 A66
@@ -996,13 +1009,20 @@ class PCOMP(CompositeShellProperty):
         D = np.zeros((3, 3), dtype='float64')
         #Q = np.zeros((3, 3), dtype='float64')
 
-        mids_ref = self.mids_ref
+        mids_ref = copy.deepcopy(self.mids_ref)
+        assert mids_ref is not None, f'The following material hasnt been cross-referenced:\n{self}'
+        if self.is_symmetrical:
+            mids_ref += mids_ref[::-1]
+
+        assert len(mids) == len(mids_ref)
         for mid, mid_ref, thetai, thickness, zmean, z0i, z1i in zip(mids, mids_ref, theta,
                                                                     thicknesses, zmeans, z0, z1):
             Qbar = self.get_Qbar_matrix(mid_ref, thetai)
             A += Qbar * thickness
-            B += Qbar * thickness * zmean
-            D += Qbar * thickness * (z1i ** 3 - z0i ** 3)
+            #B += Qbar * thickness * zmean
+            #D += Qbar * thickness * (z1i ** 3 - z0i ** 3)
+            B += Qbar * (z1i ** 2 - z0i ** 2)
+            D += Qbar * (z1i ** 3 - z0i ** 3)
             #N += Q * alpha * thickness
             #M += Q * alpha * thickness * zmean
         B /= 2.
@@ -1129,13 +1149,19 @@ class PCOMPG(CompositeShellProperty):
         7: 'ge', 8:'lam',
     }
     _properties = ['_field_map', 'plies', 'nplies', 'material_ids']
+    def update_by_pname_fid(self, pname_fid, value):
+        if isinstance(pname_fid, int):
+            self._update_field_helper(pname_fid, value)
+        else:
+            raise NotImplementedError('PCOMPG: pname_fid=%r' % pname_fid)
 
     def _update_field_helper(self, n, value):
-        nnew = n - 9
+        nnew = n - 10
         if nnew <= 0:
             raise KeyError('Field %r=%r is an invalid %s entry.' % (n, value, self.type))
 
-        ilayer = nnew // 5
+        ilayer = nnew // 10
+        #print('ilayer=%s n=%s nnew=%s' % (ilayer, n, nnew))
         try:
             ply = self.plies[ilayer]
         except IndexError:
@@ -1144,8 +1170,19 @@ class PCOMPG(CompositeShellProperty):
             raise IndexError(msg)
 
         #ply = [mid, thickness, theta, sout, global_ply_id]
-        slot = nnew % 5
-        ply[slot] = value
+        slot = nnew % 10
+        #print('ply=', ply, nnew, slot)
+        if slot == 4:
+            self.thicknesses[ilayer] = value
+        elif slot == 5:
+            self.thetas[ilayer] = value
+        else:
+            raise NotImplementedError('On PCOMPG: cannot update n=%s; slot=%i\n'
+                                      '  slot=2: Global Ply ID\n'
+                                      '  slot=3: Material ID\n'
+                                      '  slot=4: Thickness\n'
+                                      '  slot=5: Theta\n'
+                                      '  slot=6: SOUT\n' % (n, slot))
 
     @property
     def plies(self):
@@ -2329,6 +2366,9 @@ class PSHELL(Property):
         Qbar = self.get_Qbar_matrix(self.mid1_ref, theta=0.)
 
         A += Qbar * thickness
+        #B += Qbar * (z1i ** 2 - z0i ** 2)
+        #D += Qbar * (z1i ** 3 - z0i ** 3)
+
         #B += Qbar * thickness * zmean
         #D += Qbar * thickness * (z1i ** 3 - z0i ** 3)
         #N += Qbar * alpha * thickness
@@ -2368,7 +2408,7 @@ class PSHELL(Property):
             z2 = abs(self.z2)
             t = self.t
             if not ((-1.5*t <= z1 <= 1.5*t) or (-1.5*t <= z2 <= 1.5*t)):
-                msg = ('PSHELL pid=%s midsurface: z1=%s z2=%s t=%s not in range of '
+                msg = ('PSHELL pid=%s midsurface: z1=%g z2=%g t=%g not in range of '
                        '-1.5t < zi < 1.5t' % (self.pid, self.z1, self.z2, t))
                 model.log.warning(msg)
 

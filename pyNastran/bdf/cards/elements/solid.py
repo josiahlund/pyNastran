@@ -924,6 +924,39 @@ class CPENTA6(SolidElement):
         self.nodes_ref = model.Nodes(self.nodes, msg=msg)
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
 
+    def material_coordinate_system(self, xyz=None):
+        """http://www.ipes.dk/Files/Ipes/Filer/nastran_2016_doc_release.pdf"""
+        #if normal is None:
+            #normal = self.Normal() # k = kmat
+
+        if xyz is None:
+            x1 = self.nodes_ref[0].get_position()
+            x2 = self.nodes_ref[1].get_position()
+            x3 = self.nodes_ref[2].get_position()
+            x4 = self.nodes_ref[3].get_position()
+            x5 = self.nodes_ref[4].get_position()
+            x6 = self.nodes_ref[5].get_position()
+        else:
+            x1 = xyz[:, 0]
+            x2 = xyz[:, 1]
+            x3 = xyz[:, 2]
+            x4 = xyz[:, 3]
+            x5 = xyz[:, 4]
+            x6 = xyz[:, 5]
+
+        #CORDM=-2
+        centroid = self.Centroid()
+        origin = (x1 + x4) / 2.
+        xe = (x2 + x3 + x5 + x6) - origin
+        xe /= np.linalg.norm(xe)
+        v = ((x1 + x3 + x4 + x6) - (x1 + x2 + x4 + x5)) / 4.
+        ze = np.cross(xe, v)
+        ze /= np.linalg.norm(ze)
+
+        ye = np.cross(ze, xe)
+        ye /= np.linalg.norm(ye)
+        return centroid, xe, ye, ze
+
     @property
     def faces(self):
         """
@@ -2013,6 +2046,34 @@ class CTETRA4(SolidElement):
         msg = ', which is required by CTETRA eid=%s' % self.eid
         self.nodes_ref = model.Nodes(self.nodes, msg=msg)
         self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
+
+    def material_coordinate_system(self, xyz=None):
+        """http://www.ipes.dk/Files/Ipes/Filer/nastran_2016_doc_release.pdf"""
+        #if normal is None:
+            #normal = self.Normal() # k = kmat
+
+        if xyz is None:
+            x1 = self.nodes_ref[0].get_position()
+            x2 = self.nodes_ref[1].get_position()
+            x3 = self.nodes_ref[2].get_position()
+            x4 = self.nodes_ref[3].get_position()
+        else:
+            x1 = xyz[:, 0]
+            x2 = xyz[:, 1]
+            x3 = xyz[:, 2]
+            x4 = xyz[:, 3]
+
+        #CORDM=-2
+        centroid = (x1 + x2 + x3 + x4) / 4.
+        xe = (x2 + x3 + x4) / 3. - x1
+        xe /= np.linalg.norm(xe)
+        v = ((x1 + x3 + x4) - (x1 + x2 + x4)) / 3.
+        ze = np.cross(xe, v)
+        ze /= np.linalg.norm(ze)
+
+        ye = np.cross(ze, xe)
+        ye /= np.linalg.norm(ye)
+        return centroid, xe, ye, ze
 
     def _verify(self, xref):
         eid = self.eid

@@ -662,7 +662,8 @@ class TestOpt(unittest.TestCase):
 
     def test_rod_dvprel(self):
         """tests CROD and DVPREL1"""
-        model = BDF(debug=True, log=None, mode='msc')
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
 
@@ -721,7 +722,8 @@ class TestOpt(unittest.TestCase):
 
     def test_cbar_dvprel(self):
         """tests CBAR and DVPREL1"""
-        model = BDF(debug=True, log=None, mode='msc')
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [0., 0., 1.])
@@ -765,8 +767,10 @@ class TestOpt(unittest.TestCase):
         nsm = [0.]
         model.add_pbeam(pid+2, mid, xxb, so, area, i1, i2, i12, j, nsm,
                         c1=None, c2=None, d1=None, d2=None, e1=None, e2=None, f1=None, f2=None,
-                        k1=1., k2=1., s1=0., s2=0., nsia=0., nsib=None, cwa=0., cwb=None,
-                        m1a=0., m2a=None, m1b=0., m2b=None, n1a=0., n2a=None, n1b=0., n2b=None,
+                        k1=1., k2=1., s1=0., s2=0.,
+                        nsia=0., nsib=None, cwa=0., cwb=None,
+                        m1a=0., m2a=0., m1b=None, m2b=None,
+                        n1a=0., n2a=0., n1b=None, n2b=None,
                         comment='')
         beam_type = 'BAR'
         dims = [dim]
@@ -819,7 +823,8 @@ class TestOpt(unittest.TestCase):
 
     def test_shell_dvprel(self):
         """tests CBAR and DVPREL1"""
-        model = BDF(debug=True, log=None, mode='msc')
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [1., 1., 0.])

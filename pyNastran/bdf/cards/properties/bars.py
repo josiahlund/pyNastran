@@ -1070,6 +1070,7 @@ class PBAR(LineProperty):
             a BDFCard object
         comment : str; default=''
             a comment for the card
+
         """
         pid = integer(card, 1, 'pid')
         mid = integer(card, 2, 'mid')
@@ -1163,6 +1164,7 @@ class PBAR(LineProperty):
         Gets the mass per length :math:`\frac{m}{L}` of the CBAR.
 
         .. math:: \frac{m}{L} = \rho A + nsm
+
         """
         A = self.Area()
         rho = self.Rho()
@@ -1177,6 +1179,7 @@ class PBAR(LineProperty):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PBAR mid=%s' % self.mid
         self.mid_ref = model.Material(self.mid, msg=msg)

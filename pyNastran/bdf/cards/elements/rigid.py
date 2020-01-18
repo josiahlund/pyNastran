@@ -232,7 +232,7 @@ class RBAR(RigidElement):
     +------+-----+----+----+--------+-----+-----+-----+-------+
     """
     type = 'RBAR'
-    _properties = ['dependent_nodes', 'independent_nodes']
+    _properties = ['dependent_nodes', 'independent_nodes', 'nodes']
 
     @classmethod
     def _init_from_empty(cls):
@@ -262,6 +262,7 @@ class RBAR(RigidElement):
             coefficient of thermal expansion
         comment : str; default=''
             a comment for the card
+
         """
         RigidElement.__init__(self)
         if comment:
@@ -269,16 +270,26 @@ class RBAR(RigidElement):
         self.eid = eid
         self.ga = nids[0]
         self.gb = nids[1]
-        if cna == '0':
-            cna = ''
-        if cnb == '0':
+
+        # If both CNA and CNB are blank, then CNA = 123456.
+        if (cna, cnb) == ('', ''):
+            cna = '123456'
+            #cnb = ''
+        elif (cna, cnb) == ('123456', '0'):
             cnb = ''
-        if cma == '0':
-            cma = ''
-        if cmb == '0':
-            cmb = ''
+
         self.cna = cna
         self.cnb = cnb
+
+        #  If both CMA and CMB are zero or blank, all of the degrees-of-freedom
+        #  not in CNA and CNB will be made dependent.
+        if (cma, cmb) == ('', ''):
+            for comp in '123456':
+                if comp not in cna:
+                    cma += comp
+                if comp not in cnb:
+                    cmb += comp
+
         self.cma = cma
         self.cmb = cmb
         self.alpha = alpha
@@ -287,20 +298,65 @@ class RBAR(RigidElement):
 
     def validate(self):
         ncna = len(self.cna)
+        ncma = len(self.cma)
+
         ncnb = len(self.cnb)
+        ncmb = len(self.cmb)
+
         nindependent = ncna + ncnb
+        ndependent = ncma + ncmb
         independent = self.cna + self.cnb
-        if nindependent != 6:
-            msg = 'nindependent=%s; cna=%s (%s) cnb=%s (%s)' % (
-                nindependent, self.cna, ncna, self.cnb, ncnb)
-            raise RuntimeError(msg)
+        dependent = self.cma + self.cmb
+
+        independent_a = set()
+        independent_b = set()
+        dependent_a = set()
+        dependent_b = set()
+        msg = ''
         for comp in '123456':
+            if comp in self.cna:
+                independent_a.add(comp)
+            if comp in self.cnb:
+                independent_b.add(comp)
+            if comp in self.cma:
+                if comp in independent_a:
+                    msg += 'dof=%s on node %s is both independent and dependent\n' % (self.ga)
+                dependent_a.add(comp)
+            if comp in self.cmb:
+                if comp in independent_b:
+                    msg += 'dof=%s on node %s is both independent and dependent\n' % (self.gb)
+                dependent_b.add(comp)
+        if msg:
+            raise RuntimeError(msg + str(self))
+
+        if 0:  # pragma: no cover
             msgi = ''
-            if comp not in independent:
-                msgi += '  comp=%s is not independent\n' % (comp)
-        if msgi:
-            msg = 'cna=%s cnb=%s\n%s' % (self.cna, self.cnb, msgi)
-            raise RuntimeError(msg)
+            msg1 = ''
+            if nindependent != 6:
+                msg1 = 'nindependent=%s; cna=%r (%s) cnb=%r (%s)\n' % (
+                    nindependent, self.cna, ncna, self.cnb, ncnb)
+                #raise RuntimeError(msg)
+            for comp in '123456':
+                if comp not in independent:
+                    msgi += '  comp=%s is not independent\n' % (comp)
+            if msgi:
+                msg1 += 'cna=%r cnb=%r\n%s' % (self.cna, self.cnb, msgi)
+
+            msgi2 = ''
+            msg2 = ''
+            if nindependent != 6:
+                msg = 'ndependent=%s; cma=%r (%s) cmb=%r (%s)\n' % (
+                    ndependent, self.cma, ncma, self.cmb, ncmb)
+                raise RuntimeError(msg)
+            for comp in '123456':
+                if comp not in dependent:
+                    msgi2 += '  comp=%s is not dependent\n' % (comp)
+            if msgi2:
+                msg2 = 'cma=%r cmb=%r\n%s' % (self.cma, self.cmb, msgi2)
+
+            msg = msg1 + msg2
+            if msg:
+                raise RuntimeError(msg + str(self))
 
     @classmethod
     def add_card(cls, card, comment=''):
@@ -368,13 +424,6 @@ class RBAR(RigidElement):
     #             card += [gm, cm, Ai]
     #     return card
 
-    #def write_code_aster(self):
-        #msg = ''
-        #msg += "BLOCAGE=AFFE_CHAR_MECA(  # RBAR\n"
-        #msg += "        MODELE=MODELE,\n"  # rigid element
-        #msg += "        \n"
-        #return msg
-
     def Ga(self):
         if self.ga_ref is not None:
             return self.ga_ref.nid
@@ -384,6 +433,10 @@ class RBAR(RigidElement):
         if self.gb_ref is not None:
             return self.gb_ref.nid
         return self.gb
+
+    @property
+    def nodes(self):
+        return [self.Ga(), self.Gb()]
 
     def cross_reference(self, model):
         """
@@ -455,6 +508,15 @@ class RBAR1(RigidElement):
     +-------+-----+----+----+-----+-------+
     """
     type = 'RBAR1'
+
+    _properties = ['dependent_nodes', 'independent_nodes', 'nodes']
+
+    @classmethod
+    def _init_from_empty(cls):
+        eid = 1
+        nids = [1, 2]
+        cb = '123'
+        return RBAR1(eid, nids, cb, alpha=0., comment='')
 
     def __init__(self, eid, nids, cb, alpha=0., comment=''):
         RigidElement.__init__(self)
@@ -1010,31 +1072,6 @@ class RBE2(RigidElement):
 
         #rbe3 = ['RBE3', eid, ref_node, dof, wf, sDof] + rbe3_nodes
         #return rbe3
-
-    def write_code_aster(self):
-        """
-        Converts to a LIAISON SOLIDE for dofs 123456.
-        For other dof combinations, general MPC equations are written
-        """
-        msg = ''
-        msg += "BLOCAGE=AFFE_CHAR_MECA(  # RBE2 ID=%s\n" % (self.eid)
-        msg += "        MODELE=MODELE,\n"  # rigid element
-        if self.cm == 123456:
-            msg += "        LIASON_SOLIDE=(\n"
-            msg += "        _F(NOEUD=\n"
-            msg += "           "
-            for nid in self.Gmi:
-                msg += "'N%i'," % (nid)
-            msg = msg[:-1]
-            msg += '\n'
-        else:
-            msg += "        _F(NOEUD=  # doesnt handle coordinate systems\n"
-            msg += "           "
-            for nid in self.Gmi:
-                msg += "'N%i'," % (nid)
-            msg = msg[:-1]
-            msg += '\n'
-        return msg
 
     def cross_reference(self, model):
         """

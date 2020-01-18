@@ -25,7 +25,7 @@ log = get_logger(level='warning')
 class TestLoads(unittest.TestCase):
     def test_force(self):
         """tests CONROD, FORCE"""
-        model = BDF(debug=False)
+        model = BDF(log=log)
         eid = 1
         mid = 100
         nids = [10, 11]
@@ -54,7 +54,7 @@ class TestLoads(unittest.TestCase):
 
     def test_moment(self):
         """tests CONROD, MOMENT"""
-        model = BDF(debug=False)
+        model = BDF(log=log)
         eid = 1
         mid = 100
         nids = [10, 11]
@@ -83,7 +83,7 @@ class TestLoads(unittest.TestCase):
 
     def test_accel1(self):
         """tests ACCEL1"""
-        model = BDF(debug=False)
+        model = BDF(log=log)
         sid = 42
         N = [0., 0., 1.]
         nodes = [10, 11]
@@ -142,7 +142,7 @@ class TestLoads(unittest.TestCase):
         fields = expand_thru_by(fields, set_fields=True, sort_fields=True)
         assert collapse_thru_by(fields) == [14, 'THRU', 24, 'BY', 2], collapse_thru_by(fields)
 
-        model = BDF(debug=False)
+        model = BDF(log=log)
         for nid in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 23, 24]:
             model.add_grid(nid, [0., 0., 0.])
 
@@ -157,7 +157,7 @@ class TestLoads(unittest.TestCase):
 
     def test_accel(self):
         """tests ACCEL"""
-        model = BDF(debug=False)
+        model = BDF(log=log)
         sid = 42
         N = [0., 0., 1.]
         #nodes = [10, 11]
@@ -200,7 +200,7 @@ class TestLoads(unittest.TestCase):
 
     def test_grav(self):
         """tests a GRAV"""
-        model = BDF(debug=False)
+        model = BDF(log=log)
         sid = 1
         scale = 1.0
         N = [1., 2., 3.]
@@ -258,7 +258,7 @@ class TestLoads(unittest.TestCase):
 
     def test_gmload(self):
         """tests GMLOAD"""
-        model = BDF(debug=False)
+        model = BDF(log=log)
         sid = 1
         normal = [1., 2., 3.]
         entity = 'cat'
@@ -299,7 +299,7 @@ class TestLoads(unittest.TestCase):
         """tests a PLOAD4 LINE option"""
         #PLOAD4        10      10      0.819.2319
         #0      1.      0.      0.    LINE    NORM
-        model = BDF(debug=False, log=None, mode='msc')
+        model = BDF(log=log, mode='msc')
 
         sid = 1
         eids = 1

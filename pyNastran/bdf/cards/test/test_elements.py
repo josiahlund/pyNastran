@@ -12,7 +12,8 @@ class TestElements(unittest.TestCase):
 
     def test_plotel_01(self):
         """tests a PLOTEL"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid = 9
         nodes = [10, 11]
         model.add_grid(10, [0., 0., 0.])
@@ -25,11 +26,12 @@ class TestElements(unittest.TestCase):
         model.uncross_reference()
         model.safe_cross_reference()
         save_load_deck(model, xref='standard', punch=True,
-                       run_renumber=False)
+                       run_renumber=False)  # PLOTEL xref
 
     def test_cbush_01(self):
         """tests a CBUSH"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         lines = ['cbush,101,102,1,,,,,0']
         card = model._process_card(lines)
         card = BDFCard(card)
@@ -84,7 +86,8 @@ class TestElements(unittest.TestCase):
 
     def test_cfast(self):
         """tests a CFAST/PFAST"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
 
         eid1 = 10
         pid = 11
@@ -181,7 +184,8 @@ class TestElements(unittest.TestCase):
         save_load_deck(model)
 
     def test_cbush2d(self):
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
 
         model.add_grid(2, [0., 0., 0.])
         model.add_grid(3, [1., 0., 0.])
@@ -197,7 +201,8 @@ class TestElements(unittest.TestCase):
         save_load_deck(model, run_convert=False, xref=False, run_renumber=False)
 
     def test_crac2d(self):
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
 
         model.add_grid(2, [0., 0., 0.])
         model.add_grid(3, [1., 0., 0.])
@@ -282,7 +287,8 @@ class TestElements(unittest.TestCase):
 
     def test_genel_1(self):
         """tests a GENEL element"""
-        model = BDF(debug=None)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid = 1
 
         model.add_grid(1, [0., 0., 0.])
@@ -305,7 +311,7 @@ class TestElements(unittest.TestCase):
         #+-------+------+-----+------+------+------+------+-------+------+
         #| GENEL |  629 |     |  1   |  1   |  13  |  4   |   42  |   0  |
         #|       |  24  |  2  |      |      |      |      |       |      |
-        #|       |  UD  |     |  6   |  2   |  33  |  0 e  |       |      |
+        #|       |  UD  |     |  6   |  2   |  33  |  0   |       |      |
         #|       |  Z   | 1.0 | 2.0  | 3.0  | 4.0  | 5.0  |  6.0  | 7.0  |
         #|       |  8.0 | 9.0 | 10.0 |      |      |      |       |      |
         #|       |  S   | 1.5 | 2.5  | 3.5  | 4.5  | 5.5  |  6.5  | 7.5  |
@@ -337,7 +343,8 @@ class TestElements(unittest.TestCase):
 
     def test_genel_2(self):
         """tests a GENEL element"""
-        model = BDF(debug=None)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [0., 0., 0.])
 

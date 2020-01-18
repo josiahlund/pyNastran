@@ -572,7 +572,8 @@ class TestShells(unittest.TestCase):
 
     def test_cshear(self):
         """tests a PSHEAR/CSHEAR"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [1., 1., 0.])
@@ -623,7 +624,8 @@ class TestShells(unittest.TestCase):
 
     def test_shells(self):
         """tests a CTRIA3/CQUAD4/PSHELL and CTRIA6/CQUAD8/CQUAD/PCOMP"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [1., 1., 0.])
@@ -723,7 +725,8 @@ class TestShells(unittest.TestCase):
 
     def test_trax(self):
         """tests a CTRAX3/CTRAX6/???"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [1., 1., 0.])
@@ -800,7 +803,8 @@ class TestShells(unittest.TestCase):
 
     def test_ctriar_cquadr(self):
         """tests a CTRIAR/PSHELL/MAT8"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [1., 1., 0.])
@@ -844,7 +848,8 @@ class TestShells(unittest.TestCase):
 
     def test_cplstn34(self):
         """tests a CPLSTN3, CPLSTN4/PSHELL/MAT8"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [1., 1., 0.])
@@ -891,7 +896,8 @@ class TestShells(unittest.TestCase):
 
     def test_cplstn68(self):
         """tests a CPLSTN6, CPLSTN8/PSHELL/MAT8"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(5, [.5, 0., 0.])
         model.add_grid(2, [1., 0., 0.])
@@ -936,7 +942,8 @@ class TestShells(unittest.TestCase):
 
     def test_ctrishell68(self):
         """tests a CPLSTN6, CPLSTN8/PSHELL/MAT8"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(5, [.5, 0., 0.])
         model.add_grid(2, [1., 0., 0.])
@@ -984,7 +991,8 @@ class TestShells(unittest.TestCase):
         pid_pshell = 11
 
         mid = 100
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [1., 1., 0.])
@@ -1050,7 +1058,8 @@ class TestShells(unittest.TestCase):
 
     def test_cquadx4(self):
         """tests a CQUADX4"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid = 1
         pid = 2
         mid = 3
@@ -1081,7 +1090,8 @@ class TestShells(unittest.TestCase):
 
     def test_ctria6_cquad8_cquad9(self):
         """tests a CQUAD8 and CQUAD9"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid = 1
         pid = 10
         mid = 100
@@ -1159,7 +1169,8 @@ class TestShells(unittest.TestCase):
 
     def test_cquadx8(self):
         """tests a CQUADX, CTRIAX, CTRIAX6"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid = 1
         pid = 10
         mid = 100
@@ -1201,7 +1212,8 @@ class TestShells(unittest.TestCase):
 
     def test_shell_mcid(self):
         """tests that mcids=0 are correctly identified as not 0.0 and thus not dropped"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [0., 1., 0.])
         model.add_grid(3, [0., 1., 1.])
@@ -1250,7 +1262,8 @@ class TestShells(unittest.TestCase):
 
     def test_abd(self):
         """tests some ABD matrix functionality for a PCOMP"""
-        model = BDF(debug=False, log=None, mode='msc')
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
         model.add_grid(2, [1., 0., 0.])
         model.add_grid(3, [1., 1., 0.])
@@ -1309,6 +1322,81 @@ class TestShells(unittest.TestCase):
         thetad = np.linspace(0., 90., num=91)
         if IS_MATPLOTLIB:
             plot_equivalent_lamina_vs_theta(pcomp8, mat8, thetad, show=False)
+    def test_abd_2(self):
+        """tests some ABD matrix functionality for a PCOMP"""
+        log = get_logger(level='warning')
+        model = BDF(log=log)
+
+        #--------------------------
+        #PCOMP*              1601                                                *
+        #*                                                                    SYM
+        #*                      2           0.185            45.0             YES
+        #*                      2           0.185            90.0             YES
+        #*                      2           0.185           -45.0             YES
+        #*                      2           0.185             0.0             YES
+        #*                      2           0.185           -45.0             YES
+        #*                      2           0.185            90.0             YES
+        #*                      2           0.185            45.0             YES
+        #*                      2           0.185             0.0             YES
+        thetas = [45., 90., -45., 0., -45., 90., 45.0, 0.]
+        thicknesses = [0.185] * len(thetas)
+        mids = [2] * len(thetas)
+        pid = 2
+        pcomp_sym = model.add_pcomp(
+            pid, mids, thicknesses, thetas=thetas,
+            souts=None, nsm=0., sb=0., ft=None, tref=0., ge=0.,
+            lam='SYM', z0=None, comment='')
+
+        thetas = [45., 90., -45., 0., -45., 90., 45.0, 0.]
+        thetas += thetas[::-1]
+        #print(f'*****thetas = {thetas}')
+        thicknesses = [0.185] * len(thetas)
+        mids = [2] * len(thetas)
+        pid = 3
+        pcomp_asym = model.add_pcomp(
+            pid, mids, thicknesses, thetas=thetas,
+            souts=None, nsm=0., sb=0., ft=None, tref=0., ge=0.,
+            lam=None, z0=None, comment='')
+        mid = 2
+        #MAT8*                  2        179000.0          8110.0           0.317*
+        #*                 4140.0
+        e11 = 179000.
+        e22 = 8110.
+        nu12 = 0.317
+        g12 = 4140.
+        model.add_mat8(mid, e11, e22, nu12, g12=g12, g1z=1e8, g2z=1e8,
+                       rho=0., a1=0., a2=0., tref=0., Xt=0., Xc=None, Yt=0., Yc=None,
+                       S=0., ge=0., F12=0., strn=0., comment='')
+
+        model.pop_parse_errors()
+        model.cross_reference()
+        model.pop_xref_errors()
+        #ABD = pcomp.get_ABD_matrices()
+
+        #print(f'pcomp_sym:\n{pcomp_sym}')
+        ABD2 = pcomp_sym.get_ABD_matrices()
+        A = ABD2[:3, :3]
+        B = ABD2[-3:, :3]
+        D = ABD2[-3:, -3:]
+        #print(ABD2)
+        #print(f'A:\n{A}\n')
+        #print(f'B:\n{B}\n')
+        #print(f'D:\n{D}\n')
+
+        #print('-------------')
+        #print(f'pcomp_asym:\n{pcomp_asym}')
+        ABD3 = pcomp_asym.get_ABD_matrices()
+        A = ABD3[:3, :3]
+        B = ABD3[-3:, :3]
+        D = ABD3[-3:, -3:]
+        #print(ABD3)
+        #print(f'A:\n{A}\n')
+        #print(f'B:\n{B}\n')
+        #print(f'D:\n{D}\n')
+        B = ABD2[:3, -3:]
+        assert np.allclose(0., B.sum()), B
+        assert np.allclose(ABD2, ABD3), ABD2
+
 
 def make_dvcrel_optimization(model, params, element_type, eid, i=1):
     """makes a series of DVCREL1 and a DESVAR"""

@@ -176,6 +176,7 @@ class PFAST(Property):
         ----------
         model : BDF()
             the BDF object
+
         """
         msg = ', which is required by PFAST pid=%s' % self.pid
         if self.mcid != -1:

@@ -43,7 +43,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_mat1_02(self):
         """tests MAT1, MATT1"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         #k = 1000.
         E = 3.0e7
@@ -97,7 +98,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_creep(self):
         """tests MAT1/CREEP"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         #k = 1000.
         E = 3.0e7
@@ -134,7 +136,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_mat2_01(self):
         """tests MAT2, MATT2"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         G11 = G22 = G12 = G13 = G22 = G23 = G33 = 1.0
         #nuxth = nuthz = nuzx = 0.3
@@ -149,16 +152,16 @@ class TestMaterials(unittest.TestCase):
         g12_table = 2
         g13_table = 3
         g22_table = 4
-        g23_table = 1
-        g33_table = 1
-        rho_table = 1
-        a1_table = 1
-        a2_table = 1
-        a3_table = 1
-        ge_table = 1
-        st_table = 1
-        sc_table = 1
-        ss_table = 1
+        g23_table = 5
+        g33_table = 6
+        rho_table = 7
+        a1_table = 8
+        a2_table = 9
+        a3_table = 10
+        ge_table = 11
+        st_table = 12
+        sc_table = 13
+        ss_table = 14
         matt2 = model.add_matt2(mid, g11_table, g12_table, g13_table, g22_table,
                                 g23_table, g33_table, rho_table,
                                 a1_table, a2_table, a3_table,
@@ -168,8 +171,9 @@ class TestMaterials(unittest.TestCase):
 
         x = np.linspace(1., 10.)
         y = np.sin(x) + 5.
-        tablem1 = model.add_tablem1(1, x, y, comment='tablem1')
-        tablem1.write_card()
+        for tid in [1, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
+            tablem1 = model.add_tablem1(tid, x, y, comment='tablem1')
+            tablem1.write_card()
 
         x1 = 1.0
         tablem2 = model.add_tablem2(2, x1, x, y, comment='tablem2')
@@ -195,7 +199,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_mat3_01(self):
         """tests MAT3"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         ex = 3.0e7
         eth = 6.0e7
@@ -207,6 +212,8 @@ class TestMaterials(unittest.TestCase):
                               tref=0., ge=0.,
                               comment='mat3')
         mat3.write_card(size=16, is_double=False)
+        mat3.Rho()
+        mat3.raw_fields()
         mat3.validate()
 
         matt3 = model.add_matt3(
@@ -248,7 +255,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_mat4_01(self):
         """tests MAT4, MATT4"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         k = 1000.
         mat4 = model.add_mat4(mid, k, cp=0.0, rho=1.0, H=None, mu=None,
@@ -301,11 +309,14 @@ class TestMaterials(unittest.TestCase):
         #
         #MAT5           1    700.    300.    900.    400.    200.    600.     90.+
         #+             .1
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         mat5 = model.add_mat5(mid, kxx=0., kxy=0., kxz=0., kyy=0., kyz=0.,
                               kzz=0., cp=0.,
                               rho=1., hgen=1., comment='mat5')
+        mat5.get_density()
+        mat5.Rho()
         mat5.write_card(size=16, is_double=False)
         mat5.validate()
 
@@ -372,7 +383,8 @@ class TestMaterials(unittest.TestCase):
             '*',
         ]
 
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         card = model._process_card(lines)
         #print(print_card_8(card))
         cardi = BDFCard(card)
@@ -395,7 +407,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_mat8_02(self):
         """tests MAT8, MATT8"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         e11 = 3.0e7
         e22 = 6.0e7
@@ -442,7 +455,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_mat9(self):
         """tests MAT9"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         #e11 = 3.0e7
         #e22 = 6.0e7
@@ -468,6 +482,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_mat11_01(self):
         """tests MAT11"""
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         lines = [
             'MAT11          1    1.+75000000. 700000.      .1     .13     .267000000.+',
             '+       9000000.3000000.      .1    1.-5    7.-6    8.-6     50.',
@@ -525,7 +541,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_mats1(self):
         """tests MATS1"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         E = 3.0e7
         G = None
@@ -545,7 +562,8 @@ class TestMaterials(unittest.TestCase):
 
     def test_multiple_materials(self):
         """tests multiple materials"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         E = 3.0e7
         G = None
         nu = 0.3
