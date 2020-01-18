@@ -88,9 +88,9 @@ class OP2(OP2_Scalar):
         if hasattr(self, 'h5_file') and self.h5_file is not None:
             self.h5_file.close()
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
                           filter_properties=False):
-        # type: (str, Optional[List[str]]) -> List[str]
+        # type: (str, Optional[List[str]], bool) -> List[str]
         """
         List the names of attributes of a class as strings. Returns public
         attributes as default.
@@ -326,7 +326,7 @@ class OP2(OP2_Scalar):
             self.set_as_msc()
         elif mode.lower() == 'nx':
             self.set_as_nx()
-        elif mode.lower() == 'optistruct':
+        elif mode.lower() == 'optistruct': # radioss,
             self.set_as_optistruct()
         else:
             raise RuntimeError("mode=%r and must be in [msc, nx, radioss, optistruct]")
@@ -445,7 +445,6 @@ class OP2(OP2_Scalar):
 
         #self.case_control_deck = CaseControlDeck(self.case_control_lines, log=self.log)
         self.log.debug('done loading!')
-
 
     @property
     def is_geometry(self):
@@ -596,8 +595,9 @@ class OP2(OP2_Scalar):
                     raise NotImplementedError()
                     #continue
 
+        skip_pandas = ['params', 'gpdt', 'eqexin']
         for result_type in result_types:
-            if result_type in ['params', 'gpdt', 'eqexin']:
+            if result_type in skip_pandas:
                 #self.log.debug('skipping %s' % result_type)
                 continue
 
