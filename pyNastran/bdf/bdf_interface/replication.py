@@ -183,6 +183,10 @@ def repeat_cards(old_card, new_card):
             card.append(field2)
             continue
 
+        #1. Duplication of fields from the preceding entry is accomplished
+        #   by coding the symbol =.
+        #2. Duplication of all trailing fields from the preceding entry is
+        #   accomplished by coding the symbol
         if field == '':
             field2 = field
         elif field == '=':

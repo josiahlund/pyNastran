@@ -2150,6 +2150,7 @@ class GetCard(GetMethods):
             'CTRIA6', 'CQUAD8', 'CQUAD',
             'CTETRA', 'CPENTA', 'CHEXA', 'CPYRAM',
             'CRAC2D', 'CRAC3D', 'CHBDYP', #'CHBDYG',
+            'CHACAB', 'CAABSF',
         ]
 
         if etypes is None:
@@ -2277,8 +2278,9 @@ class GetCard(GetMethods):
             #'CDAMP4' : -23,
             #'CHBDYG' : -108,
         #}
-        elements_without_properties = [
-            'CONROD', 'CELAS2', 'CELAS4', 'CDAMP2', 'CDAMP4', 'CHBDYG', 'GENEL']
+        elements_without_properties = {
+            'CONROD', 'CELAS2', 'CELAS4', 'CDAMP2', 'CDAMP4',
+            'CHBDYG', 'GENEL'}
         for eid, element in self.elements.items():
             try:
                 pid = element.Pid()
@@ -2316,7 +2318,12 @@ class GetCard(GetMethods):
             for nid in sorted(self.spoints):  # SPOINTs
                 nid_to_eids_map[nid] = []
 
+        skip_cards = {
+            'CCONEAX',
+        }
         for (eid, element) in self.elements.items():  # load the mapper
+            if element.type in skip_cards:
+                continue
             try:
                 # not supported for 0-D and 1-D elements
                 nids = element.node_ids
@@ -2353,7 +2360,13 @@ class GetCard(GetMethods):
         for nid in self.epoints:
             nid_to_elements_map[nid] = []
 
+        skip_cards = {
+            'CCONEAX',
+        }
         for element in self.elements.values():  # load the mapper
+            if element.type in skip_cards:
+                continue
+
             try:
                 # not supported for 0-D and 1-D elements
                 nids = element.node_ids
@@ -2388,7 +2401,8 @@ class GetCard(GetMethods):
             #pid_to_eids_map[pid] = []
 
         elements_without_properties = {
-            'CONROD', 'CONM2', 'CELAS2', 'CELAS4', 'CDAMP2', 'CDAMP4', 'GENEL'}
+            'CONROD', 'CONM2', 'CELAS2', 'CELAS4', 'CDAMP2', 'CDAMP4',
+            'GENEL', 'CHACAB', 'CAABSF', }
         thermal_elements = {'CHBDYP'}
         elements_without_properties.update(thermal_elements)
         skip_elements = elements_without_properties
@@ -2438,8 +2452,10 @@ class GetCard(GetMethods):
         for mid in mids:
             mid_to_pids_map[mid] = []
 
-        properties_without_materials = [
-            'PGAP', 'PELAS', 'PVISC', 'PBUSH', 'PDAMP', 'PFAST', 'PBUSH1D']
+        properties_without_materials = {
+            'PGAP', 'PELAS', 'PVISC', 'PBUSH', 'PDAMP', 'PFAST', 'PBUSH1D',
+            'PACABS', 'PAABSF', 'PACBAR',
+        }
 
         for pid in self.property_ids:
             prop = self.Property(pid)
@@ -2631,15 +2647,17 @@ class GetCard(GetMethods):
                                 spciii = spcii
                             else:
                                 spciii = spcii.conid
-                            spcs2i = self.get_reduced_spcs(spciii,
-                                                           consider_spcadd=False,
-                                                           stop_on_failure=stop_on_failure)
+                            spcs2i = self.get_reduced_spcs(
+                                spciii,
+                                consider_spcadd=False,
+                                stop_on_failure=stop_on_failure)
                             spcs2 += spcs2i
                     else:
                         assert isinstance(spci, integer_types), spci
-                        spcs2i = self.get_reduced_spcs(spci,
-                                                       consider_spcadd=False,
-                                                       stop_on_failure=stop_on_failure)
+                        spcs2i = self.get_reduced_spcs(
+                            spci,
+                            consider_spcadd=False,
+                            stop_on_failure=stop_on_failure)
                         spcs2 += spcs2i
             else:
                 spcs2.append(spc)

@@ -1111,4 +1111,4 @@ class BDFAttributes(object):
         key = key.upper()
         if key in self.params:
             param = self.params[key]
-            param.update_values(self, *values)
+            param.update_values(*values)

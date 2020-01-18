@@ -203,84 +203,17 @@ def get_bdf_stats(model, return_type='string', word=''):
             msg.append('  %-8s %s' % (name + ':', count_name))
         msg.append('')
 
-    # spcs
-    for (spc_id, spcadds) in sorted(model.spcadds.items()):
-        msg.append('bdf.spcadds[%s]' % spc_id)
-        groups_dict = {}
-        for spcadd in spcadds:
-            groups_dict[spcadd.type] = groups_dict.get(spcadd.type, 0) + 1
-        for name, count_name in sorted(groups_dict.items()):
-            msg.append('  %-8s %s' % (name + ':', count_name))
-        msg.append('')
+    _constraint_stats(model, msg)
+    _nsm_stats(model, msg)
 
-    for (spc_id, spcs) in sorted(model.spcs.items()):
-        msg.append('bdf.spcs[%s]' % spc_id)
-        groups_dict = {}
-        for spc in spcs:
-            groups_dict[spc.type] = groups_dict.get(spc.type, 0) + 1
-        for name, count_name in sorted(groups_dict.items()):
-            msg.append('  %-8s %s' % (name + ':', count_name))
-        msg.append('')
-
-    # mpcs
-    for (mpc_id, mpcadds) in sorted(model.mpcadds.items()):
-        msg.append('bdf.mpcadds[%s]' % mpc_id)
-        groups_dict = {}
-        for mpcadd in mpcadds:
-            groups_dict[mpcadd.type] = groups_dict.get(mpcadd.type, 0) + 1
-        for name, count_name in sorted(groups_dict.items()):
-            msg.append('  %-8s %s' % (name + ':', count_name))
-        msg.append('')
-
-    for (mpc_id, mpcs) in sorted(model.mpcs.items()):
-        msg.append('bdf.mpcs[%s]' % mpc_id)
-        groups_dict = {}
-        for mpc in mpcs:
-            groups_dict[mpc.type] = groups_dict.get(mpc.type, 0) + 1
-        for name, count_name in sorted(groups_dict.items()):
-            msg.append('  %-8s %s' % (name + ':', count_name))
-        msg.append('')
-
-    # nsms
-    for (nsm_id, nsmadds) in sorted(model.nsmadds.items()):
-        msg.append('bdf.nsmadds[%s]' % nsm_id)
-        groups_dict = {}
-        for nsmadd in nsmadds:
-            groups_dict[nsmadd.type] = groups_dict.get(nsmadd.type, 0) + 1
-        for name, count_name in sorted(groups_dict.items()):
-            msg.append('  %-8s %s' % (name + ':', count_name))
-        msg.append('')
-
-    for (mpc_id, nsms) in sorted(model.nsms.items()):
-        msg.append('bdf.nsms[%s]' % mpc_id)
-        groups_dict = {}
-        for nsm in nsms:
-            groups_dict[nsm.type] = groups_dict.get(nsm.type, 0) + 1
-        for name, count_name in sorted(groups_dict.items()):
-            msg.append('  %-8s %s' % (name + ':', count_name))
-        msg.append('')
-
-    # aero
-    if model.aero:
-        msg.append('bdf.aero')
-        msg.append('  %-8s 1' % ('AERO:'))
-
-    # aeros
-    if model.aeros:
-        msg.append('bdf:aeros')
-        msg.append('  %-8s 1' % ('AEROS:'))
-
-    #mkaeros
-    if model.mkaeros:
-        msg.append('bdf:mkaeros')
-        msg.append('  %-8s %s' % ('MKAERO:', len(model.mkaeros)))
+    _aero_stats(model, msg)
 
     # radset
     if model.radset:
         msg.append('bdf:radset')
         msg.append('  %-8s 1' % ('RADSET:'))
 
-    #mkaeros
+    #seqgp
     if model.seqgp:
         msg.append('bdf:seqgp')
         msg.append('  %-8s 1' % ('SEQGP:'))
@@ -342,6 +275,88 @@ def get_bdf_stats(model, return_type='string', word=''):
     if return_type == 'string':
         return '\n'.join(msg)
     return msg
+
+def _constraint_stats(model, msg):
+    """helper for ``get_bdf_stats(...)``"""
+    # spcs
+    for (spc_id, spcadds) in sorted(model.spcadds.items()):
+        msg.append('bdf.spcadds[%s]' % spc_id)
+        groups_dict = {}
+        for spcadd in spcadds:
+            groups_dict[spcadd.type] = groups_dict.get(spcadd.type, 0) + 1
+        for name, count_name in sorted(groups_dict.items()):
+            msg.append('  %-8s %s' % (name + ':', count_name))
+        msg.append('')
+
+    for (spc_id, spcs) in sorted(model.spcs.items()):
+        msg.append('bdf.spcs[%s]' % spc_id)
+        groups_dict = {}
+        for spc in spcs:
+            groups_dict[spc.type] = groups_dict.get(spc.type, 0) + 1
+        for name, count_name in sorted(groups_dict.items()):
+            msg.append('  %-8s %s' % (name + ':', count_name))
+        msg.append('')
+
+    # mpcs
+    for (mpc_id, mpcadds) in sorted(model.mpcadds.items()):
+        msg.append('bdf.mpcadds[%s]' % mpc_id)
+        groups_dict = {}
+        for mpcadd in mpcadds:
+            groups_dict[mpcadd.type] = groups_dict.get(mpcadd.type, 0) + 1
+        for name, count_name in sorted(groups_dict.items()):
+            msg.append('  %-8s %s' % (name + ':', count_name))
+        msg.append('')
+
+    for (mpc_id, mpcs) in sorted(model.mpcs.items()):
+        msg.append('bdf.mpcs[%s]' % mpc_id)
+        groups_dict = {}
+        for mpc in mpcs:
+            groups_dict[mpc.type] = groups_dict.get(mpc.type, 0) + 1
+        for name, count_name in sorted(groups_dict.items()):
+            msg.append('  %-8s %s' % (name + ':', count_name))
+        msg.append('')
+
+def _aero_stats(model, msg):
+    """helper for ``get_bdf_stats(...)``"""
+    if model.aero:
+        msg.append('bdf.aero')
+        msg.append('  %-8s 1' % ('AERO:'))
+
+    # aero
+    if model.aero:
+        msg.append('bdf.aero')
+        msg.append('  %-8s 1' % ('AERO:'))
+
+    # aeros
+    if model.aeros:
+        msg.append('bdf:aeros')
+        msg.append('  %-8s 1' % ('AEROS:'))
+
+    #mkaeros
+    if model.mkaeros:
+        msg.append('bdf:mkaeros')
+        msg.append('  %-8s %s' % ('MKAERO:', len(model.mkaeros)))
+
+def _nsm_stats(model, msg):
+    """helper for ``get_bdf_stats(...)``"""
+    # nsms
+    for (nsm_id, nsmadds) in sorted(model.nsmadds.items()):
+        msg.append('bdf.nsmadds[%s]' % nsm_id)
+        groups_dict = {}
+        for nsmadd in nsmadds:
+            groups_dict[nsmadd.type] = groups_dict.get(nsmadd.type, 0) + 1
+        for name, count_name in sorted(groups_dict.items()):
+            msg.append('  %-8s %s' % (name + ':', count_name))
+        msg.append('')
+
+    for (mpc_id, nsms) in sorted(model.nsms.items()):
+        msg.append('bdf.nsms[%s]' % mpc_id)
+        groups_dict = {}
+        for nsm in nsms:
+            groups_dict[nsm.type] = groups_dict.get(nsm.type, 0) + 1
+        for name, count_name in sorted(groups_dict.items()):
+            msg.append('  %-8s %s' % (name + ':', count_name))
+        msg.append('')
 
 def _get_bdf_stats_loads(model):
     # type: (Any) -> List[str]

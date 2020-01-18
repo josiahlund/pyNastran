@@ -885,53 +885,65 @@ def hdf5_load_dmigs(model, group, unused_encoding):
         if class_type == 'DMIG' and name == 'UACCEL':
             raise NotImplementedError('DMIG UACCEL')
         elif class_type == 'DMI':
-            ncols = _cast(sub_group['ncols'])
-            nrows = _cast(sub_group['nrows'])
-            #polar = _cast(sub_group['polar'])
-            matrix_form = _cast(sub_group['matrix_form'])
-            tin = _cast(sub_group['tin'])
-            tout = _cast(sub_group['tout'])
-            GCi = _cast(sub_group['GCi'])
-            GCj = _cast(sub_group['GCj'])
-            Real = _cast(sub_group['Real'])
-            Complex = None
-            if 'Complex' in sub_group:
-                Complex = _cast(sub_group['Complex'])
-
-            #ifo = matrix_form
-            form = matrix_form
-            model.add_dmi(name, form, tin, tout, nrows, ncols, GCj, GCi,
-                          Real, Complex=None, comment='')
-
+            _load_dmi(model, name, sub_group)
         else:
-            class_obj = CARD_MAP[class_type]
-            ncols = None
-            if 'ncols' in sub_group:
-                ncols = _cast(sub_group['ncols'])
-            polar = _cast(sub_group['polar'])
-            matrix_form = _cast(sub_group['matrix_form'])
-            tin = _cast(sub_group['tin'])
-            tout = _cast(sub_group['tout'])
-            #dmig_group.create_dataset('tin_dtype', data=dmig.tin_dtype)
-            #dmig_group.create_dataset('tout_dtype', data=dmig.tout_dtype)
-
-            #dmig_group.create_dataset('matrix_type', data=dmig.matrix_type)
-            #dmig_group.create_dataset('is_complex', data=dmig.is_complex)
-            #dmig_group.create_dataset('is_real', data=dmig.is_real)
-            #dmig_group.create_dataset('is_polar', data=dmig.is_polar)
-
-            GCi = _cast(sub_group['GCi'])
-            GCj = _cast(sub_group['GCj'])
-            Real = _cast(sub_group['Real'])
-            Complex = None
-            if 'Complex' in sub_group:
-                Complex = _cast(sub_group['Complex'])
-
-            ifo = matrix_form
-            dmig = class_obj(name, ifo, tin, tout, polar, ncols,
-                             GCj, GCi, Real, Complex=Complex, comment='', finalize=True)
-            model.dmigs[name] = dmig
+            _load_dmig(model, name, sub_group, class_type)
     model.card_count[class_type] = len(keys)
+
+def _load_dmi(model: BDF, name, sub_group):
+    """loads the DMI"""
+    ncols = _cast(sub_group['ncols'])
+    nrows = _cast(sub_group['nrows'])
+    #polar = _cast(sub_group['polar'])
+    matrix_form = _cast(sub_group['matrix_form'])
+    tin = _cast(sub_group['tin'])
+    tout = _cast(sub_group['tout'])
+    GCi = _cast(sub_group['GCi'])
+    GCj = _cast(sub_group['GCj'])
+    Real = _cast(sub_group['Real'])
+    Complex = None
+    if 'Complex' in sub_group:
+        Complex = _cast(sub_group['Complex'])
+
+    #ifo = matrix_form
+    form = matrix_form
+    model.add_dmi(name, form, tin, tout, nrows, ncols, GCj, GCi,
+                  Real, Complex=Complex, comment='')
+
+def _load_dmig(model, name, sub_group, class_type):
+    """loads the DMIG, DMIJ, DMIJI, DMIK"""
+    class_obj = CARD_MAP[class_type]
+    ncols = None
+    if 'ncols' in sub_group:
+        ncols = _cast(sub_group['ncols'])
+    polar = _cast(sub_group['polar'])
+    matrix_form = _cast(sub_group['matrix_form'])
+    tin = _cast(sub_group['tin'])
+    tout = _cast(sub_group['tout'])
+    #dmig_group.create_dataset('tin_dtype', data=dmig.tin_dtype)
+    #dmig_group.create_dataset('tout_dtype', data=dmig.tout_dtype)
+
+    #dmig_group.create_dataset('matrix_type', data=dmig.matrix_type)
+    #dmig_group.create_dataset('is_complex', data=dmig.is_complex)
+    #dmig_group.create_dataset('is_real', data=dmig.is_real)
+    #dmig_group.create_dataset('is_polar', data=dmig.is_polar)
+
+    GCi = _cast(sub_group['GCi'])
+    GCj = _cast(sub_group['GCj'])
+    Real = _cast(sub_group['Real'])
+    Complex = None
+    if 'Complex' in sub_group:
+        Complex = _cast(sub_group['Complex'])
+
+    ifo = matrix_form
+    dmig = class_obj(name, ifo, tin, tout, polar, ncols,
+                     GCj, GCi, Real, Complex=Complex, comment='', finalize=True)
+    assert class_type in ['DMIG', 'DMIK', 'DMIJ', 'DMIJI'], class_type
+    slot_name = class_type.lower() + 's'
+    slot = getattr(model, slot_name)
+    slot[name] = dmig
+    str(dmig)
+    #model.dmigs[name] = dmig
 
 def hdf5_load_dconstrs(model, group, encoding):
     """loads the dconstrs"""
@@ -982,7 +994,6 @@ def hdf5_load_usets(model, group, encoding):
     if len(keys) == 0:
         #model.log.warning('skipping loading %s' % group)
         raise RuntimeError('error loading %s' % group)
-        #return
 
     for name in keys:
         sub_group = group[name]

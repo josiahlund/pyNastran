@@ -851,7 +851,7 @@ def _hdf5_export_object_dict(group, model, name, obj_dict, keys, encoding):
             # for debugging
             #sub_group2 = group.create_group('values2')
             #_h5_export_class(sub_group2, model, key, value, skip_attrs, encoding, debug=True)
-        i += 1
+        #i += 1
 
     #group.attrs['type'] = class_name
     #print('%s keys = %s' % (name, keys))

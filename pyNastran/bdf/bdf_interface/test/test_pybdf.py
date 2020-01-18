@@ -1,3 +1,4 @@
+"""tests PyBDF"""
 # encoding: utf8
 # pylint: disable=W0212
 from __future__ import print_function, unicode_literals
@@ -7,9 +8,11 @@ import unittest
 from six import StringIO
 from cpylog import get_logger
 
+import numpy as np
 from pyNastran.bdf.bdf_interface.pybdf import BDFInputPy, _show_bad_file, _lines_to_decks
 
 class TestPyBDF(unittest.TestCase):
+    """tests PyBDF"""
 
     def test_pybdf_open_file_checks(self):
         """tests _open_file_checks"""
@@ -68,7 +71,7 @@ class TestPyBDF(unittest.TestCase):
         os.rmdir(bdf_dir)
 
     def test_get_lines_1(self):
-        import numpy as np
+        """tests the basic deck sections, with a GRID and a skipped POST"""
         punch = False
         lines = [
             'CEND',
@@ -92,6 +95,7 @@ class TestPyBDF(unittest.TestCase):
             print(line)
 
     def test_get_lines_2(self):
+        """tests system control lines"""
         with open('junk.bdf', 'w') as bdf_file:
             bdf_file.write('CEND\n')
             bdf_file.write('BEGIN BULK\n')
