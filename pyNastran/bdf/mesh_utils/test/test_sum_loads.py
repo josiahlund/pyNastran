@@ -202,7 +202,7 @@ class TestLoadSum(unittest.TestCase):
         A_expected = 4.
         A = 4.
         p = 3.
-        Fi = p * A
+        #Fi = p * A
         element = model.elements[1]
         normal = element.Normal()
         normal_expected = array([0., 0., 1.])

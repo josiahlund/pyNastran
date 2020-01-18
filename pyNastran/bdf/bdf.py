@@ -1187,7 +1187,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
                     is_error = True
 
             if is_error:
-                msg = 'There are dupliate cards.\n\n' + msg
+                msg = 'There are duplicate cards.\n\n' + msg
 
             if self._stop_on_xref_error:
                 msg += 'There are parsing errors.\n\n'
@@ -2278,9 +2278,9 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
                 self.log.warning('    lines:\n')
                 for line in card_lines:
                     print(line)
-            else:
+            elif show_log:
                 self.log.info('    rejecting card_name = %r' % card_name)
-
+            assert isinstance(show_log, bool), show_log
         self.increase_card_count(card_name)
         self.reject_lines.append([_format_comment(comment)] + card_lines)
 
@@ -2896,16 +2896,6 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
         else:
             self.reject_cards.append(card_obj)
 
-    def _echo_card(self, card, card_obj):
-        """echos a card"""
-        try:
-            print(print_card_8(card_obj).rstrip())
-        except:
-            if card in ['DEQATN']:
-                print(str(card_obj).rstrip())
-            else:
-                print(print_card_16(card_obj).rstrip())
-
     def _add_card_helper(self, card_obj, card, card_name, ifile, comment=''):
         # type: (BDFCard, List[str], str, str) -> None
         """
@@ -2919,6 +2909,8 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
             the fields of the card object; used for rejection and special cards
         card_name : str
             the card_name -> 'GRID'
+        ifile : int
+            the file number
         comment : str
             an optional the comment for the card
 
@@ -2931,7 +2923,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
             return
 
         if self.echo and not self.force_echo_off:
-            self._echo_card(card, card_obj)
+            _echo_card(card, card_obj)
 
         if card_name in self._card_parser:
             card_class, add_card_function = self._card_parser[card_name]
@@ -3179,6 +3171,10 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
 
         .. todo:: how are SPOINTs/EPOINTs identified?
 
+        Examples
+        --------
+        >>> out = model.get_xyz_in_coord_array(cid=0)
+        >>> nid_cp_cd, xyz_cid, xyz_cp, icd_transform, icp_transform = out
         """
         icd_transform, icp_transform, xyz_cp, nid_cp_cd = self.get_displacement_index_xyz_cp_cd(
             fdtype=fdtype, idtype=idtype, sort_ids=True)
@@ -3607,7 +3603,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
             #old_card, unused_card = self.create_card_object(
                 #card_lines_old, card_name,
                 #is_list=False, has_none=True)
-            #print(old_card)
+            #print(card_lines_old)
             old_card = self._old_card_fields(card_lines_old, card_name, self.log,
                                              is_list=False, has_none=True,
                                              is_dynamic_syntax=self._is_dynamic_syntax)
@@ -3813,7 +3809,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
         else:
             for icard, card in enumerate(cards_list):
                 card_name, comment, card_lines, (ifile, unused_iline) = card
-                #print(unused_ifile_iline, card_lines[0])
+                #print(unused_iline, card_lines[0])
                 if card_name is None:
                     msg = 'card_name = %r\n' % card_name
                     msg += 'card_lines = %s' % card_lines
@@ -3835,7 +3831,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
                     continue
 
                 if self.is_reject(card_name):
-                    self.reject_card_lines(card_name, card_lines, comment)
+                    self.reject_card_lines(card_name, card_lines, comment=comment)
                 else:
                     self.add_card(card_lines, card_name, comment=comment, ifile=ifile,
                                   is_list=False, has_none=False)
@@ -3937,9 +3933,18 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
             #elif key == 'skip_properties'
             elif key == 'units':
                 self.units = [value.strip() for value in value.upper().split(',')]
+            elif key in ['code-block', 'code_block']:
+                value = line.split('=', 1)[1]
+                if not hasattr(self, 'code_block'):
+                    self.code_block = ''
+                    char0 = value.lstrip()[0]
+                    indent = value.index(char0)
+                self.code_block += value[indent:]
             else:
                 raise NotImplementedError(key)
-        return
+
+        if hasattr(self, 'code_block'):
+            exec(self.code_block)
 
 #---------------------------------------------------------------------------------------------------
     # HDF5
@@ -3954,10 +3959,6 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
         ----------
         bdf_filename : str / None
             the input bdf (default=None; popup a dialog)
-        #validate : bool; default=True
-            #runs various checks on the BDF
-        #xref :  bool; default=False
-            #should the bdf be cross referenced
         punch : bool; default=False
             indicates whether the file is a punch file
         read_includes : bool; default=True
@@ -4002,15 +4003,16 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
         sol, method, sol_iline = parse_executive_control_deck(executive_control_lines)
         self.update_solution(sol, method, sol_iline)
 
-        self.case_control_deck = CaseControlDeck(case_control_lines, self.log)
-        self.case_control_deck.solmap_to_value = self._solmap_to_value
-        self.case_control_deck.rsolmap_to_str = self.rsolmap_to_str
-
         #self._is_cards_dict = True
         if self._is_cards_dict:
             cards, card_count = self.get_bdf_cards_dict(bulk_data_lines, bulk_data_ilines)
         cards_out = self._parse_cards_hdf5(cards, card_count)
         assert isinstance(cards_out, dict), cards_out
+
+        self.case_control_deck = CaseControlDeck(case_control_lines, self.log)
+        self.case_control_deck.solmap_to_value = self._solmap_to_value
+        self.case_control_deck.rsolmap_to_str = self.rsolmap_to_str
+
         return cards_out
 
     def _parse_cards_hdf5(self, cards, unused_card_count):
@@ -4250,6 +4252,17 @@ class BDF(BDF_):
             model._parse_all_cards(superelement_line[iminus:], superelement_ilines)
             self.superelement_models[superelement_id] = model
             self.initial_superelement_models.append(superelement_id)
+
+
+def _echo_card(card, card_obj):
+    """echos a card"""
+    try:
+        print(print_card_8(card_obj).rstrip())
+    except:
+        if card in ['DEQATN']:
+            print(str(card_obj).rstrip())
+        else:
+            print(print_card_16(card_obj).rstrip())
 
 def read_bdf(bdf_filename=None, validate=True, xref=True, punch=False,
              save_file_structure=False,
@@ -4492,6 +4505,6 @@ def main():  # pragma: no cover
     model.write_bdf('test.bdf')
 
 
-if __name__ == '__main__':  # pragma: no cover
-    from pyNastran.bdf.test.test_bdf import main
+#if __name__ == '__main__':  # pragma: no cover
+    #from pyNastran.bdf.test.test_bdf import main
     #main()

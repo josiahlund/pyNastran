@@ -577,6 +577,17 @@ class TestBars(unittest.TestCase):
         model.add_card(card_lines, 'CBAR', comment='', is_list=True, has_none=True)
         model.pop_parse_errors()
 
+    def test_baror_2(self):
+        model = BDF(debug=False)
+        pid = 12
+        is_g0 = True
+        g0 = 42
+        x = None
+        baror = model.add_baror(pid, is_g0, g0, x, offt='GGG', comment='baror')
+        baror.raw_fields()
+        baror.write_card(size=8)
+        baror.write_card(size=16)
+
     def test_cbend(self):
         """tests a CBEND"""
         model = BDF(debug=False)

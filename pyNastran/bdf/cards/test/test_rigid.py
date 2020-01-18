@@ -32,11 +32,11 @@ class TestRigid(unittest.TestCase):
 
     def test_rbe3_02(self):
         """RBE3 Gmi/Cmi default"""
-        model = BDF()
-        model.add_grid(1, [0.,0.,0])
-        model.add_grid(4, [1.,0.,0])
-        model.add_grid(5, [0.,1.,0])
-        model.add_grid(6, [1.,1.,0])
+        model = BDF(debug=None, log=None, mode='msc')
+        model.add_grid(1, [0., 0., 0])
+        model.add_grid(4, [1., 0., 0])
+        model.add_grid(5, [0., 1., 0])
+        model.add_grid(6, [1., 1., 0])
         rbe3 = model.add_rbe3(eid=1, refgrid=1, refc=1, weights=[.1, .5, 3.], comps=['123']*3,
                               Gmi=None, Cmi=None, Gijs=[4, 5, 6])
         rbe3.write_card()

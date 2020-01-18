@@ -152,6 +152,7 @@ def scale_model(model, xyz_scale, mass_scale, time_scale, weight_scale, gravity_
     model.log.debug('time_scale = %s' % time_scale)
     model.log.debug('weight_scale = %s' % weight_scale)
     model.log.debug('gravity_scale = %s' % gravity_scale)
+    temperature_scale = 1.
     _set_wtmass(model, gravity_scale)
 
     if convert_nodes:
@@ -163,7 +164,7 @@ def scale_model(model, xyz_scale, mass_scale, time_scale, weight_scale, gravity_
     if convert_properties:
         _convert_properties(model, xyz_scale, mass_scale, weight_scale)
     if convert_materials:
-        _convert_materials(model, xyz_scale, mass_scale, weight_scale)
+        _convert_materials(model, xyz_scale, mass_scale, weight_scale, temperature_scale)
 
     if convert_aero:
         _convert_aero(model, xyz_scale, time_scale, weight_scale)
@@ -439,6 +440,8 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
     Skips are unscaled (intentionally)
 
     """
+    if len(model.properties) == 0:
+        return
     time_scale = 1.
     force_scale = weight_scale
     moment_scale = force_scale * xyz_scale
@@ -486,50 +489,14 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
             #prop.c ???
 
         elif prop_type == 'PBAR':
-            prop.A *= area_scale
-            prop.i1 *= area_moi_scale
-            prop.i2 *= area_moi_scale
-            prop.i12 *= area_moi_scale
-            prop.j *= area_moi_scale
-            prop.nsm *= nsm_bar_scale
-            prop.c1 *= xyz_scale
-            prop.c2 *= xyz_scale
-            prop.d1 *= xyz_scale
-            prop.d2 *= xyz_scale
-            prop.e1 *= xyz_scale
-            prop.e2 *= xyz_scale
-            prop.f1 *= xyz_scale
-            prop.f2 *= xyz_scale
+            _convert_pbar(prop, xyz_scale, area_scale, area_moi_scale, nsm_bar_scale)
 
         elif prop_type == 'PBARL':
             prop.dim = [d * xyz_scale for d in prop.dim]
             prop.nsm *= nsm_bar_scale
 
         elif prop_type == 'PBEAM':
-            prop.A *= area_scale
-            prop.i1 *= area_moi_scale
-            prop.i2 *= area_moi_scale
-            prop.i12 *= area_moi_scale
-            prop.j *= area_moi_scale
-            prop.nsm *= nsm_bar_scale
-            prop.c1 *= xyz_scale
-            prop.c2 *= xyz_scale
-            prop.d1 *= xyz_scale
-            prop.d2 *= xyz_scale
-            prop.e1 *= xyz_scale
-            prop.e2 *= xyz_scale
-            prop.f1 *= xyz_scale
-            prop.f2 *= xyz_scale
-
-            prop.m1a *= xyz_scale
-            prop.m2a *= xyz_scale
-            prop.m1b *= xyz_scale
-            prop.m2b *= xyz_scale
-            prop.n1a *= xyz_scale
-            prop.n2a *= xyz_scale
-            prop.n1b *= xyz_scale
-            prop.n2b *= xyz_scale
-
+            _convert_pbeam(prop, xyz_scale, area_scale, area_moi_scale, nsm_bar_scale)
         elif prop_type == 'PBEAML':
             prop.dim *= xyz_scale
             prop.nsm *= nsm_bar_scale
@@ -559,31 +526,7 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
             prop.nsm *= nsm_bar_scale
 
         elif prop_type == 'PBUSH':
-            # can be length=0
-            #assert len(prop.Ki) == 6, prop.Ki
-            #assert len(prop.Bi) == 6, prop.Bi
-            for var in prop.vars:
-                # TODO: I think this needs to consider rotation
-                if var == 'K':
-                    prop.Ki = [ki*stiffness_scale if ki is not None else None
-                               for ki in prop.Ki]
-                elif var == 'B':
-                    prop.Bi = [bi*velocity_scale if bi is not None else None
-                               for bi in prop.Bi]
-                elif var == 'GE':
-                    pass
-                else:
-                    raise NotImplementedError(prop)
-
-            #prop.rcv
-            if prop.mass is not None:
-                prop.mass *= mass_scale
-            #rcv : List[float]; default=None -> (None, None, None, None)
-                #[sa, st, ea, et] = rcv
-                #length(mass_fields) = 4
-            #mass : float; default=None
-                #lumped mass of the CBUSH
-                #This is an MSC only parameter.
+            _convert_pbush(prop, velocity_scale, mass_scale, stiffness_scale)
         elif prop.type in ['PBUSH1D', 'PBUSH2D']:
             model.log.warning('skipping:\n%s' % str(prop))
 
@@ -622,8 +565,6 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
             #pass
         #elif prop.type == 'PBUSHT':
             #pass
-        #elif prop.type == 'PBUSH1D':
-            #pass
         #elif prop.type == 'PDAMPT':
             #pass
         #elif prop.type == 'PDAMP5':
@@ -643,19 +584,92 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
         else:
             raise NotImplementedError(prop_type)
 
-def _convert_materials(model, xyz_scale, mass_scale, weight_scale):
+def _convert_pbar(prop, xyz_scale, area_scale, area_moi_scale, nsm_bar_scale):
+    """converts a PBAR"""
+    prop.A *= area_scale
+    prop.i1 *= area_moi_scale
+    prop.i2 *= area_moi_scale
+    prop.i12 *= area_moi_scale
+    prop.j *= area_moi_scale
+    prop.nsm *= nsm_bar_scale
+    prop.c1 *= xyz_scale
+    prop.c2 *= xyz_scale
+    prop.d1 *= xyz_scale
+    prop.d2 *= xyz_scale
+    prop.e1 *= xyz_scale
+    prop.e2 *= xyz_scale
+    prop.f1 *= xyz_scale
+    prop.f2 *= xyz_scale
+
+def _convert_pbeam(prop, xyz_scale, area_scale, area_moi_scale, nsm_bar_scale):
+    """converts a PBEAM"""
+    prop.A *= area_scale
+    prop.i1 *= area_moi_scale
+    prop.i2 *= area_moi_scale
+    prop.i12 *= area_moi_scale
+    prop.j *= area_moi_scale
+    prop.nsm *= nsm_bar_scale
+    prop.c1 *= xyz_scale
+    prop.c2 *= xyz_scale
+    prop.d1 *= xyz_scale
+    prop.d2 *= xyz_scale
+    prop.e1 *= xyz_scale
+    prop.e2 *= xyz_scale
+    prop.f1 *= xyz_scale
+    prop.f2 *= xyz_scale
+
+    prop.m1a *= xyz_scale
+    prop.m2a *= xyz_scale
+    prop.m1b *= xyz_scale
+    prop.m2b *= xyz_scale
+    prop.n1a *= xyz_scale
+    prop.n2a *= xyz_scale
+    prop.n1b *= xyz_scale
+    prop.n2b *= xyz_scale
+
+def _convert_pbush(prop, velocity_scale, mass_scale, stiffness_scale):
+    # can be length=0
+    #assert len(prop.Ki) == 6, prop.Ki
+    #assert len(prop.Bi) == 6, prop.Bi
+    for var in prop.vars:
+        # TODO: I think this needs to consider rotation
+        if var == 'K':
+            prop.Ki = [ki*stiffness_scale if ki is not None else None
+                       for ki in prop.Ki]
+        elif var == 'B':
+            prop.Bi = [bi*velocity_scale if bi is not None else None
+                       for bi in prop.Bi]
+        elif var == 'GE':
+            pass
+        else:  # pragma: no cover
+            raise NotImplementedError(prop)
+
+    #prop.rcv
+    if prop.mass is not None:
+        prop.mass *= mass_scale
+    #rcv : List[float]; default=None -> (None, None, None, None)
+        #[sa, st, ea, et] = rcv
+        #length(mass_fields) = 4
+    #mass : float; default=None
+        #lumped mass of the CBUSH
+        #This is an MSC only parameter.
+
+
+def _convert_materials(model, xyz_scale, mass_scale, weight_scale, temperature_scale):
     """
     Converts the materials
 
     Supports: MAT1, MAT2, MAT3, MAT8, MAT9, MAT10, MAT11
 
     """
+    nmaterials = len(model.materials)
+    if nmaterials == 0:
+        return
+
     force_scale = weight_scale
     stress_scale = force_scale / xyz_scale ** 2
-
     density_scale = mass_scale / xyz_scale ** 3
-    temp_scale = 1.
-    a_scale = 1. / temp_scale # thermal expansion
+    a_scale = 1. / temperature_scale # thermal expansion
 
     model.log.debug('--Material Scales--')
     model.log.debug('density_scale (L^3)= %g' % density_scale)
@@ -667,7 +681,7 @@ def _convert_materials(model, xyz_scale, mass_scale, weight_scale):
             mat.e *= stress_scale
             mat.g *= stress_scale
             mat.a *= a_scale
-            mat.tref *= temp_scale
+            mat.tref *= temperature_scale
             mat.rho *= density_scale
             mat.St *= stress_scale
             mat.Sc *= stress_scale
@@ -688,7 +702,7 @@ def _convert_materials(model, xyz_scale, mass_scale, weight_scale):
                 mat.a2 *= a_scale
             if mat.a3 is not None:
                 mat.a3 *= a_scale
-            mat.tref *= temp_scale
+            mat.tref *= temperature_scale
             if mat.St is not None:
                 mat.St *= stress_scale
             if mat.Sc is not None:
@@ -706,7 +720,7 @@ def _convert_materials(model, xyz_scale, mass_scale, weight_scale):
             mat.ax *= a_scale
             mat.ath *= a_scale
             mat.az *= a_scale
-            mat.tref *= temp_scale
+            mat.tref *= temperature_scale
 
         #elif mat_type == 'MAT4':
             #mat.k
@@ -759,7 +773,7 @@ def _convert_materials(model, xyz_scale, mass_scale, weight_scale):
             mat.G66 *= stress_scale
             mat.rho *= density_scale
             mat.A *= a_scale
-            mat.tref *= temp_scale
+            mat.tref *= temperature_scale
         elif mat.type == 'MAT3D':
             mat.e1 *= stress_scale
             mat.e2 *= stress_scale
@@ -779,7 +793,7 @@ def _convert_materials(model, xyz_scale, mass_scale, weight_scale):
             #mat.a1 = a1
             #mat.a2 = a2
             #mat.a3 = a3
-            mat.tref *= temp_scale
+            mat.tref *= temperature_scale
             #mat.ge = ge
         else:
             raise NotImplementedError(mat)
@@ -1259,7 +1273,7 @@ def _convert_dvprel1(dvprel, xyz_scale, mass_scale, weight_scale):
     elif prop_type == 'PCOMP':
         if var_to_change.startswith('THETA') or var_to_change == 'GE':
             return scale
-        elif var_to_change.startswith('T') or var_to_change == 'Z0':
+        if var_to_change.startswith('T') or var_to_change == 'Z0':
             scale = xyz_scale
         elif var_to_change == 'SB': # Allowable shear stress of the bonding material
             scale = stress_scale

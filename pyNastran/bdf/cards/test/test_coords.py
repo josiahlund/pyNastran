@@ -563,7 +563,7 @@ class TestCoords(unittest.TestCase):
         card.write_card(size, 'dummy')
         card.raw_fields()
 
-        model = BDF()
+        model = BDF(debug=False)
         cid = 2
         grid1, grid2, grid3 = 1, 4, 3
         coord = model.add_cord1c(cid, grid1, grid2, grid3, comment='cord1c')
@@ -947,7 +947,7 @@ def get_nodes(grids, grids_expected, coords):
         #coord_obj = model.Coord(cid)
 
     model.cross_reference()
-    save_load_deck(model, run_remove_unused=False, run_convert=False, run_save_load_hdf5=True)
+    save_load_deck(model, run_remove_unused=False, run_convert=False)
 
     for (i, grid) in enumerate(grids_expected):
         (nid, cid, x, y, z) = grid

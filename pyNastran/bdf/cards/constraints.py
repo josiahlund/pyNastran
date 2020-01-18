@@ -716,12 +716,14 @@ class SPC(Constraint):
         self.enforced = enforced
         self.nodes_ref = None
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
+                          filter_properties=False):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         my_keys_to_skip = ['gids_ref', 'gids']
         if keys_to_skip is None:
             keys_to_skip = []
-        return Constraint.object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+        return Constraint.object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+                                            filter_properties=filter_properties)
 
     def object_methods(self, mode='public', keys_to_skip=None):
         """.. seealso:: `pyNastran.utils.object_methods(...)`"""
@@ -786,7 +788,9 @@ class SPC(Constraint):
         """
         conid = data[0]
         nodes = [data[1]]
-        components = data[2]
+        components_str = sorted(str(data[2]))
+        components = int(''.join(components_str))
+
         assert 0 <= components <= 123456, data
         enforced = [data[3]]
         assert conid > 0, data
@@ -1134,7 +1138,7 @@ class SPC1(Constraint):
 
         """
         conid = integer(card, 1, 'conid')
-        components = parse_components(card, 2, 'components')  # 246 = y; dx, dz dir
+        components = components_or_blank(card, 2, 'components', 0)  # 246 = y; dx, dz dir
         nodes = card.fields(3)
         return SPC1(conid, components, nodes, comment=comment)
 

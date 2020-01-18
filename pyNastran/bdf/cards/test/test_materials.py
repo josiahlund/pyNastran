@@ -145,6 +145,7 @@ class TestMaterials(unittest.TestCase):
                               a1=None, a2=None, a3=None, tref=0.,
                               ge=0., St=None, Sc=None, Ss=None,
                               mcsid=None, comment='mat2')
+        mat2.raw_fields()
         mat2.write_card(size=16, is_double=False)
         mat2.validate()
 
@@ -315,6 +316,7 @@ class TestMaterials(unittest.TestCase):
         mat5 = model.add_mat5(mid, kxx=0., kxy=0., kxz=0., kyy=0., kyz=0.,
                               kzz=0., cp=0.,
                               rho=1., hgen=1., comment='mat5')
+        mat5.K()
         mat5.get_density()
         mat5.Rho()
         mat5.write_card(size=16, is_double=False)
@@ -469,6 +471,7 @@ class TestMaterials(unittest.TestCase):
                               rho=0., A=None, tref=0., ge=0.,
                               comment='mat9')
         mat9.write_card(size=16, is_double=False)
+        mat9.Rho()
         mat9.validate()
 
         #matt9 = model.add_matt9
@@ -515,6 +518,13 @@ class TestMaterials(unittest.TestCase):
             msg += 'expected =  %r' % expected
             self.assertEqual(actual, expected, msg)
 
+        save_load_deck(model, xref='standard', punch=True,
+                       run_remove_unused=False)
+
+    def test_mat3d(self):
+        """tests MAT3D"""
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         mid = 10
         e1 = 1.
         e2 = 2.
@@ -525,7 +535,6 @@ class TestMaterials(unittest.TestCase):
         g12 = 112.
         g13 = 113.
         g23 = 123.
-        model = BDF(debug=False)
         mat3d = model.add_mat3d(
             mid,
             e1, e2, e3, nu12, nu13, nu23, g12, g13, g23,
@@ -630,6 +639,7 @@ class TestMaterials(unittest.TestCase):
         save_load_deck(model)
 
     def test_nxstrat(self):
+        """tests the NXSTRAT"""
         params = {
             #'AUTO' : 1,
             #'MAXITE' : 30,
@@ -644,7 +654,8 @@ class TestMaterials(unittest.TestCase):
             'G' : 7,
             'H' : 8,
         }
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         nxstrat = model.add_nxstrat(42, params)
         nxstrat.raw_fields()
         save_load_deck(model) # , run_remove_unused=False

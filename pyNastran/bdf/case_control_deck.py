@@ -25,6 +25,8 @@ import sys
 import copy
 from typing import List, Dict, Any
 
+from cpylog import get_logger
+
 #from pyNastran.bdf import subcase
 from pyNastran.bdf.subcase import Subcase, update_param_name
 from pyNastran.bdf.bdf_interface.subcase_cards import (
@@ -40,9 +42,7 @@ from pyNastran.utils import object_attributes
 from cpylog import get_logger
 
 class CaseControlDeck(object):
-    """
-    CaseControlDeck parsing and extraction class
-    """
+    """CaseControlDeck parsing and extraction class"""
     type = 'CaseControlDeck'
 
     def __getstate__(self):
@@ -67,10 +67,35 @@ class CaseControlDeck(object):
 
         """
         # pulls the logger from the BDF object
-        self.log = get_logger(log, "debug")
+        self.log = get_logger(log, level="debug")
         self.debug = False
 
         self.sol_200_map = {
+            #101 - Linear Static
+            #103 - Modal
+            #105 - Buckling
+            #106 - Non-Linear Static
+            #107 - Direct Complex Eigenvalue
+            #108 - Direct Frequency Response
+            #109 - Direct Transient Response
+            #110 - Modal Complex Eigenvalue
+            #111 - Modal Frequency Response
+            #112 - Modal Transient Response
+            #129 - Nonlinear Transient
+            #144 - Static Aeroelastic Analysis
+            #145 - Flutter / Aeroservoelastic analysis
+            #146 - Dynamic Aeroelastic Analysis
+            #153 - Non-Linear static coupled with heat transfer
+            #159 - Nonlinear Transient coupled with Heat transfer
+            #187 - Dynamic Design Analysis Method
+            #200 - Design Optimization and Sensitivity analysis
+            #400 - Non-Linear Static and Dynamic (implicit) (MSC.NASTRAN native, supersedes 106, 129, 153 and 159 - part of MSC.NASTRAN)
+            #401 - Non-Linear Static (SAMCEF based for NX.NASTRAN)
+            #402 - Non-Linear Static and Dynamic (implicit) (SAMCEF based for NX.NASTRAN)
+            #600 - Non-Linear Static and Dynamic (implicit) (front end to MSC.Marc - part of MSC.NASTRAN)
+            #601 - Implicit Non-Linear (ADINA for NX Nastran, will no longer be available in NX NASTRAN after 2020)
+            #700 - Explicit Non-Linear (LS Dyna plus MSC.Dytran - part of MSC.NASTRAN)
+            #701 - Explicit Non-Linear (ADINA for NX Nastran, will no longer be available in NX NASTRAN after 2020)
             'STATICS' : 101,
             'STATIC' : 101,
 
@@ -119,6 +144,7 @@ class CaseControlDeck(object):
             raise
 
     def load_hdf5_file(self, hdf5_file, encoding):
+        """loads the case control deck section from a hdf5 file"""
         from pyNastran.utils.dict_to_h5py import _cast
 
         keys = list(hdf5_file.keys())
@@ -134,13 +160,13 @@ class CaseControlDeck(object):
                 keys = list(subcase_group.keys())
                 keys.remove('keys')
                 subcases = {}
-                for key in keys:
-                    sub_group = subcase_group[key]
-                    ikey = int(key)
-                    subcase = Subcase(id=ikey)
+                for key2 in keys:
+                    sub_group = subcase_group[key2]
+                    ikey2 = int(key2)
+                    subcase = Subcase(id=ikey2)
                     subcase.log = self.log
                     subcase.load_hdf5_file(sub_group, encoding)
-                    subcases[ikey] = subcase
+                    subcases[ikey2] = subcase
                     str(subcase)
                 self.subcases = subcases
                 #print(value_bytes)
@@ -149,6 +175,7 @@ class CaseControlDeck(object):
                 raise RuntimeError('error loading hdf5 CaseControlDeck/%s' % key)
 
     def export_to_hdf5(self, hdf5_file, model, encoding):
+        """exports the case control deck section to an hdf5 file"""
         keys_to_skip = ['type', 'log', 'sol_200_map', 'rsolmap_to_str', 'solmap_to_value']
 
         # scalars----
@@ -602,9 +629,12 @@ class CaseControlDeck(object):
         #print('  equals_count = %s' % equals_count)
         if line_upper.startswith('SUBCASE'):
             param_type = split_equal_space(line_upper, 'SUBCASE', 'SUBCASE = 5')
-            key = 'SUBCASE'
+            if ' ' in param_type:
+                # SUBCASE 1 STATIC
+                param_type = param_type.split()[0]
+                self.log.debug(f"key={key!r} param_type={param_type!r} line_upper={line_upper!r}")
 
-            #print("key=%r isubcase=%r" % (key, isubcase))
+            key = 'SUBCASE'
             value = integer(param_type, line_upper)
             #self.isubcase = int(isubcase)
             param_type = 'SUBCASE-type'
@@ -994,7 +1024,7 @@ class CaseControlDeck(object):
             write_begin_bulk = self.write_begin_bulk
         msg = ''
         subcase0 = self.subcases[0]
-        for subcase_id, subcase in sorted(self.subcases.items()):
+        for unused_subcase_id, subcase in sorted(self.subcases.items()):
             msg += subcase.write_subcase(subcase0)
         #if len(self.subcases) == 1:
             #msg += 'BEGIN BULK\n'
@@ -1008,14 +1038,19 @@ class CaseControlDeck(object):
 
 def _split_param(line, line_upper):
     """parses a PARAM card"""
-    if ',' in line_upper:
-        sline = line_upper.split(',')
-    elif '\t' in line_upper:
-        sline = line_upper.expandtabs().split()
-    elif ' ' in line_upper:
-        sline = line_upper.split()
+    tabbed_line_upper = line_upper.expandtabs().rstrip()
+    if ',' in tabbed_line_upper:
+        sline = tabbed_line_upper.split(',')
+    elif '\t' in tabbed_line_upper:
+        sline = tabbed_line_upper.expandtabs().split()
+    elif ' ' in tabbed_line_upper:
+        sline = tabbed_line_upper.split()
     else:
         raise SyntaxError("trying to parse %r..." % line)
+
+    if len(sline) == 2:
+        if ' ' in tabbed_line_upper:
+            sline = tabbed_line_upper.replace(',', ' ').split()
 
     if len(sline) != 3:
         raise SyntaxError("trying to parse %r..." % line)

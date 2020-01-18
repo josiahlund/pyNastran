@@ -826,6 +826,7 @@ class DESVAR(OptConstraint):
             self.ddval_ref = model.DDVal(self.ddval, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.ddval = self.DDVal()
         self.ddval_ref = None
 
@@ -1270,7 +1271,7 @@ def validate_dresp1(property_type, response_type, atta, attb, atti):
         if property_type == 'ELEM':
             if response_type == 'CFAILURE':
                 pass
-            elif response_type == 'STRESS':
+            elif response_type in ['STRESS', 'STRAIN']:
                 pass
             else:
                 raise RuntimeError(msg)
@@ -1319,10 +1320,14 @@ def validate_dresp1(property_type, response_type, atta, attb, atti):
         assert attb > 0, msg
         assert len(atti) > 0, msg
 
-    elif response_type == 'STRESS':
-        _validate_dresp1_stress(property_type, response_type, atta, attb, atti)
+    elif response_type in ['STRESS', 'STRAIN']:
+        _validate_dresp1_stress_strain(property_type, response_type, atta, attb, atti)
     elif response_type == 'FORCE':
         _validate_dresp1_force(property_type, response_type, atta, attb, atti)
+    elif response_type == 'ELEM':
+        assert len(atti) > 0, msg
+        for eid in atti:
+            assert isinstance(eid, int), msg
     else:
         msg = 'DRESP1 ptype=%s rtype=%s atta=%s attb=%s atti=%s' % (
             property_type, response_type, atta, attb, atti)
@@ -1439,13 +1444,15 @@ def _validate_dresp_property_none(property_type, response_type, atta, attb, atti
         raise RuntimeError(msg)
     return atta, atti
 
-def _validate_dresp1_stress(property_type, response_type, atta, attb, atti):
+def _validate_dresp1_stress_strain(property_type, response_type, atta, attb, atti):
     """helper for ``validate_dresp``"""
     msg = 'DRESP1 ptype=%s rtype=%s atta=%s attb=%s atti=%s' % (
         property_type, response_type, atta, attb, atti)
 
     _blank_or_mode(attb, msg)
-    if property_type == 'PBARL':
+    if property_type == 'ELEM':
+        assert isinstance(atta, int), msg
+    elif property_type == 'PBARL':
         assert atta in [2, 3, 4, 5, 7, 8], msg
     elif property_type == 'PBAR':
         assert atta in [2, 6, 7, 8, 14, 15], msg
@@ -1650,14 +1657,16 @@ class DRESP1(OptConstraint):
         """exports the dresps in a vectorized way"""
         _export_dresps_to_hdf5(h5_file, model, encoding)
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
+                          filter_properties=False):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
 
         my_keys_to_skip = ['rtype', 'ptype']
         return super(DRESP1, self).object_attributes(
-            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+            filter_properties=filter_properties)
 
     @property
     def rtype(self):
@@ -1967,7 +1976,7 @@ class DRESP1(OptConstraint):
                                     'PSDVELO', 'PSDACCL']:
             data = self._nodes()
         elif self.response_type in ['FRFORC', 'TFORC',
-                                    'STRESS', 'ESE', 'CFAILURE', 'CSTRAIN']:
+                                    'STRESS', 'STRAIN', 'ESE', 'CFAILURE', 'CSTRAIN']:
             data = self._elements()
         elif self.response_type in op2_results:
             data = self.atti
@@ -2236,6 +2245,9 @@ class DRESP2(OptConstraint):
         dequation = integer_or_string(card, 3, 'dequation_id')
         region = integer_or_blank(card, 4, 'region')
         method = string_or_blank(card, 5, 'method', 'MIN')
+
+        # MSC 2005   Defaults: C1=100., C2=.005)
+        # MSC 2016.1 Defaults: C1=1., C2=.005, C3=10.)
         c1 = double_or_blank(card, 6, 'c1', 1.)
         c2 = double_or_blank(card, 7, 'c2', 0.005)
         c3 = double_or_blank(card, 8, 'c3', 10.)
@@ -2370,6 +2382,9 @@ class DRESP2(OptConstraint):
             self.func = fortran_to_python_short(self.dequation, default_values)
         else:
             raise NotImplementedError(self.dequation)
+
+    def safe_cross_reference(self, model, xref_errors):
+        self.cross_reference(model)
 
     def uncross_reference(self):
         """Removes cross-reference links"""
@@ -2680,7 +2695,9 @@ class DRESP3(OptConstraint):
             list_fields += build_table_lines(fields2, nstart=i, nend=j)
         return list_fields
 
-    def cross_reference(self, model):
+    def safe_cross_reference(self, model, xref_errors):
+        self.cross_reference(model)
+
         """
         Cross links the card so referenced cards can be extracted directly
 
@@ -3087,14 +3104,16 @@ class DVCREL1(DVXREL1):  # similar to DVMREL1
     def OptID(self):
         return self.oid
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
+                          filter_properties=False):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
 
         my_keys_to_skip = ['Type']
         return super(DVCREL1, self).object_attributes(
-            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+            filter_properties=filter_properties)
 
     @property
     def Type(self):
@@ -3332,14 +3351,16 @@ class DVCREL2(DVXREL2):
         return DVCREL2(oid, element_type, pid, cp_name, dequation, dvids, labels,
                        cp_min, cp_max, comment=comment)
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
+                          filter_properties=False):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
 
         my_keys_to_skip = ['Type']
         return super(DVCREL2, self).object_attributes(
-            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+            filter_properties=filter_properties)
 
     @property
     def Type(self):
@@ -3864,7 +3885,7 @@ class DVMREL2(DVXREL2):
                 #print("%s = %s" % (dvid_name, dvid))
                 if dvid:
                     assert dvid is not None
-                    assert dvid is not 'DESVAR'
+                    assert dvid != 'DESVAR'
                     dvids.append(dvid)
                     n += 1
 
@@ -3876,7 +3897,7 @@ class DVMREL2(DVXREL2):
                 label = string(card, i, label_name)
                 #print("%s = %s" % (label_name, label))
                 if label:
-                    assert label is not 'DTABLE'
+                    assert label != 'DTABLE'
                     labels.append(label)
         return DVMREL2(oid, mat_type, mid, mp_name, dequation, dvids, labels,
                        mp_min=mp_min, mp_max=mp_max, comment=comment)
@@ -4575,7 +4596,7 @@ class DVPREL2(DVXREL2):
                 #print("%s = %s" % (dvid_name, dvid))
                 if dvid:
                     assert dvid is not None
-                    assert dvid is not 'DESVAR'
+                    assert dvid != 'DESVAR'
                     dvids.append(dvid)
                     n += 1
 
@@ -4587,7 +4608,7 @@ class DVPREL2(DVXREL2):
                 label = string(card, i, label_name)
                 #print("%s = %s" % (label_name, label))
                 if label:
-                    assert label is not 'DTABLE'
+                    assert label != 'DTABLE'
                     labels.append(label)
 
         dvprel = DVPREL2(oid, prop_type, pid, pname_fid, dequation, dvids, labels,

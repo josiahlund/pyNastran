@@ -2648,6 +2648,18 @@ class MATG(Material):
         #8: 'g12', 9:'g13', 10:'g23', 11:'rho', 12:'a1', 13:'a2', 14:'a3',
         #15:'tref', 16: 'ge',
     #}
+    @classmethod
+    def _init_from_empty(cls):
+        mid = 10
+        idmem = 1
+        behav = 2
+        tabld = 3
+        tablu = [4, 5, 6, 7]
+        yprs = 6.
+        epl = 7.
+        gpl = 8.
+        return MATG(mid, idmem, behav, tabld, tablu, yprs, epl, gpl, comment='')
+
     def __init__(self, mid, idmem, behav, tabld, tablu, yprs, epl, gpl,
                  gap=0., tab_yprs=None, tab_epl=None, tab_gpl=None, tab_gap=None, comment=''):
         Material.__init__(self)
@@ -2671,6 +2683,9 @@ class MATG(Material):
         self.tab_gap = tab_gap
 
         #self._validate_input()
+
+    def validate(self):
+        assert isinstance(self.tablu, list) and len(self.tablu) == 4, self.tablu
 
     @classmethod
     def add_card(cls, card, comment=''):
@@ -2710,6 +2725,9 @@ class MATG(Material):
         return MATG(mid, idmem, behav, tabld, tablu, yprs, epl, gpl, gap,
                     tab_yprs, tab_epl, tab_gpl, tab_gap,
                     comment=comment)
+
+    def uncross_reference(self):
+        pass
 
     def raw_fields(self):
         list_fields = [
@@ -3170,19 +3188,19 @@ class MATHE(HyperelasticMaterial):
 
     ``model (MSC) = OGDEN, FOAM``
 
-    +-------+-------+----------+--------+------+--------+-------+
-    |   1   |   2   |    3     |   4    |  5   |   6    |   7   |
-    +=======+=======+==========+========+======+========+=======+
-    | MATHE |  MID  |  Model   |   NOT  |   K  |  RHO   |  TEXP |
-    +-------+-------+----------+--------+------+--------+-------+
-    |       |  MU1  |  ALPHA1  |  BETA1 |      |        |       |
-    +-------+-------+----------+--------+------+--------+-------+
-    |       |  MU2  |  ALPHA2  |  BETA2 |  MU3 | ALPHA3 | BETA3 |
-    +-------+-------+----------+--------+------+--------+-------+
-    |       |  MU4  |  ALPHA4  |  BETA4 |  MU5 | ALPHA5 | BETA5 |
-    +-------+-------+----------+--------+------+--------+-------+
-    |       |  D1   |    D2    |   D3   |   D4 |   D5   |       |
-    +-------+-------+----------+--------+------+--------+-------+
+    +-------+-------+----------+--------+------+--------+-------+----+
+    |   1   |   2   |    3     |   4    |  5   |   6    |   7   |  8 |
+    +=======+=======+==========+========+======+========+=======+====+
+    | MATHE |  MID  |  Model   |   NOT  |   K  |  RHO   |  TEXP |    |
+    +-------+-------+----------+--------+------+--------+-------+----+
+    |       |  MU1  |  ALPHA1  |  BETA1 |      |        |       |    |
+    +-------+-------+----------+--------+------+--------+-------+----+
+    |       |  MU2  |  ALPHA2  |  BETA2 |  MU3 | ALPHA3 | BETA3 |    |
+    +-------+-------+----------+--------+------+--------+-------+----+
+    |       |  MU4  |  ALPHA4  |  BETA4 |  MU5 | ALPHA5 | BETA5 |    |
+    +-------+-------+----------+--------+------+--------+-------+----+
+    |       |  D1   |    D2    |   D3   |   D4 |   D5   |       |    |
+    +-------+-------+----------+--------+------+--------+-------+----+
 
     NOT is an MSC only parameter
 
@@ -3190,15 +3208,15 @@ class MATHE(HyperelasticMaterial):
 
     ``model (MSC) = ABOYCE, GENT``
 
-    +-------+-------+----------+--------+------+--------+-------+
-    |   1   |   2   |    3     |   4    |  5   |   6    |   7   |
-    +=======+=======+==========+========+======+========+=======+
-    | MATHE |  MID  |   Model  |        |  K   |   RHO  |  TEXP |
-    +-------+-------+----------+--------+------+--------+-------+
-    |       |  NKT  |    N1    |        |      |        |       |
-    +-------+-------+----------+--------+------+--------+-------+
-    |       |   D1  |    D2    |   D3   |  D4  |   D5   |       |
-    +-------+-------+----------+--------+------+--------+-------+
+    +-------+-------+----------+--------+------+--------+-------+----+
+    |   1   |   2   |    3     |   4    |  5   |   6    |   7   |  8 |
+    +=======+=======+==========+========+======+========+=======+====+
+    | MATHE |  MID  |   Model  |        |  K   |   RHO  |  TEXP |    |
+    +-------+-------+----------+--------+------+--------+-------+----+
+    |       |  NKT  |    N1    |        |      |        |       |    |
+    +-------+-------+----------+--------+------+--------+-------+----+
+    |       |   D1  |    D2    |   D3   |  D4  |   D5   |       |    |
+    +-------+-------+----------+--------+------+--------+-------+----+
 
     the last line is an MSC only line
 
@@ -3840,11 +3858,11 @@ def get_mat_props_S(mid_ref):
             [      0.,       0.,       0.,    0.,    0., 1/g12],
         ])
         denom = 1 - nu12 * nu21
-        C2 = np.array([
-            [e1, -nu21 * e1, 0.],
-            [nu12 * e2, e2, 0.],
-            [0., 0., g12 * denom],
-        ]) / denom
+        #C2 = np.array([
+            #[e1, -nu21 * e1, 0.],
+            #[nu12 * e2, e2, 0.],
+            #[0., 0., g12 * denom],
+        #]) / denom
 
     else:
         raise NotImplementedError(mid_ref.get_stats())

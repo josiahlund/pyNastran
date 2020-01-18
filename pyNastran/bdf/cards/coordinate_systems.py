@@ -2161,13 +2161,17 @@ class Cord1x(Coord):
 
 
 class GMCORD(BaseCard):
-    """defines the GMCOORD class"""
+    """defines the GMCOORD class
+
+    GMCORD | CID | ENTITY | ID1 | ID2 |
+    GMCORD | 101 | GMCURV |  26 |  44 |
+    """
     type = 'GMCORD'
 
     @classmethod
     def _init_from_empty(cls):
         cid = 1
-        entity = 2
+        entity = 'GMCURV'
         gm_ids = [34]
         return GMCORD(cid, entity, gm_ids, comment='')
 

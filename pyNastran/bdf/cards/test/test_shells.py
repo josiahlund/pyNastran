@@ -6,6 +6,7 @@ from six.moves import StringIO
 import numpy as np
 from numpy import array
 
+from cpylog import get_logger
 from pyNastran.bdf.bdf import PCOMP, MAT1, BDF
 from pyNastran.bdf.cards.materials import get_mat_props_S
 from pyNastran.bdf.cards.test.utils import save_load_deck
@@ -19,7 +20,8 @@ except ImportError:
 
 class TestShells(unittest.TestCase):
     def test_pshell(self):
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         pid = 10
         pshell = model.add_pshell(pid, mid1=1, mid2=2, mid3=3, mid4=4, tst=3.14)
         assert ' 3.14' in pshell.rstrip(), pshell.rstrip()
@@ -236,7 +238,8 @@ class TestShells(unittest.TestCase):
         self._make_ctria3(model, rho, nu, G, E, t, nsm)
 
     def test_cquad4_01(self):
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         eid = 10
         pid = 20
         mid = 30
@@ -1215,9 +1218,9 @@ class TestShells(unittest.TestCase):
         log = get_logger(level='warning')
         model = BDF(log=log)
         model.add_grid(1, [0., 0., 0.])
-        model.add_grid(2, [0., 1., 0.])
-        model.add_grid(3, [0., 1., 1.])
-        model.add_grid(4, [0., 0., 1.])
+        model.add_grid(2, [1., 0., 0.])
+        model.add_grid(3, [1., 1., 0.])
+        model.add_grid(4, [0., 1., 0.])
 
         eid = 10
         pid = 100
@@ -1244,6 +1247,7 @@ class TestShells(unittest.TestCase):
         assert model.elements[10].write_card().rstrip() == 'CTRIA3        10     100       1       2       3       0'
 
         model.cross_reference()
+        unused_ABD = pshell.get_ABD_matrices(theta_offset=0.)
         assert model.elements[10].rstrip() == 'CTRIA3        10     100       1       2       3       0'
         assert model.elements[11].rstrip() == 'CQUAD4        11     100       1       2       3       4       0'
 
@@ -1260,7 +1264,7 @@ class TestShells(unittest.TestCase):
         assert model2.elements[10].rstrip() == 'CTRIA3        10     100       1       2       3       0'
         assert model2.elements[11].rstrip() == 'CQUAD4        11     100       1       2       3       4       0'
 
-    def test_abd(self):
+    def test_abd_1(self):
         """tests some ABD matrix functionality for a PCOMP"""
         log = get_logger(level='warning')
         model = BDF(log=log)
@@ -1396,7 +1400,6 @@ class TestShells(unittest.TestCase):
         B = ABD2[:3, -3:]
         assert np.allclose(0., B.sum()), B
         assert np.allclose(ABD2, ABD3), ABD2
-
 
 def make_dvcrel_optimization(model, params, element_type, eid, i=1):
     """makes a series of DVCREL1 and a DESVAR"""

@@ -17,8 +17,7 @@ from pyNastran.bdf.mesh_utils.cut_model_by_plane import (
 
 def cut_and_plot_model(title, p1, p2, zaxis,
                        model, coord, nodal_result,
-                       log,
-                       ytol,
+                       log, ytol,
                        plane_atol=1e-5,
                        csv_filename=None,
                        invert_yaxis=False,

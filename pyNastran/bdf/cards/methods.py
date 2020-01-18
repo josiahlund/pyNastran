@@ -314,6 +314,7 @@ class EIGC(Method):
             ksteps = []
         if NJIs is None:
             NJIs = []
+
         self.mblkszs = mblkszs
         self.iblkszs = iblkszs
         self.ksteps = ksteps

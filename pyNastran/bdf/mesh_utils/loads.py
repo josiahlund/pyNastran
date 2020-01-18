@@ -410,14 +410,16 @@ def sum_forces_moments_elements(model, p0, loadcase_id, eids, nids,
     xyz = _get_xyz_cid0_dict(model, xyz_cid0)
 
     unsupported_types = set()
-    shell_elements = [
+    shell_elements = {
         'CTRIA3', 'CQUAD4', 'CTRIAR', 'CQUADR',
-        'CTRIA6', 'CQUAD8', 'CQUAD', 'CSHEAR']
+        'CTRIA6', 'CQUAD8', 'CQUAD', 'CSHEAR'}
+    skip_loads = {'QVOL'}
     for load, scale in zip(loads, scale_factors):
         #if load.type not in ['FORCE1']:
             #continue
         #print(load.type)
-        if load.type == 'FORCE':
+        loadtype = load.type
+        if loadtype == 'FORCE':
             if load.node_id not in nids:
                 continue
             if load.Cid() != 0:
@@ -489,7 +491,7 @@ def sum_forces_moments_elements(model, p0, loadcase_id, eids, nids,
                 continue
             m = load.mag * load.xyz * scale
             M += m
-        elif load.type == 'MOMENT2':
+        elif loadtype == 'MOMENT2':
             not_found_nid = False
             for nid in load.node_ids:
                 if nid not in nids:
@@ -500,7 +502,7 @@ def sum_forces_moments_elements(model, p0, loadcase_id, eids, nids,
             m = load.mag * load.xyz * scale
             M += m
 
-        elif load.type == 'PLOAD':
+        elif loadtype == 'PLOAD':
             nodes = load.node_ids
             nnodes = len(nodes)
             nodesi = 0
@@ -534,10 +536,10 @@ def sum_forces_moments_elements(model, p0, loadcase_id, eids, nids,
             F += f * node_scale
             M += m * node_scale
 
-        elif load.type == 'PLOAD1':
+        elif loadtype == 'PLOAD1':
             _pload1_elements(model, loadcase_id, load, scale, eids, xyz, F, M, p)
 
-        elif load.type == 'PLOAD2':
+        elif loadtype == 'PLOAD2':
             pressure = load.pressure * scale
             for eid in load.element_ids:
                 if eid not in eids:
@@ -553,13 +555,13 @@ def sum_forces_moments_elements(model, p0, loadcase_id, eids, nids,
                     M += m
                 else:
                     #model.log.warning('case=%s etype=%r loadtype=%r not supported' % (
-                        #loadcase_id, elem.type, load.type))
+                        #loadcase_id, elem.type, loadtype))
                     raise NotImplementedError('case=%s etype=%r loadtype=%r not supported' % (
                         loadcase_id, elem.type, load.type))
-        elif load.type == 'PLOAD4':
+        elif loadtype == 'PLOAD4':
             _pload4_elements(loadcase_id, load, scale, eids, xyz, F, M, p)
 
-        elif load.type == 'GRAV':
+        elif loadtype == 'GRAV':
             if include_grav:  # this will be super slow
                 g = load.GravityVector() * scale
                 for eid, elem in model.elements.items():
@@ -572,9 +574,11 @@ def sum_forces_moments_elements(model, p0, loadcase_id, eids, nids,
                     m = cross(r, f)
                     F += f
                     M += m
+        elif loadtype in skip_loads:
+            continue
         else:
             # we collect them so we only get one print
-            unsupported_types.add(load.type)
+            unsupported_types.add(loadtype)
 
     for loadtype in unsupported_types:
         model.log.warning('case=%s loadtype=%r not supported' % (loadcase_id, loadtype))
@@ -721,7 +725,7 @@ def _get_pload4_area_centroid_normal_nface(loadcase_id, load, elem, xyz):
         nodes = None
         face_acn = elem.get_face_area_centroid_normal(load.g34_ref.nid, load.g1_ref.nid)
         # TODO: backwards?
-        #face_acn= elem.get_face_area_centroid_normal(load.g1_ref.nid, load.g34_ref.nid)
+        #face_acn = elem.get_face_area_centroid_normal(load.g1_ref.nid, load.g34_ref.nid)
         unused_face, area, face_centroid, normal = face_acn
         nface = 4
 
@@ -795,7 +799,7 @@ def _get_pload4_area_centroid_normal_nface(loadcase_id, load, elem, xyz):
             #nface, ni, normal, area, face_centroid))
     else:
         eid = elem.eid
-        msg = 'PLOAd4: case=%s eid=%s etype=%r loadtype=%r not supported\n%s%s' % (
+        msg = 'PLOAD4: case=%s eid=%s etype=%r loadtype=%r not supported\n%s%s' % (
             loadcase_id, eid, etype, load.type, str(load), str(elem))
         raise NotImplementedError(msg)
     return nodes, area, face_centroid, normal, nface

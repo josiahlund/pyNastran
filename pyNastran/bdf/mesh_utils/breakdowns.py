@@ -38,7 +38,7 @@ def get_length_breakdown(model, property_ids=None, stop_if_no_length=True):
         #'CBUSH', 'CBUSH1D', 'CBUSH2D',
         #'CRAC2D', 'CRAC3D',
     #]
-    skip_props = [
+    skip_props = {
         'PSOLID', 'PLPLANE', 'PPLANE', 'PELAS',
         'PDAMP', 'PBUSH', 'PBUSH1D', 'PBUSH2D',
         'PELAST', 'PDAMPT', 'PBUSHT', 'PDAMP5',
@@ -46,7 +46,7 @@ def get_length_breakdown(model, property_ids=None, stop_if_no_length=True):
         'PCOMPS', 'PVISC',
         'PSHELL', 'PCOMP', 'PCOMPG', 'PSHEAR',
         'PBEND',
-    ]
+    }
     bar_properties = ['PBAR', 'PBARL', 'PBEAM', 'PBEAML',
                       'PROD', 'PTUBE', 'PBRSECT', 'PBMSECT', 'PBCOMP']
     pid_eids = model.get_element_ids_dict_with_pids(
@@ -118,13 +118,14 @@ def get_area_breakdown(model, property_ids=None, stop_if_no_area=True, sum_bar_a
     #'PCOMPS',
 
     """
-    skip_props = [
+    skip_props = {
         'PSOLID', 'PLPLANE', 'PPLANE', 'PELAS',
         'PDAMP', 'PBUSH', 'PBUSH1D', 'PBUSH2D',
         'PELAST', 'PDAMPT', 'PBUSHT', 'PDAMP5',
         'PFAST', 'PGAP', 'PRAC2D', 'PRAC3D', 'PCONEAX', 'PLSOLID',
         'PCOMPS', 'PVISC', 'PBCOMP', 'PBEND',
-    ]
+    }
+    bar_properties = {'PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE'}
 
     pid_eids = model.get_element_ids_dict_with_pids(
         property_ids, stop_if_no_eids=stop_if_no_area,
@@ -144,7 +145,7 @@ def get_area_breakdown(model, property_ids=None, stop_if_no_area=True, sum_bar_a
                     print(prop)
                     print(elem)
                     raise
-        elif prop.type in ['PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE']:
+        elif prop.type in bar_properties:
             for eid in eids:
                 elem = model.elements[eids[0]]
                 area = elem.Area()
@@ -323,13 +324,13 @@ def get_mass_breakdown(model, property_ids=None, stop_if_no_mass=True, detailed=
         else:
             mass_type_to_mass[elem.type] += elem.Mass()
 
-    properties_to_skip = [
+    properties_to_skip = {
         'PLPLANE', 'PPLANE', 'PELAS',
         'PDAMP', 'PBUSH', 'PBUSH1D', 'PBUSH2D',
         'PELAST', 'PDAMPT', 'PBUSHT', 'PDAMP5',
         'PFAST', 'PGAP', 'PRAC2D', 'PRAC3D', 'PCONEAX',
-        'PVISC', 'PBCOMP', 'PBEND', ]
-    bar_properties = ['PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE']
+        'PVISC', 'PBCOMP', 'PBEND', }
+    bar_properties = {'PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE'}
     for pid, eids in pid_eids.items():
         prop = model.properties[pid]
         masses = []
@@ -377,7 +378,7 @@ def get_mass_breakdown(model, property_ids=None, stop_if_no_mass=True, detailed=
                     masses_nonstructural.append(length * nsm)
                 else:
                     masses.append(length * (rho * area + nsm))
-        elif prop.type in ['PSOLID', 'PCOMPS', 'PLSOLID']:
+        elif prop.type in ['PSOLID', 'PCOMPS', 'PLSOLID', 'PIHEX']:
             rho = prop.Rho()
             for eid in eids:
                 elem = model.elements[eid]

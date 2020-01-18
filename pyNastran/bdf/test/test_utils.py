@@ -7,7 +7,7 @@ from pyNastran.bdf.utils import (
     write_patran_syntax_dict)
 
 class TestBdfUtils(unittest.TestCase):
-    def test_bdf_utils_01(self):
+    def test_utils_parse_patran_syntax(self):
         """tests parse_patran_syntax"""
         msg = '1:10  14:20:2  50:40:-1'
         output = parse_patran_syntax(msg, pound=None)
@@ -38,7 +38,7 @@ class TestBdfUtils(unittest.TestCase):
         #with self.assertRaises(ValueError):
         output = parse_patran_syntax(msg, pound='5')
 
-    def test_bdf_utils_02(self):
+    def test_utils_parse_patran_syntax_dict_1(self):
         """tests parse_patran_syntax_dict"""
         msg = 'n 1:10  14:20:2  50:40:-1 e 10 20'
         expected_nodes = np.array(

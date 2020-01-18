@@ -19,5 +19,6 @@ class TestPatran(unittest.TestCase):
         assert nids.min() == 1, nids
         assert nids.max() == 2214, nids
 
+
 if __name__ == '__main__':  # pragma: no cover
     unittest.main()

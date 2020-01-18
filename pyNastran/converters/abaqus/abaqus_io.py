@@ -258,9 +258,10 @@ def add_lines(grid, nids, eids_lines, nid_offset):
         node_ids = elem_nids + nid_offset
         for unused_eid, node_idsi in zip(eids, node_ids):
             elem = vtkLine()
-            elem.GetPointIds().SetId(0, node_idsi[0])
-            elem.GetPointIds().SetId(1, node_idsi[1])
-            grid.InsertNextCell(3, elem.GetPointIds())
+            point_ids = elem.GetPointIds()
+            point_ids.SetId(0, node_idsi[0])
+            point_ids.SetId(1, node_idsi[1])
+            grid.InsertNextCell(3, point_ids)
     return nelements
 
 
@@ -275,10 +276,11 @@ def add_tris(grid, nids, eids_tris, nid_offset):
         node_ids = elem_nids + nid_offset
         for unused_eid, node_idsi in zip(eids, node_ids):
             elem = vtkTriangle()
-            elem.GetPointIds().SetId(0, node_idsi[0])
-            elem.GetPointIds().SetId(1, node_idsi[1])
-            elem.GetPointIds().SetId(2, node_idsi[2])
-            grid.InsertNextCell(5, elem.GetPointIds())
+            point_ids = elem.GetPointIds()
+            point_ids.SetId(0, node_idsi[0])
+            point_ids.SetId(1, node_idsi[1])
+            point_ids.SetId(2, node_idsi[2])
+            grid.InsertNextCell(5, point_ids)
     return nelements
 
 
@@ -295,11 +297,12 @@ def add_quads(grid, nids, eids_quads, nid_offset):
         #node_ids = inids # + nid_offset + 1
         for unused_eid, node_idsi in zip(eids, node_ids):
             elem = vtkQuad()
-            elem.GetPointIds().SetId(0, node_idsi[0])
-            elem.GetPointIds().SetId(1, node_idsi[1])
-            elem.GetPointIds().SetId(2, node_idsi[2])
-            elem.GetPointIds().SetId(3, node_idsi[3])
-            grid.InsertNextCell(9, elem.GetPointIds())
+            point_ids = elem.GetPointIds()
+            point_ids.SetId(0, node_idsi[0])
+            point_ids.SetId(1, node_idsi[1])
+            point_ids.SetId(2, node_idsi[2])
+            point_ids.SetId(3, node_idsi[3])
+            grid.InsertNextCell(9, point_ids)
     return nelements
 
 
@@ -314,11 +317,12 @@ def add_tetras(grid, nids, eids_tetras, nid_offset):
         node_ids = elem_nids + nid_offset
         for unused_eid, node_idsi in zip(eids, node_ids):
             elem = vtkTetra()
-            elem.GetPointIds().SetId(0, node_idsi[0])
-            elem.GetPointIds().SetId(1, node_idsi[1])
-            elem.GetPointIds().SetId(2, node_idsi[2])
-            elem.GetPointIds().SetId(3, node_idsi[3])
-            grid.InsertNextCell(10, elem.GetPointIds())
+            point_ids = elem.GetPointIds()
+            point_ids.SetId(0, node_idsi[0])
+            point_ids.SetId(1, node_idsi[1])
+            point_ids.SetId(2, node_idsi[2])
+            point_ids.SetId(3, node_idsi[3])
+            grid.InsertNextCell(10, point_ids)
     return nelements
 
 
@@ -333,13 +337,14 @@ def add_hexas(grid, nids, eids_hexas, nid_offset):
         node_ids = elem_nids + nid_offset
         for unused_eid, node_idsi in zip(eids, node_ids):
             elem = vtkHexahedron()
-            elem.GetPointIds().SetId(0, node_idsi[0])
-            elem.GetPointIds().SetId(1, node_idsi[1])
-            elem.GetPointIds().SetId(2, node_idsi[2])
-            elem.GetPointIds().SetId(3, node_idsi[3])
-            elem.GetPointIds().SetId(4, node_idsi[4])
-            elem.GetPointIds().SetId(5, node_idsi[5])
-            elem.GetPointIds().SetId(6, node_idsi[6])
-            elem.GetPointIds().SetId(7, node_idsi[7])
-            grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
+            point_ids = elem.GetPointIds()
+            point_ids.SetId(0, node_idsi[0])
+            point_ids.SetId(1, node_idsi[1])
+            point_ids.SetId(2, node_idsi[2])
+            point_ids.SetId(3, node_idsi[3])
+            point_ids.SetId(4, node_idsi[4])
+            point_ids.SetId(5, node_idsi[5])
+            point_ids.SetId(6, node_idsi[6])
+            point_ids.SetId(7, node_idsi[7])
+            grid.InsertNextCell(elem.GetCellType(), point_ids)
     return nelements

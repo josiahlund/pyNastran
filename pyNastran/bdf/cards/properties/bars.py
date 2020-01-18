@@ -1,96 +1,1028 @@
+# pylint: disable=C0103,R0914,R0902,R0913
+"""
+All bar properties are defined in this file.  This includes:
+ *   PBAR
+ *   PBARL
+ *   PBEAM3
+ *   PBEND
+ *   PBRSECT
 
-    #HAT = (DIM2*DIM3)+2*((DIM1-DIM2)*DIM2)+2*(DIM2*DIM4)
-    elif beam_type == 'HAT':
-        #
-        #        <--------d3------->
-        #
-        #        +-----------------+              ^
-        #   d4   |        A        |   d4         |
-        # <----> +-d2-+-------+-d2-+ <---->       |
-        #        | B  |       |  B |              | d1
-        # +------+----+       +----+------+       |
-        # |     C     |       |     C     | t=d2  |
-        # +-----------+       +-----------+       v
-        dim1, dim2, dim3, dim4 = dim
-        assert dim3 > 2.*dim2, 'HAT; required: dim3 > 2*dim2; dim2=%s dim3=%s; delta=%s\n%s' % (dim2, dim3, dim3-2*dim2, prop)
-        #DIM3, CAN NOT BE LESS THAN THE SUM OF FLANGE
-            #THICKNESSES, 2*DIM2
-        t = dim[1]
-        wa = dim[2]
-        hb = dim[0] - 2. * t
-        wc = dim[3] + t
-        A = wa * t + (2. * wc * t) + (2. * hb * t)
+All bars are LineProperty objects.
+Multi-segment beams are IntegratedLineProperty objects.
 
-    #HAT1 = (DIM1*DIM5)+(DIM3*DIM4)+((DIM1-DIM3)*DIM4)+2*((DIM2-DIM5-DIM4)*DIM4)
-    elif beam_type == 'HAT1':
-        # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
-        w = dim[3]
+"""
+from __future__ import (nested_scopes, generators, division, absolute_import,
+                        print_function, unicode_literals)
+from itertools import count
+from typing import List, Tuple, Union, Any
+from six import integer_types, string_types
+from numpy import pi, array
+import numpy as np
 
-        h0 = dim[4]         # btm bar
-        w0 = dim[0] / 2.
-
-        h2 = dim[1] - h0 - 2 * w  # vertical bar
-        w2 = w
-
-        h3 = w              # top bar
-        w3 = dim[2] / 2.
-
-        dim1, dim2, dim3, dim4, dim5 = dim
-        assert dim2 > dim4+dim5, 'HAT1; required: dim2 > dim4+dim5; dim2=%s dim4=%s; dim5=%s\n%s' % (dim2, dim4, dim5, prop)
-        #*DIM4+DIM5, CAN NOT BE LARGER THAN THE HEIGHT OF
-            #THE HAT, DIM2.
+from pyNastran.bdf.field_writer_8 import set_blank_if_default
+from pyNastran.bdf.cards.base_card import Property
+from pyNastran.bdf.bdf_interface.assign_type import (
+    integer, double, double_or_blank, string, string_or_blank,
+    blank, integer_or_double, #integer_or_blank,
+)
+from pyNastran.utils.mathematics import integrate_unit_line, integrate_positive_unit_line
+from pyNastran.bdf.field_writer_8 import print_card_8
+from pyNastran.bdf.field_writer_16 import print_card_16
+from pyNastran.bdf.bdf_interface.bdf_card import BDFCard
+from pyNastran.bdf.bdf_interface.utils import to_fields
+from pyNastran.utils.numpy_utils import float_types
 
 
-        h1 = w              # upper, horizontal lower bar (see HAT)
-        w1 = w0 - w3
-        A = 2. * (h0 * w0 + h1 * w1 + h2 * w2 + h3 * w3)
-    #DBOX = ((DIM2*DIM3)-((DIM2-DIM7-DIM8)*(DIM3-((0.5*DIM5)+DIM4)))) +
-    #       (((DIM1-DIM3)*DIM2)-((DIM2-(DIM9+DIM10))*(DIM1-DIM3-(0.5*DIM5)-DIM6)))
-    elif beam_type == 'DBOX':
-        #
-        #  |--2------5----
-        #  |     |       |
-        #  1     3       6
-        #  |     |       |
-        #  |--4--|---7---|
-        #
+def Iyy_beam(b, h):
+    """gets the Iyy for a solid beam"""
+    return 1 / 12. * b * h ** 3
 
-        #0,1,2,6,11
-        #1,2,3,7,12
 
-        htotal = dim[1]
-        wtotal = dim[0]
+def get_inertia_rectangular(sections):
+    """
+    Calculates the moment of inertia for a section about the CG.
 
-        h2 = dim[6]
-        w2 = dim[3]
+    Parameters
+    ----------
+    sections : [[b,h,y,z]_1,...]
+        [[b,h,y,z]_1,...] y,z is the centroid
+        (x in the direction of the beam, y right, z up)
 
-        h4 = dim[7]
-        w4 = w2
+    Returns
+    -------
+    interia_parameters : List[Area, Iyy, Izz, Iyz]
+        the inertia parameters
 
-        h1 = htotal - h2 - h4
-        w1 = dim[3]
+    .. seealso:: http://www.webs1.uidaho.edu/mindworks/Machine_Design/Posters/PDF/Moment%20of%20Inertia.pdf
+    """
+    As = []
+    Ax = 0.
+    Ay = 0.
+    for section in sections:
+        (b, h, x, y) = section
+        A = b * h
+        As.append(A)
+        Ax += A * x
+        Ay += A * y
 
-        h5 = dim[8]
-        w5 = wtotal - w2
+    xcg = Ax / A
+    ycg = Ay / A
+    Axx = 0.
+    Ayy = 0.
+    Axy = 0.
+    for (i, section) in enumerate(sections):
+        (b, h, x, y) = section
+        #A = b*h
+        #As.append(A)
+        Axx += As[i] * (x - xcg) ** 2
+        Ayy += As[i] * (y - ycg) ** 2
+        Axy += As[i] * (x - xcg) * (y - ycg)
+    Ixx = Axx / A
+    Iyy = Ayy / A
+    Ixy = Axy / A
+    return (A, Ixx, Iyy, Ixy)
 
-        h7 = dim[9]
-        w7 = w5
 
-        h6 = htotal - h5 - h7
-        w6 = dim[5]
+def _IAreaL(prop, dim):
+    # type: (Any, List[float]) -> Tuple[float, float, float, float]
+    beam_type = prop.beam_type
+    if beam_type == 'ROD':
+        A, I1, I2, I12 = rod_section(prop.type, prop.beam_type, dim, prop)
+    elif beam_type == 'TUBE':
+        A, I1, I2, I12 = tube_section(prop.type, prop.beam_type, dim, prop)
+    elif beam_type == 'TUBE2':
+        A, I1, I2, I12 = tube2_section(prop.type, prop.beam_type, dim, prop)
 
-        h3 = (h1 + h6) / 2.
-        w3 = dim[4]
+    elif beam_type == 'I':
+        # |  ------------
+        # |  |    A     | d6
+        # |  ------------
+        # |     >| |<--d3
+        # |      |B|           "I" beam
+        # | d1   | |
+        # |      | |
+        # |   ----------
+        # |   |   C    |  d5
+        # |   ----------
+        sections = []
+        h1 = dim[5]  # d2
+        w1 = dim[2]
+        y1 = dim[0] / 2. - h1
+        sections.append([w1, h1, 0., y1])
 
-        A = (h1 * w1 + h2 * w2 + h3 * w3 + h4 * w4 +
-             h5 * w5 + h6 * w6 + h7 * w7)
+        h3 = dim[4]
+        w3 = dim[1]
+        #y3 = -dim[0] / 2. + h3
+        sections.append([w3, h3, 0., y1])
+
+        h2 = dim[0] - h1 - h3
+        w2 = dim[3]  # d1
+        sections.append([w2, h2, 0., 0.])
+
+        (A, Iyy, Izz, Iyz) = get_inertia_rectangular(sections)
+        assert Iyz == 0.
+
+    elif beam_type == 'BAR':
+        #: *-------*
+        #: |       |
+        #: |  BAR  |h1
+        #: |       |
+        #: *-------*
+        #:    w1
+        #: I_{xx}=\frac{bh^3}{12}
+        #: I_{yy}=\frac{hb^3}{12}
+        h1 = dim[1]
+        w1 = dim[0]
+        A = h1 * w1
+        Iyy = 1 / 12. * w1 * h1 ** 3
+        Izz = 1 / 12. * h1 * w1 ** 3
+        Iyz = 0.  #: .. todo:: is the Ixy of a bar 0 ???
+
     else:
+        msg = 'beam_type=%r is not supported for %s class...' % (
+            beam_type, prop.type)
+        raise NotImplementedError(msg)
+    return (A, Iyy, Izz, Iyz)
+
+class LineProperty(Property):
+    def __init__(self):
+        self.beam_type = None
+        self.A = None
+        self.i1 = None
+        self.i2 = None
+        self.i12 = None
+        self.j = None
+        self.nsm = None
+        Property.__init__(self)
+        self.mid_ref = None
+
+    #def D_bending(self):
+        #pass
+
+    #def D_axial(self):
+        #pass
+
+    #def D_thermal(self):
+        #pass
+
+    #def D_shear(self):
+        #pass
+
+    def Area(self):
+        # type: () -> float
+        """gets area"""
+        return self.A
+
+    def Nsm(self):
+        # type: () -> float
+        """gets nonstructural mass per unit length"""
+        return self.nsm
+
+    def J(self):
+        # type: () -> float
+        """gets J"""
+        return self.j
+
+    def I11(self):
+        # type: () -> float
+        """gets I11"""
+        return self.i1
+
+    def I22(self):
+        # type: () -> float
+        """gets I22"""
+        return self.i2
+
+    def Rho(self):
+        # type: () -> float
+        """gets the material density"""
+        return self.mid_ref.rho
+
+    def E(self):
+        # type: () -> float
+        """gets the material Young's ratio"""
+        return self.mid_ref.E
+
+    def G(self):
+        # type: () -> float
+        """gets the material Shear ratio"""
+        return self.mid_ref.G
+
+    def Nu(self):
+        # type: () -> float
+        """gets the material Poisson's ratio"""
+        return self.mid_ref.nu
+
+def A_I1_I2_I12(prop, beam_type, dim):
+    r"""
+    ::
+
+      BAR
+          2
+          ^
+          |
+      *---|--*
+      |   |  |
+      |   |  |
+      |h  *-----------> 1
+      |      |
+      |   b  |
+      *------*
+
+    .. math:: I_1 = \frac{1}{12} b h^3
+
+    .. math:: I_2 = \frac{1}{12} h b^3
+    """
+    if beam_type == 'ROD':
+        A, I1, I2, I12 = rod_section(prop.type, beam_type, dim, prop)
+    elif beam_type == 'TUBE':
+        A, I1, I2, I12 = tube_section(prop.type, beam_type, dim, prop)
+
+    elif beam_type == 'BAR':
+        A, I1, I2, I12 = bar_section(prop.type, beam_type, dim, prop)
+    elif beam_type == 'BOX':
+        A, I1, I2, I12 = box_section(prop.type, beam_type, dim, prop)
+    elif beam_type == 'L':
+        A, I1, I2, I12 = l_section(prop.type, beam_type, dim, prop)
+    else:  # pragma: no cover
+        msg = 'A_I1_I2_I12; beam_type=%s is not supported for %s class...' % (
+            beam_type, prop.type)
+        raise NotImplementedError(msg)
+    assert A == prop.Area(), prop
+    return A, I1, I2, I12
+
+def _bar_areaL(class_name: str, beam_type: str, dim: List[float],
+               prop: Any) -> float:
+    """
+    Area(x) method for the PBARL and PBEAML classes (pronounced **Area-L**)
+
+    Parameters
+    ----------
+    dim : List[float]
+        a list of the dimensions associated with **beam_type**
+
+    Returns
+    -------
+    Area : float
+        Area of the given cross section defined by **self.beam_type**
+
+    Notes
+    -----
+    internal method
+    """
+    if beam_type == 'ROD':
+        A, I1, I2, I12 = rod_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'TUBE':
+        A, I1, I2, I12 = tube_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'TUBE2':
+        A, I1, I2, I12 = tube2_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'I':
+        A, I1, I2, I12 = i_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'I1':
+        A, I1, I2, I12 = i1_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'L':
+        A, I1, I2, I12 = l_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'CHAN':
+        A, I1, I2, I12 = chan_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'CHAN1':
+        A, I1, I2, I12 = chan1_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'CHAN2':
+        A, I1, I2, I12 = chan2_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'T':
+        A, I1, I2, I12 = t_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'T1':
+        A, I1, I2, I12 = t1_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'T2':
+        A, I1, I2, I12 = t2_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'BOX':
+        A, I1, I2, I12 = box_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'BOX1':
+        A, I1, I2, I12 = box1_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'BAR':
+        A, I1, I2, I12 = bar_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'CROSS':
+        A, I1, I2, I12 = cross_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'H':
+        A, I1, I2, I12 = h_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'Z':
+        A, I1, I2, I12 = zee_section(class_name, beam_type, dim, prop)
+
+    elif beam_type == 'HEXA':
+        A, I1, I2, I12 = hexa_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'HAT':
+        A, I1, I2, I12 = hat_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'HAT1':
+        A, I1, I2, I12 = hat1_section(class_name, beam_type, dim, prop)
+    elif beam_type == 'DBOX':
+        A, I1, I2, I12 = dbox_section(class_name, beam_type, dim, prop)
+    else:  # pragma: no cover
         msg = 'areaL; beam_type=%s is not supported for %s class...' % (
             beam_type, class_name)
         raise NotImplementedError(msg)
     assert A > 0, 'beam_type=%r dim=%r A=%s\n%s' % (beam_type, dim, A, prop)
-    #A = 1.
     return A
+
+def I1_I2_I12(prop, dim):
+    A, I1, I2, I12 = A_I1_I2_I12(prop, prop.beam_type, dim)
+    return(I1, I2, I12)
+
+def rod_section(class_name, beam_type, dim, prop):
+    # This is a circle if you couldn't tell...
+    #   __C__
+    #  /     \
+    # |       |
+    # F       D
+    # |       |
+    #  \     /
+    #   \_E_/
+    #
+    R = dim[0]
+    A = pi * R ** 2
+    I1 = A * R ** 2 / 4.
+    I2 = I1
+    I12 = 0.
+    return A, I1, I2, I12
+
+def tube_section(class_type, beam_type, dim, prop):
+    r_outer, r_inner = dim
+    assert r_outer > r_inner, 'TUBE; r_outer=%s r_inner=%s' % (r_outer, r_inner)
+    A = pi * (r_outer ** 2 - r_inner ** 2)
+    I1 = pi * (r_outer ** 4 - r_inner ** 4) / 4.
+    I2 = I1
+    I12 = 0.
+    return A, I1, I2, I12
+
+def tube2_section(class_type, beam_type, dim, prop):
+    r_outer, thick = dim
+    r_inner = r_outer - thick
+    assert r_outer > r_inner, 'TUBE2; r_outer=%s r_inner=%s' % (r_outer, r_inner)
+
+    # same as tube
+    A = pi * (r_outer ** 2 - r_inner ** 2)
+    I1 = pi * (r_outer ** 4 - r_inner ** 4) / 4.
+    I2 = I1
+    I12 = 0.
+    return A, I1, I2, I12
+
+def bar_section(class_type, beam_type, dim, prop):
+    #per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
+    # <------> D1
+    #
+    # F------C  ^
+    # |      |  |
+    # |      |  | D2
+    # |      |  |
+    # E------D  v
+    b, h = dim
+    A = b * h
+    I1 = b * h ** 3 / 12.
+    I2 = h * b ** 3 / 12.
+    I12 = 0.
+    #J = b*h**3*(1/3. - 0.21*h/b*(1-h**4/(12*b**4)))
+    return A, I1, I2, I12
+
+def box_section(class_name, beam_type, dim, prop):
+    #
+    # +----------+ ^     ^
+    # |          | | d3  |
+    # |  +----+  | v     |
+    # |  |    |  |       |  d2
+    # |  +----+  |       |
+    # |          |       |
+    # +----------+       v
+    #          <-> d4
+    # <----d1---->
+    #
+    dim1, dim2, dim3, dim4 = dim
+    assert dim1 > 2.*dim4, 'BOX; required: dim1 > 2*dim4; dim1=%s dim4=%s\n%s' % (dim1, dim4, prop)
+    assert dim2 > 2.*dim3, 'BOX; required: dim2 > 2*dim3; dim2=%s dim3=%s\n%s' % (dim2, dim3, prop)
+
+    # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
+    b = dim1
+    h = dim2
+    t1 = dim3
+    t2 = dim4
+    bi = b - 2 * t2
+    hi = h - 2 * t1
+    A = b * h - bi * hi
+
+    I1 = (b * h ** 3 - bi * hi ** 3) / 12
+    I2 = (h * b ** 3 - bi * hi ** 3) / 12
+    I12 = 0.
+    #j = (2*t2*t1*(b-t2)**2*(h-t1)**2)/(b*t2+h*t1-t2**2-t1**2)
+    return A, I1, I2, I12
+
+def box1_section(class_name, beam_type, dim, prop):
+    dim1, dim2, dim3, dim4, dim5, dim6 = dim
+    h1 = dim3  # top
+    w1 = dim1
+
+    h2 = dim4  # btm
+    A1 = (h1 + h2) * w1
+
+    h3 = dim2 - h1 - h2  # left
+    w3 = dim6
+
+    w4 = dim5  # right
+    A2 = h3 * (w3 + w4)
+    A = A1 + A2
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def cross_section(class_type, beam_type, dim, prop):
+    dim1, dim2, dim3, dim4 = dim
+    h1 = dim3
+    w1 = dim2
+
+    h2 = dim4
+    w2 = dim1
+    A = h1 * w1 + h2 * w2
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def h_section(class_name, beam_type, dim, prop):
+    dim1, dim2, dim3, dim4 = dim
+    h1 = dim3
+    w1 = dim2
+
+    h2 = dim4
+    w2 = dim1
+    A = h1 * w1 + h2 * w2
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def t_section(class_name, beam_type, dim, prop):
+    # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
+    #       ^ y
+    #       |
+    #       |
+    #  <----d1=d--->
+    #  +-----------+ ^     ^
+    #  | 1         | |     | d3=tf ----> z
+    #  +---+  +----+ |     v
+    #      |  |      |     ^
+    #      |  |      | d2  |
+    #      |  |      |     | hw
+    #      |  |      |     |
+    #      +--+      v     v
+    #
+    #      <--> d4=tw
+    #
+    dim1, dim2, dim3, dim4 = dim
+    d = dim1 # bf
+    tf = dim3
+    tw = dim4
+    h = dim2 - 0.5 * tf
+    hw = dim2 - tf
+    #print('tf=%s tw=%s bf=%s' % (tf, tw, bf))
+    #print('h=%s hw=%s' % (h, hw))
+
+    A = d*tf + hw*tw
+    yna = hw*tw*(hw+tf)/(2*A)
+    i1 = (
+       (d*tf**3 + tw*hw**3) / 12. +
+       hw*tw*(yna + 0.5 * (hw +tf))**2 + d*tf*yna**2
+    )
+    i2 = (tf*d**3 + hw*tw**3)/12.
+    i12 = 0.
+    #j = 1/3 * (tf**3*d + tw**3 * h)
+    return A, i1, i2, i12
+
+def t1_section(class_name, beam_type, dim, prop):
+    dim1, dim2, dim3, dim4 = dim
+    h1 = dim1
+    w1 = dim3
+
+    h2 = dim4
+    w2 = dim2
+    A = h1 * w1 + h2 * w2
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def t2_section(class_name, beam_type, dim, prop):
+    #       ^ y
+    #       |
+    #       |
+    #      +--+      ^     v
+    #      |  |      |     ^
+    #      |1 |      | d2  |
+    #      |  |      |     | hw=bweb
+    #      |  |      |     |
+    #  +---+  +----+ |     v
+    #  | 2 |  |    | |     | d3=tf ----> z
+    #  +---+--+----+ v     v
+    #  <----d1=d--->
+    #
+    #      <--> d4=tweb
+    #
+    dim1, dim2, dim3, dim4 = dim
+    ball = dim1
+    hall = dim2
+    tflange = dim3
+    tweb = dim4
+    # bweb = hall - tflange
+    bflange = ball - tweb
+    #print(f'hall={hall} ball={ball} tweb={tweb} bflange={bflange}')
+    assert hall - tflange > 0, f'bweb={hall-tflange} hall(dim2)={hall} tflange(dim3)={tflange}'
+    assert ball - tweb > 0, f'bflange={bflange} ball(dim1)={ball} tweb(dim4)={tweb}'
+    A = tweb * hall + tflange * bflange
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def zee_section(class_name, beam_type, dim, prop):
+    #  bflange bweb
+    # <--d1-><--d2-->
+    # +-------------+            ^
+    # |             |            |
+    # +------+      |  ^         |
+    #        |      |  |         |
+    #        |      |  | d3=hweb |  d4 = hall
+    #        |      |  v         |
+    #        |      +---------+  |
+    #        |                |  |
+    #        +----------------+  v
+    #
+    dim1, dim2, dim3, dim4 = dim
+    bflange = dim1
+    bweb = dim2
+    hweb = dim3
+    hall = dim4
+    tflange = hall - hweb # actually 2*tflange
+    A = bflange * tflange + hall * bweb
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def hexa_section(class_name, beam_type, dim, prop):
+    #     _______
+    #   /        \     ^
+    #  /          \    |
+    # *            *   |  d3 = h
+    #  \          /    |
+    #   \        /     |
+    #    \______/      v
+    #           |d1| = wtri
+    # <-----d2----> = wall
+    #
+    dim1, dim2, dim3 = dim
+    hbox = dim3
+    wall = dim2
+    wtri = dim1
+    wbox = wall - 2 * wtri
+    assert wbox > 0, 'wbox=%s' % (wbox)
+    A = hbox * wbox + hbox * wtri
+    #print('hbox=%s wbox=%s hbox*wbox=%s 2*wtri*hbox=%s A=%s' % (
+        #hbox, wbox, hbox*wbox, 2*wtri*hbox, A))
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def hat_section(class_name, beam_type, dim, prop):
+    #
+    #        <--------d3------->
+    #
+    #        +-----------------+              ^
+    #   d4   |        A        |   d4         |
+    # <----> +-d2-+-------+-d2-+ <---->       |
+    #        | B  |       |  B |              | d1
+    # +------+----+       +----+------+       |
+    # |     C     |       |     C     | t=d2  |
+    # +-----------+       +-----------+       v
+    dim1, dim2, dim3, dim4 = dim
+    t = dim2
+    wa = dim3
+    assert wa > 2.*t, f'HAT; required: dim3 > 2*dim2; dim2={t} dim3={wa}; delta={wa-2*t}\n{prop}'
+    #DIM3, CAN NOT BE LESS THAN THE SUM OF FLANGE
+        #THICKNESSES, 2*DIM2
+    hb = dim1 - 2. * t
+    wc = dim4 + t
+    assert hb > 0., f'HAT; required hb=dim1-2*dim2={hb} dim1={dim1} dim2={dim2}'
+    A = wa * t + (2. * wc * t) + (2. * hb * t)
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def hat1_section(class_name, beam_type, dim, prop):
+    # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
+    #
+    #        <-----d3=wmid----->
+    #
+    #        +-----------------+              ^
+    #   d4   |                 |              |
+    #        +----+-------+-d4-+  d4=t        |
+    #        |    |       |    |              | d2=hall
+    # +------+----+   x   +----+------+       |
+    # |           |       |           | t=d2  |
+    # +-----------+-------+-----------+       |  ^
+    # |                               |       |  |
+    # |                               |       |  | d5=hbox
+    # +-------------------------------+       v  v
+    #
+    # <------------d1=wbox------------>
+    dim1, dim2, dim3, dim4, dim5 = dim
+    wbox = dim1
+    hall = dim2
+    unused_wmid = dim3
+    t = dim4
+    hbox = dim5
+    hweb = hall - hbox - t
+    assert hweb > 0, hweb
+
+    Abox = hbox * wbox
+    # we do a first pass assuming the hat is flat and then
+    # add the leftover web sections
+    Ahat = wbox * t + 2 * hweb * t
+    A = Abox + Ahat
+
+    b1 = dim1
+    h = dim2
+    b2 = dim3
+    t2 = dim4
+    t1 = dim5
+    A0 = b1 * t1 + t2 * (b1 - b2) + 2 * t2 * (h - t1) + t2 * (b2 - 2 * t2)
+    assert np.allclose(A, A0), 'A=%s A0=%s' % (A, A0)
+    #assert dim2 > dim4+dim5, 'HAT1; required: dim2 > dim4+dim5; dim2=%s dim4=%s; dim5=%s\n%s' % (dim2, dim4, dim5, prop)
+    #*DIM4+DIM5, CAN NOT BE LARGER THAN THE HEIGHT OF
+        #THE HAT, DIM2.
+
+
+    #h1 = w  # upper, horizontal lower bar (see HAT)
+    #w1 = w0 - w3
+    #A = 2. * (h0 * w0 + h1 * w1 + h2 * w2 + h3 * w3)
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def i_section(class_name, beam_type, dim, prop):
+    # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
+
+    #  <----d3=b---->
+    #
+    #  1------------2         ^
+    #  |      B     |  d6=tb  |
+    # 12---11---4---3         |
+    #       |   |             |
+    #       |   |             |  d1=h
+    #       | C | <--- d4=tw  |
+    #       |   |             |
+    #  9---10---5---6         |
+    #  |      A     |  d5=ta  |
+    #  8------------7         v
+    #
+    #  <----d2=a---->
+    #
+    dim1, dim2, dim3, dim4, dim5, dim6 = dim
+
+    h = dim1
+    a = dim2
+    b = dim3
+    tw = dim4
+    ta = dim5
+    tb = dim6
+    hw = h - (ta + tb)
+    hf = h - 0.5 * (ta + tb)
+    assert hw > 0, 'hw=%s' % hw
+    assert hf > 0, 'hf=%s' % hf
+
+    A = ta * a + hw * tw + b * tb
+    yc = (0.5 * hw * (hw + ta)*tw + hf*tb*b) / A
+    #ys = tb * hf * b**3/(tb * b**3 + ta * a**a)
+    #yna = yc - ys
+    i1 = (
+       1 / 12 * (h*tb**3 + a*ta**3 + tw*hw**3)
+       + (hf-yc)**2*b*tb+yc**2*a*ta
+       + (yc - 0.5*(hw+ta))**2*hw*tw
+    )
+    i2 = (b**3 * tb + ta * a**3 + hw*tw**3) / 12.
+    i12 = 0.
+    #j = 1/3 * (tb**3*b + ta**3*a + tw**3*hf)
+    #assert np.allclose(i1+i2, j), 'I1+I2=%s+%s=%s J=%s' % (i1, i2, i1 + i2, j)
+
+    assert dim1 > dim5+dim6, 'I; required: dim1 > dim5+dim6; dim1=%s dim5=%s dim6=%s\n%s' % (dim1, dim5, dim6, prop)
+    #THE SUM OF THE FLANGE THICKNESSES,DIM5 + DIM6,
+    #CAN NOT BE GREATER THAT THE WEB HEIGHT, DIM1.
+    return A, i1, i2, i12
+
+def i1_section(class_name, beam_type, dim, prop):
+    #
+    #  d1/2   d2  d1/2
+    #  <---><---><--->
+    #
+    #  1--------------2     ^
+    #  |      A       |     |
+    # 12---11---4-----3     |
+    #       |   |        ^  |
+    #       |   |        |  |  d4
+    #       | B |     d3 |  |
+    #       |   |        v  |
+    #  9----10---5----6     |
+    #  |      C       |     |
+    #  8--------------7     v
+    #
+    #  <----d2---->
+    #
+    #
+    # h1 = hA = (d4 - d3) / 2
+    # h2 = hB = d3
+    #
+    # w1 = wA = d1 + d2
+    # w2 = d2
+    #
+    # A3 = A1
+    # A = A1 + A2 + A3
+    dim1, dim2, dim3, dim4 = dim
+    w1 = dim1 + dim2
+    h1 = (dim4 - dim3) / 2.
+
+    w2 = dim2
+    h2 = dim3
+
+    A = 2. * (h1 * w1) + h2 * w2
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def l_section(class_type, beam_type, dim, prop):
+    # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
+    #
+    #  D4
+    # F---C      ^
+    # |   |      |
+    # | 2 |      |
+    # |   |      | D2
+    # +---+---+  |
+    # |1   D3 |  |
+    # E-------D  v
+    #
+    # <------> D1
+    #
+    dim1, dim2, dim3, dim4 = dim
+    t1 = dim3
+    t2 = dim4
+    b = dim1 - 0.5 * t2
+    h = dim2 - 0.5 * t1
+    h2 = dim2 - t1
+    b1 = dim1 - t2
+    A = (b + 0.5 * t2) * t1 + h2 * t2
+
+    yc = t2*h2 * (h2 + t1) / (2 * A)
+    zc = t1*b1 * (b1 + t2) / (2 * A)
+    i1 = (
+        t1 ** 3 * (b + 0.5 * t2) / 12. +
+        t1 * (b + 0.5 * t2) * yc ** 2 +
+        t2 * h ** 3 / 12 +
+        h2 * t2 * (0.5 * (h2 + t1) - yc) ** 2
+    )
+    i2 = (
+        t2 ** 3 * h2 / 12. +
+        t1*(b + 0.5 * t2) ** 3 / 12. +
+        t1*(b + 0.5 * t2) * (0.5 * b1 - zc) ** 2  # zc is z2 in the docs...
+    )
+    i12 = (
+        zc * yc * t1 * t2
+        - b1 * t1 * yc * (0.5 * (b1 + t2) - zc)
+        - h2 * t2 * zc * (0.5 * (h2 + t1) - yc)
+    )
+    #j = 1/3 * (t1**3*b + t2**3 * h)
+    #k1 = h2 * t2 / A
+    #k2 = b1 * t1 / A
+    #yna = yc
+    #zna = zc
+    return A, i1, i2, i12
+
+def chan_section(class_name, beam_type, dim, prop):
+    #
+    # +-+----+   ^  ^
+    # | |    |   |  | d4 = tf
+    # | +----+   |  v
+    # | |        |         ^
+    # | |<-- d3  |         |
+    # | |    tw  | d2 = h  | hw
+    # | |        |         |
+    # | +----+   |         v
+    # | |    |   |
+    # +-+----+   v
+    #   <-bf->
+    # <--d1-->
+    #
+
+    dim1, dim2, dim3, dim4 = dim
+    tw = tweb = dim3
+    tf = tflange = dim4
+    bflange_tweb = dim1
+
+    bflange = bflange_tweb - tweb
+    hweb_all = dim2
+    hweb = dim2 - 2. * tf
+    #print(f'tflange={tflange} bflage={bflange} hweb_all={hweb_all} hweb={hweb} tweb={tweb}')
+    A0 = 2 * (tflange * bflange) + tweb * hweb_all
+
+    d = dim2 - 2 * tf
+
+    # per https://docs.plm.automation.siemens.com/data_services/resources/nxnastran/10/help/en_US/tdocExt/pdf/element.pdf
+    #b = dim1 - 0.5 * tw
+    #h = dim2 - tf
+    #bf = dim1 - tw
+    #hw = dim2 - 2 * tf
+
+    #A = 2 * tf * bf + (h + tf) * tweb  # I think tt is tf...
+    #zc = bf * tf * (bf + tw) / A
+    #zs = b**2 * tf / (2 * b * tw + h * tf / 3)
+    #i1 = (
+        #h ** 2 * tf * bf / 2
+        #+ bf * tf ** 3 / 6
+        #+ (h + tf) ** 3 * tw / 12
+    #)
+    #i2 = (
+        #(h + tf) * tw**3/12
+        #+ bf**3 * tf / 6
+        #+ 0.5 * (bf + tw) ** 2 * bf * tf
+        #- zc ** 2 * A
+    #)
+    #j = (2 * b * tf **3 + h * tw ** 3) / 3
+
+    # warping coefficient for the cross section relative to the shear center
+    #iw = tf * b**3 * h**2 / 12 * (2 * tw * h + 3 * tf * b) / (tw * h + 6 * tf * b)
+    #k1 = tw * hw / A
+    #k2 = 2 * tf * bf / A
+    #zna = zc + zs
+    hweb = dim2 - 2 * tf
+    A1 = 2 * tf * dim1 + hweb * tweb
+    A = A1
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def chan1_section(class_name, beam_type, dim, prop):
+    #
+    # +--------+  ^
+    # |        |  |
+    # +---+----+  |
+    # |   |       |         ^
+    # |   |       |         |
+    # |   |       | d4 = h  | d3 = hw = h2
+    # |   |       |         |
+    # +---+----+  |         v
+    # |        |  |
+    # +--------+  v
+    # <---w1--->
+    # <--><---->
+    # dim2 dim1
+    # tw    bf
+    dim1, dim2, dim3, dim4 = dim
+    tweb = dim2
+    bflange = dim1
+    h_all = dim4
+    h_inner = dim3
+
+    h1 = h_all - h_inner  # 2*tflange
+    assert h_all > h_inner, f'h_all(dim4)={h_all} h_inner(dim3)={h_inner}'
+    tflange = h1 / 2.
+    w_all = bflange + tweb  # bf + tw
+    A = h1 * w_all + h_inner * tweb
+    #print(f'h_all={h_all} h_inner={h_inner} tweb={tweb} tflange={tflange} bflange={bflange}')
+    A2 = dim2 * dim3 + (h_all - dim3) * (dim1 + dim2)
+    assert np.allclose(A, A2), 'A=%s A2=%s' % (A, A2)
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def chan2_section(class_name, beam_type, dim, prop):
+    #  d1        d1
+    # <-->      <-->
+    # +--+      +--+        ^
+    # |  |      |  |        |
+    # |  |      |  |        | d3
+    # +--+------+--+  ^     |
+    # |            |  | d2  |
+    # +------------+  v     v
+    #
+    # <-----d4----->
+    #
+    dim1, dim2, dim3, dim4 = dim
+    hupper = dim3 - dim2
+    hlower = dim2
+    wlower = dim4
+    wupper = dim1
+    A = 2 * hupper * wupper + hlower * wlower
+
+    h2 = dim2
+    w2 = dim4
+
+    h1 = dim3 - h2
+    w1 = dim1 * 2
+    A2 = h1 * w1 + h2 * w2
+    A3 = 2 * dim1 * dim3 + (dim4 - 2 * dim1) * dim2
+    assert np.allclose(A, A2), 'A=%s A2=%s A3=%s' % (A, A2, A3)
+    assert np.allclose(A, A3), 'A=%s A2=%s A3=%s' % (A, A2, A3)
+    I1 = I2 = I12 = None
+    return A, I1, I2, I12
+
+def dbox_section(class_name, beam_type, dim, prop):
+    #DBOX = ((DIM2*DIM3)-((DIM2-DIM7-DIM8)*(DIM3-((0.5*DIM5)+DIM4)))) +
+    #       (((DIM1-DIM3)*DIM2)-((DIM2-(DIM9+DIM10))*(DIM1-DIM3-(0.5*DIM5)-DIM6)))
+    #
+    #  |--2--|---5---|
+    #  |     |       |
+    #  1     3       6
+    #  |     |       |
+    #  |--4--|---7---|
+    #
+    dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10 = dim
+
+    #0,1,2,6,11
+    #1,2,3,7,12
+
+    htotal = dim2
+    wtotal = dim1
+
+    wleft = dim3 - dim4 - dim5 / 2.
+    wright = dim1 - dim3 - dim6 - dim5 / 2.
+    assert wleft > 0, wleft
+    #assert wright > 0, wright
+
+    #A1 = dim4 * htotal
+    #A2 = dim7 * wleft
+    #A3 = dim5 * htotal
+    #A4 = dim8 * wleft
+    #A5 = dim9 * wright
+    #A6 = dim6 * htotal
+    #A7 = dim10 * wright
+    #A = A1 + A2 + A3 + A4 + A5 + A6 + A7
+
+    A1 = dim4 * htotal
+    A2 = wleft * dim7
+    A3 = dim5 * htotal
+    A4 = wleft * dim8
+    A5 = wright * dim9
+    A6 = dim6 * htotal
+    A7 = wright * dim10
+    A = A1 + A2 + A3 + A4 + A5 + A6 + A7
+
+    z1 = dim4 / 2
+    z2 = dim4 + wleft / 2
+    z3 = dim3
+    z4 = z2
+    z5 = dim3 + dim5 / 2 + wright / 2
+    z6 = dim1 - dim6 / 2
+    z7 = z5
+
+    y1 = htotal / 2
+    y2 = htotal - dim7 / 2
+    y3 = y1
+    y4 = dim8 / 2
+    y5 = htotal - dim9 / 2.
+    y6 = y1
+    y7 = dim10 / 2
+
+    cg_y = (A1 * y1 + A2 * y2 + A3 * y3 + A4 * y4 + A5 * y5 + A6 * y6 + A7 * y7) / A
+    cg_z = (A1 * z1 + A2 * z2 + A3 * z3 + A4 * z4 + A5 * z5 + A6 * z6 + A7 * z7) / A
+
+    dy1 = y1 - cg_y
+    dy2 = y2 - cg_y
+    dy3 = y3 - cg_y
+    dy4 = y4 - cg_y
+    dy5 = y5 - cg_y
+    dy6 = y6 - cg_y
+    dy7 = y7 - cg_y
+
+    dz1 = z1 - cg_z
+    dz2 = z2 - cg_z
+    dz3 = z3 - cg_z
+    dz4 = z4 - cg_z
+    dz5 = z5 - cg_z
+    dz6 = z6 - cg_z
+    dz7 = z7 - cg_z
+    assert dz1 < 0., dz1
+    assert dy2 > 0., dy2
+
+    # inertia taken about the centroid
+    # 1/12 * b * h^3 = 1/12 * A * h^2
+    Iy1 = A1 * htotal ** 2
+    Iy2 = A2 * dim7 ** 2
+    Iy3 = A3 * htotal ** 2
+    Iy4 = A4 * dim8 ** 2
+    Iy5 = A5 * dim9 ** 2
+    Iy6 = A6 * htotal ** 2
+    Iy7 = A7 * dim10 ** 2
+    dI1 = A1 * dy1 + A2 * dy2 + A3 * dy3 + A4 * dy4 + A5 * dy5 + A6 * dy6 + A7 * dy7
+    I1 = (Iy1 + Iy2 + Iy3 + Iy4 + Iy5 + Iy6 + Iy7) / 12. + dI1
+
+    # 1/12 * b^3 * h = 1/12 * A * b^2
+    Iz1 = A1 * dim4 ** 2
+    Iz2 = A2 * wleft ** 2
+    Iz3 = A3 * dim5 ** 2
+    Iz4 = A4 * wleft ** 2
+    Iz5 = A5 * wright ** 2
+    Iz6 = A6 * dim6 ** 2
+    Iz7 = A7 * wright ** 2
+    dI2 = A1 * dz1 + A2 * dz2 + A3 * dz3 + A4 * dz4 + A5 * dz5 + A6 * dz6 + A7 * dz7
+    I2 = (Iz1 + Iz2 + Iz3 + Iz4 + Iz5 + Iz6 + Iz7) / 12. + dI2
+
+    I12 = None
+    return A, I1, I2, I12
+
 
 class IntegratedLineProperty(LineProperty):
     def __init__(self):
@@ -129,8 +1061,6 @@ class IntegratedLineProperty(LineProperty):
 
     def Nsm(self):
         # type: () -> float
-        #print("xxb = ",self.xxb)
-        #print("nsm = ",self.nsm)
         nsm = integrate_positive_unit_line(self.xxb, self.nsm)
         return nsm
 
@@ -431,6 +1361,7 @@ class PBAR(LineProperty):
         self.mid_ref = model.Material(self.mid, msg=msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.mid = self.Mid()
         self.mid_ref = None
 
@@ -670,10 +1601,32 @@ class PBARL(LineProperty):
             keys = list(cls.valid_types.keys())
             raise KeyError('%r is not a valid PBARL type\nallowed_types={%s}' % (
                 Type, ', '.join(sorted(keys))))
+
+        # PBARL
+        # 9. For DBOX section, the default value for DIM5 to DIM10 are
+        #    based on the following rules:
+        #     a. DIM5, DIM6, DIM7 and DIM8 have a default value of
+        #        DIM4 if not provided.
+        #     b. DIM9 and DIM10 have a default value of DIM6 if not
+        #        provided.
         dim = []
-        for i in range(ndim):
-            dimi = double(card, 9 + i, 'ndim=%s; dim%i' % (ndim, i + 1))
-            dim.append(dimi)
+        if Type == 'DBOX':
+            for i in range(ndim):
+                if i in [4, 5, 6, 7]:
+                    dim4 = dim[3]
+                    dimi = double_or_blank(card, 9 + i, 'ndim=%s; dim%i' % (ndim, i + 1),
+                                           default=dim4)
+                elif i in [8, 9]:
+                    dim6 = dim[5]
+                    dimi = double_or_blank(card, 9 + i, 'ndim=%s; dim%i' % (ndim, i + 1),
+                                           default=dim6)
+                else:
+                    dimi = double(card, 9 + i, 'ndim=%s; dim%i' % (ndim, i + 1))
+                dim.append(dimi)
+        else:
+            for i in range(ndim):
+                dimi = double(card, 9 + i, 'ndim=%s; dim%i' % (ndim, i + 1))
+                dim.append(dimi)
 
         #: dimension list
         assert len(dim) == ndim, 'PBARL ndim=%s len(dims)=%s' % (ndim, len(dim))
@@ -764,24 +1717,25 @@ class PBARL(LineProperty):
     def I1(self):
         # type: () -> float
         """gets the section I1 moment of inertia"""
-        I = self.I1_I2_I12()
-        return I[0]
+        I1 = A_I1_I2_I12(self, self.beam_type, self.dim)
+        return I1
 
     def I2(self):
         # type: () -> float
         """gets the section I2 moment of inertia"""
+        I2 = A_I1_I2_I12(self, self.beam_type, self.dim)[2]
         I = self.I1_I2_I12()
-        return I[1]
+        return I2
 
     def I12(self):
         # type: () -> float
         """gets the section I12 moment of inertia"""
         try:
-            I = self.I1_I2_I12()
+            I12 = A_I1_I2_I12(self, self.beam_type, self.dim)
         except:
             print(str(self))
             raise
-        return I[2]
+        return I12
 
     #def I1_I2_I12(self):
         #"""gets the section I1, I2, I12 moment of inertia"""
@@ -790,6 +1744,10 @@ class PBARL(LineProperty):
     def I11(self):
         # type: () -> float
         return self.I1()
+
+    def I22(self):
+        # type: () -> float
+        return self.I2()
 
     def _points(self, beam_type, dim):
         if beam_type == 'BAR':  # origin ar center
@@ -1000,10 +1958,6 @@ class PBARL(LineProperty):
         #: .. seealso:: http://en.wikipedia.org/wiki/Perpendicular_axis_theorem
         J = I1 + I2
         return J
-
-    def I22(self):
-        # type: () -> float
-        return self.I2()
 
     def raw_fields(self):
         list_fields = ['PBARL', self.pid, self.Mid(), self.group, self.beam_type,
@@ -1361,7 +2315,7 @@ class PBEAM3(LineProperty):  # not done, cleanup; MSC specific card
         pid = 1
         mid = 2
         A = 3.
-        iz =4.
+        iz = 4.
         iy = 5.
         return PBEAM3(pid, mid, A, iz, iy,
                       iyz=None, j=None, nsm=0.,
@@ -1451,7 +2405,6 @@ class PBEAM3(LineProperty):  # not done, cleanup; MSC specific card
                 if value is None:
                     values[i + 1] = station_a_value
             return values
-
 
         self.pid = pid
         self.mid = mid

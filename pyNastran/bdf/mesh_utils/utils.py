@@ -71,9 +71,8 @@ def cmd_line_equivalence(argv=None, quiet=False):
     from docopt import docopt
     import pyNastran
     msg = (
-        "Usage:\n"
-        "  bdf equivalence IN_BDF_FILENAME EQ_TOL [-o OUT_BDF_FILENAME]\n"
-
+        'Usage:\n'
+        '  bdf equivalence IN_BDF_FILENAME EQ_TOL [-o OUT_BDF_FILENAME]\n'
         '  bdf equivalence -h | --help\n'
         '  bdf equivalence -v | --version\n'
         '\n'
@@ -207,7 +206,7 @@ def cmd_line_bin(argv=None, quiet=False):  # pragma: no cover
     dy = (y1 - y0) / nbins
     y0i = y0
     y1i = y0 + dy
-    for i in range(nbins):
+    for unused_i in range(nbins):
         j = np.where((y0i <= y) & (y <= y1i))[0]
         if not len(j):
             continue
@@ -279,8 +278,9 @@ def cmd_line_renumber(argv=None, quiet=False):
 
     size = 16
     if data['--size']:
-        size = int(data['--size'])
+        size = int(data['SIZE'])
 
+    assert size in [8, 16], size
     #cards_to_skip = [
         #'AEFACT', 'CAERO1', 'CAERO2', 'SPLINE1', 'SPLINE2',
         #'AERO', 'AEROS', 'PAERO1', 'PAERO2', 'MKAERO1']
@@ -315,7 +315,7 @@ def cmd_line_mirror(argv=None, quiet=False):
 
         "Positional Arguments:\n"
         "  IN_BDF_FILENAME    path to input BDF/DAT/NAS file\n"
-       #"  OUT_BDF_FILENAME   path to output BDF/DAT/NAS file\n"
+        #"  OUT_BDF_FILENAME   path to output BDF/DAT/NAS file\n"
         '\n'
 
         'Options:\n'
@@ -464,7 +464,7 @@ def cmd_line_convert(argv=None, quiet=False):
     data = docopt(msg, version=ver, argv=argv[1:])
     if not quiet:  # pragma: no cover
         print(data)
-    size = 16
+    #size = 16
     bdf_filename = data['IN_BDF_FILENAME']
     bdf_filename_out = data['--output']
     if bdf_filename_out is None:
@@ -506,13 +506,13 @@ def cmd_line_scale(argv=None, quiet=False):
         argv = sys.argv
 
     import argparse
-    import textwrap
+    #import textwrap
     import pyNastran
     parent_parser = argparse.ArgumentParser(
         #prog = 'pyNastranGUI',
         #usage = usage,
         #description='A foo that bars',
-        epilog="And that's how you'd foo a bar",
+        #epilog="And that's how you'd foo a bar",
         #formatter_class=argparse.RawDescriptionHelpFormatter,
         #description=textwrap.dedent(text),
         #version=pyNastran.__version__,
@@ -631,7 +631,7 @@ def cmd_line_export_mcids(argv=None, quiet=False):
     data = docopt(msg, version=ver, argv=argv[1:])
     if not quiet:  # pragma: no cover
         print(data)
-    size = 16
+    #size = 16
     bdf_filename = data['IN_BDF_FILENAME']
     csv_filename_in = data['--output']
     if csv_filename_in is None:
@@ -700,7 +700,7 @@ def cmd_line_split_cbars_by_pin_flag(argv=None, quiet=False):
     data = docopt(msg, version=ver, argv=argv[1:])
     if not quiet:  # pragma: no cover
         print(data)
-    size = 16
+    #size = 16
     bdf_filename_in = data['IN_BDF_FILENAME']
     bdf_filename_out = data['--output']
     if bdf_filename_out is None:
@@ -750,7 +750,7 @@ def cmd_line_transform(argv=None, quiet=False):
     if not quiet:  # pragma: no cover
         print(data)
 
-    size = 16
+    #size = 16
     bdf_filename = data['IN_BDF_FILENAME']
     bdf_filename_out = data['--output']
     if bdf_filename_out is None:
@@ -768,16 +768,16 @@ def cmd_line_transform(argv=None, quiet=False):
     log = SimpleLogger(level=level, encoding='utf-8', log_func=None)
     model = read_bdf(bdf_filename, log=log)
 
-    nid_cp_cd, xyz_cid0, xyz_cp, icd_transform, icp_transform = model.get_xyz_in_coord_array(
+    nid_cp_cd, xyz_cid0, unused_xyz_cp, unused_icd_transform, unused_icp_transform = model.get_xyz_in_coord_array(
         cid=0, fdtype='float64', idtype='int32')
 
-    update_nodesi = False
+    update_nodes_flag = False
     # we pretend to change the SPOINT location
     if dxyz is not None:
         xyz_cid0 += dxyz
-        update_nodesi = True
+        update_nodes_flag = True
 
-    if update_nodes:
+    if update_nodes_flag:
         update_nodes(model, nid_cp_cd, xyz_cid0)
         model.write_bdf(bdf_filename_out)
 
@@ -785,6 +785,7 @@ def cmd_line_filter(argv=None, quiet=False):  # pragma: no cover
     """command line interface to bdf filter"""
     if argv is None:
         argv = sys.argv
+
     from docopt import docopt
     import pyNastran
     msg = (
@@ -826,7 +827,7 @@ def cmd_line_filter(argv=None, quiet=False):  # pragma: no cover
     data = docopt(msg, version=ver, argv=argv[1:])
     if not quiet:  # pragma: no cover
         print(data)
-    size = 16
+    #size = 16
     bdf_filename = data['IN_BDF_FILENAME']
     bdf_filename_out = data['--output']
     if bdf_filename_out is None:
@@ -874,7 +875,7 @@ def cmd_line_filter(argv=None, quiet=False):  # pragma: no cover
     eids = np.array(eids)
 
     # we pretend to change the SPOINT location
-    update_nodes = False
+    update_nodesi = False
     # we pretend to change the SPOINT location
     iunion = None
     if xsign:
@@ -882,21 +883,21 @@ def cmd_line_filter(argv=None, quiet=False):  # pragma: no cover
         xfunc = func_map[xsign]
         ix = xfunc(xvals, xval)
         iunion = _union(xval, ix, iunion)
-        update_nodes = True
+        update_nodesi = True
     if ysign:
         yvals = xyz_cid0[:, 1]
         yfunc = func_map[ysign]
         iy = yfunc(yvals, yval)
         iunion = _union(yval, iy, iunion)
-        update_nodes = True
+        update_nodesi = True
     if zsign:
         zvals = xyz_cid0[:, 2]
         zfunc = func_map[zsign]
-        iz = xfunc(zvals, zval)
+        iz = zfunc(zvals, zval)
         iunion = _union(zval, iz, iunion)
-        update_nodes = True
+        update_nodesi = True
 
-    if update_nodes:
+    if update_nodesi:
         eids_to_remove = eids[iunion]
         for eid in eids_to_remove:
             etype = model.elements[eid].type
@@ -1046,7 +1047,7 @@ def cmd_line(argv=None, quiet=False):
     msg += '\n'
 
     if len(argv) == 1:
-        sys.exit(msg)
+        sys.exit(msg + 'Not enough arguments.\n')
 
     #assert sys.argv[0] != 'bdf', msg
 
@@ -1076,7 +1077,11 @@ def cmd_line(argv=None, quiet=False):
         cmd_line_bin(argv, quiet=quiet)
     elif argv[1] == 'create_vectorized_numbered' and dev:
         cmd_line_create_vectorized_numbered(argv, quiet=quiet)
+    elif argv[1] in ['-v', '--version']:
+        import pyNastran
+        print(pyNastran.__version__)
     else:
+        print(argv)
         sys.exit(msg)
         #raise NotImplementedError('arg1=%r' % sys.argv[1])
 

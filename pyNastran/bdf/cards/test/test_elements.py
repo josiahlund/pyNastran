@@ -61,7 +61,8 @@ class TestElements(unittest.TestCase):
 
     def test_gap_01(self):
         """tests a CGAP/PGAP"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         lines = ['CGAP    899     90      21      99      0.      1.      0.      0']
         card = model._process_card(lines)
         card = BDFCard(card)
@@ -241,10 +242,11 @@ class TestElements(unittest.TestCase):
 
         #model.pop_parse_errors()
         #model.cross_reference()
-        save_load_deck(model, run_convert=False, run_save_load_hdf5=True)
+        save_load_deck(model, run_convert=False)
 
     def test_crac3d(self):
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
 
         model.add_grid(2, [0., 0., 0.])
         model.add_grid(3, [1., 0., 0.])

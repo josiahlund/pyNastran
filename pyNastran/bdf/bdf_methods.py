@@ -42,7 +42,6 @@ class BDFMethods(BDFAttributes):
             xyz_cid0=None)
 
     """
-
     def __init__(self):
         BDFAttributes.__init__(self)
 

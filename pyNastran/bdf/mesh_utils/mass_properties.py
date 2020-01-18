@@ -18,6 +18,7 @@ from pyNastran.utils.numpy_utils import integer_types
 from pyNastran.utils.mathematics import integrate_positive_unit_line
 
 NO_MASS = {
+    # no mass
     'GRID', 'PARAM', 'FORCE', 'FORCE1', 'FORCE2', 'MOMENT1', 'MOMENT2', 'LOAD',
     'DVPREL1', 'DVPREL2', 'DVCREL1', 'DVCREL2', 'DVMREL1', 'DVMREL2', 'DCONSTR', 'DESVAR',
     'DEQATN', 'DRESP1', 'DRESP2', 'DRESP3',
@@ -28,6 +29,7 @@ NO_MASS = {
     'PELAS', 'PVISC', 'PBUSH1D',
     'CELAS1', 'CELAS2', 'CELAS3', 'CELAS4', #'CLEAS5',
     'CDAMP1', 'CDAMP2', 'CDAMP3', 'CDAMP4', 'CDAMP5',
+    'PDAMP', 'PGAP',
     'CBUSH', 'CBUSH1D', 'CBUSH2D', 'CVISC', 'CGAP', # is this right?
     'CFAST', 'GENEL',
     'CRAC2D', 'CRAC3D',
@@ -41,14 +43,14 @@ NO_MASS = {
     'CPLSTN3', 'CPLSTN6', 'CPLSTN4', 'CPLSTN8',
 
     'ASET', 'ASET1', 'BSET', 'BSET1', 'CSET', 'CSET1',
-    'QSET', 'QSET1', 'USET', 'USET1',
+    'QSET', 'QSET1', 'USET', 'USET1', 'OMIT', 'OMIT1',
 
     'DLOAD', 'TLOAD1', 'PLOAD', 'PLOAD2', 'PLOAD4',
     'TSTEP', 'TSTEPNL', 'TABLED1', 'TABLED2', 'TABLED3', 'TABLED4',
     'TABLEM1', 'TABLEM2', 'TABLEM3', 'TABLEM4', 'TABLEST',
 
     # aero
-    'MONPNT1', 'MONPNT2', 'MONPNT3',
+    'MONPNT1', 'MONPNT2', 'MONPNT3', 'MONDSP1',
     'AERO', 'AEROS',
     'CAERO1', 'CAERO2', 'CAERO3', 'CAERO4', 'CAERO5',
     'SPLINE1', 'SPLINE2', 'SPLINE3', 'SPLINE4', 'SPLINE5', 'SPLINE6', 'SPLINE7',

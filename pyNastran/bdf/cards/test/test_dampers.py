@@ -14,7 +14,8 @@ class TestDampers(unittest.TestCase):
     def test_damper_01(self):
         """tests PDAMP"""
         lines = ['pdamp, 201, 1.e+5']
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         card = model._process_card(lines)
         card = BDFCard(card)
 
@@ -176,26 +177,9 @@ class TestDampers(unittest.TestCase):
         pbush1d.write_card(size=8, is_double=False)
 
         params = [
-            ('K1', 1.0),
-            ('K2', 1.0),
-            ('K3', 1.0),
-            ('K4', 1.0),
-            ('K5', 1.0),
-            ('K6', 1.0),
-
-            ('B1', 1.0),
-            ('B2', 1.0),
-            ('B3', 1.0),
-            ('B4', 1.0),
-            ('B5', 1.0),
-            ('B6', 1.0),
-
-            #('M1', 1.0),
-            #('M2', 1.0),
-            #('M3', 1.0),
-            #('M4', 1.0),
-            #('M5', 1.0),
-            #('M6', 1.0),
+            ('K1', 1.0), ('K2', 1.0), ('K3', 1.0), ('K4', 1.0), ('K5', 1.0), ('K6', 1.0),
+            ('B1', 1.0), ('B2', 1.0), ('B3', 1.0), ('B4', 1.0), ('B5', 1.0), ('B6', 1.0),
+            #('M1', 1.0), ('M2', 1.0), ('M3', 1.0), ('M4', 1.0), ('M5', 1.0), ('M6', 1.0),
         ]
         i = make_dvprel_optimization(model, params, 'PBUSH', pbush.pid, i=1)
 

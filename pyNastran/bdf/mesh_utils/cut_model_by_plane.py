@@ -891,6 +891,32 @@ def _is_dot(ivalues, percent_values, plane_atol):
     return is_dot
 
 def calculate_area_moi(model, rods, normal_plane, thetas, moi_filename=None):
+    """
+    Parameters
+    ----------
+    model : BDF
+        the model object
+    rods : (eids, nids, xyzs)
+        eids : List[int]
+            the element id that was split
+        nids : (nelements, 2) int ndarray
+            the n1, n2 in xyzs that define the cut shell element
+        xyzs : (nnodes, 3) float ndarray
+            the xyz of the nodes
+    normal_plane : (3, ) float ndarray
+        the direction of the cut plane
+    thetas : dict???
+        thetas[eid] = (thetad, Ex, Ey, Gxy)
+    moi_filename : str; default=None
+        writes a csv file
+
+    Returns
+    -------
+    total_area
+    Isum
+    EIsum
+    avg_centroid
+    """
     rod_elements, rod_nids, rod_xyzs = rods
     eids = np.abs(rod_elements[:, 0])
     neids = len(eids)

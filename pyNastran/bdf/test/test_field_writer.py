@@ -39,8 +39,7 @@ class Testfield_writer_8(unittest.TestCase):
         self.assertEqual(print_field_8(-0.0748662), '-.074866',
                          print_field_8(-0.0748662))
 
-
-    def test_2(self):
+    def test_field_random(self):
         for i in range(100):
             a = random.uniform(-20, 20)
             a2 = 10 ** a
@@ -407,12 +406,14 @@ class Testfield_writer_8(unittest.TestCase):
         large_exponent = 17
 
         nums = (
-            [0., 0.000034, -0.000034] +
+            [0., 0.000034, -0.000034,
+             0.000000000000000000000001, -0.000000000000000000000001] +
             [9./11 * 10**x for x in range(small_exponent, large_exponent+1)] +
             [-9./11 * 10**x for x in range(small_exponent, large_exponent+1)])
 
         expected = [
             '              0.', '         .000034', '        -.000034',
+            '           1.-24', '          -1.-24',
 
             '8.18181818182-18', '8.18181818182-17', '8.18181818182-16', '8.18181818182-15',
             '8.18181818182-14', '8.18181818182-13', '8.18181818182-12', '8.18181818182-11',
@@ -440,12 +441,12 @@ class Testfield_writer_8(unittest.TestCase):
             self.assertEqual(output, expectedi, msg='num=%s output=%r expected=%r' % (x, output, expectedi))
 
         nums = [0.99999999999999 * 10**x for x in range(small_exponent, large_exponent+1)]
-        positive_output = [print_float_16(x) for x in nums]
-        negative_output = [print_float_16(-x) for x in nums]
+        unused_positive_output = [print_float_16(x) for x in nums]
+        unused_negative_output = [print_float_16(-x) for x in nums]
+
 
 def compare(value_in):
     field = print_field_8(value_in)
-
     val = interpret_value(field)
     if val != 0:
         p = (val - value_in) / val

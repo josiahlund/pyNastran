@@ -185,10 +185,10 @@ class PBUSH(BushingProperty):
             sa, st, ea, et = rcv
         if sa is not None or st is not None or ea is not None or et is not None:
             self.vars.append('RCV')
-            self.sa = rcv[0]
-            self.st = rcv[1]
-            self.ea = rcv[2]
-            self.et = rcv[3]
+        self.sa = sa
+        self.st = st
+        self.ea = ea
+        self.et = et
 
         # M parameter (MSC only; in 2016, not in 2005)
         self.mass = mass
@@ -386,13 +386,23 @@ class PBUSH1D(BushingProperty):
 
         Parameters
         ----------
-        pid : ???
-            ???
+        pid : int
+            property id
+        k : float
+           stiffness
+        c : float
+            Viscous damping
+        m : float
+            mass
+        sa : float
+            Stress recovery coefficient [1/area].
+        se : float
+            Strain recovery coefficient [1/length].
         optional_vars : dict[name] : value; default=None
             name : str
                 SHOCKA, SPRING, DAMPER, GENER
-            values : ???
-                ???
+            values : List[varies]
+                the values
 
         """
         BushingProperty.__init__(self)

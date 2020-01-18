@@ -190,6 +190,8 @@ def bdf_renumber(bdf_filename, bdf_filename_out, size=8, is_double=False,
                      starting_ids_dict=starting_ids_dict, round_ids=False)
 
     """
+    assert size in [8, 16], size
+    assert isinstance(is_double, bool), is_double
     starting_id_dict_default = {
         'cid' : 1,
         'nid' : 1,
@@ -598,8 +600,10 @@ def bdf_renumber(bdf_filename, bdf_filename_out, size=8, is_double=False,
         'caeros' : caero_id_map,
 
         'DLOAD' : dload_map,
+        'RANDOM' : dload_map, # RANDPS, RANDT1
         'LOAD' : load_map,
         'LOADSET' : lseq_map,
+        'CLOAD' : lseq_map,
         'TSTEP' : tstep_map,
         'TSTEPNL' : tstepnl_map,
         'SUPORT1' : suport1_map,
@@ -664,7 +668,7 @@ def get_renumber_starting_ids_from_model(model):
         max(model.rigid_elements) if model.rigid_elements else 0,
     ])
     pid_max = max([
-        max(model.properties) if model.masses else 0,
+        max(model.properties) if model.properties else 0,
         max(model.properties_mass) if model.properties_mass else 0,
     ])
     mids = model.material_ids
@@ -704,7 +708,7 @@ def get_starting_ids_dict_from_mapper(model, mapper):
         'spcs' : 'spc_id',
         'mpcs' : 'mpc_id',
         'LOAD' : 'load_id',
-        'DLOAD' : 'dload_id',
+        'DLOAD' : 'dload_id', 'RANDOM' : 'dload_id',
         'SUPORT' : 'suport_id',
         'SUPORT1' : 'suport1_id',
         'sets' : 'set_id',
@@ -732,7 +736,7 @@ def get_starting_ids_dict_from_mapper(model, mapper):
             #if key2 == 'nid':
                 #print("  nid_offset = %s" % offset)
                 #print("  nid map = %s" % old_new_map)
-            starting_id_dict2[key2] = max(old_new_map.values()) + 1 #offset
+            starting_id_dict2[key2] = max(old_new_map.values()) + 1 # offset
         else:
             if len(old_new_map):
                 missed_keys.append(key)
@@ -1083,7 +1087,7 @@ def _update_case_control(model, mapper):
     mapper_quantities = [
         'FREQUENCY', 'DLOAD', 'LOAD', 'LOADSET', 'SPC', 'MPC', 'METHOD', 'CMETHOD',
         'TSTEP', 'TSTEPNL', 'NLPARM', 'SDAMPING', 'DESSUB', 'DESOBJ', 'GUST',
-        'SUPORT1', 'TRIM', 'BOUTPUT', 'IC', 'CSSCHD', 'FMETHOD', 'TFL',
+        'SUPORT1', 'TRIM', 'BOUTPUT', 'IC', 'CSSCHD', 'FMETHOD', 'TFL', 'CLOAD',
     ]
 
     # TODO: remove this...
@@ -1099,8 +1103,9 @@ def _update_case_control(model, mapper):
         'TITLE', 'ECHO', 'ANALYSIS', 'SUBTITLE', 'LABEL', 'SUBSEQ', 'OUTPUT',
         'TCURVE', 'XTITLE', 'YTITLE', 'AECONFIG', 'AESYMXZ', 'MAXLINES', 'PARAM', 'CONTOUR',
         'PTITLE', 'PLOTTER', 'K2PP', 'CSCALE', 'XGRID LINES', 'YGRID LINES', 'YMIN', 'YMAX',
-        'LINE',
+        'LINE', 'XAXIS', 'YAXIS',
         ] + skip_keys_temp
+    warn_keys = ['RANDOM']
 
     sets_analyzed = set()
     # sets in the global don't get updated....
@@ -1133,6 +1138,8 @@ def _update_case_control(model, mapper):
 
             if key in skip_keys:
                 pass
+            elif key in warn_keys:
+                model.log.warning('skipping %s=%s' % (key, values))
             elif 'SET ' in key:
                 # does this need to be updated...I don't think so...
                 continue

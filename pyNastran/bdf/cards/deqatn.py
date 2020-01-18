@@ -236,6 +236,9 @@ class DEQATN(BaseCard):  # needs work...
         # combine the equations into a single organized block
         line0_eq = line0[16:]
         eqs_temp = [line0_eq] + card[1:]
+        #eqs_temp2 = [line.replace(';;', ';') for line in eqs_temp]
+        #for line in eqs_temp2:
+            #print(line)
         eqs = lines_to_eqs(eqs_temp)
         return DEQATN(equation_id, eqs, comment=comment)
 
@@ -298,6 +301,9 @@ class DEQATN(BaseCard):  # needs work...
         del self.nargs
         del self.dtable, self.dtable_ref
 
+    def _verify(self, xref):
+        pass
+
     def evaluate(self, *args):
         """Makes a call to self.func"""
         #args2 = args[:self.nargs]
@@ -343,11 +349,12 @@ def _split_equations_by_semicolon(eqs_in):
     nchars = 72 - 16
     for eq in eqs_in:
         eq2 = eq[nstart:nchars].strip(' \t\n')
-        semicolon = ''
-        if eq2.endswith(';'):
-            eq2 = eq2.rstrip(' \t;')
-            semicolon = ';'
+
+        semicolon = ';' if eq2.rstrip().endswith(';') else ''
+        eq2 = eq2.rstrip(' \t;')
         #nline = len(eq.rstrip('; \n')) + 16
+
+        #print('eq2=%r' % eq2)
         if ';' in eq2:
             eq2s = eq2.split(';')
             eq_tempi = [eqi.strip() + ';' for eqi in eq2s if eqi.strip()]
@@ -355,8 +362,8 @@ def _split_equations_by_semicolon(eqs_in):
                 #print(check_line)
                 #_check_for_valid_line(check_line, eq)
 
-            #print('eq_tempi =' % eq_tempi)
-            eq_tempi[-1] += semicolon
+            #print('eq_tempi = %r' % eq_tempi)
+            #eq_tempi[-1] += semicolon
             eqs_temp_out += eq_tempi
         else:
             check_line = eq2 + semicolon
@@ -662,7 +669,7 @@ def write_function_header(func_header, eq, default_values, comment=''):
                  for var in variables]
 
     if func_name in BUILTINS:
-        func_name += '_'
+        func_name = '_' + func_name
 
     if is_float:
         # f(a,b,c) = 1.
@@ -686,7 +693,7 @@ def write_function_header(func_header, eq, default_values, comment=''):
     msg += _write_comment(comment)
     msg += _write_variables(variables)
     for builtin in BUILTINS:
-        ubuiltin = builtin + '_'
+        ubuiltin = '_' + builtin
         if builtin in func_line and ubuiltin not in func_line:
             raise RuntimeError('cannot have an equation with %r\n%s' % (builtin, func_line))
         if builtin in variables and ubuiltin not in variables:
@@ -704,7 +711,6 @@ def write_function_header(func_header, eq, default_values, comment=''):
                     #print('group = %r' % group)
                 #print(y.group(0))
                 #print('***eq = %r' % eq)
-            #aaa
     for builtin in BUILTINS:
         if builtin in eq and '_' + builtin not in eq:
             eq = eq.replace(builtin, '_'+builtin)

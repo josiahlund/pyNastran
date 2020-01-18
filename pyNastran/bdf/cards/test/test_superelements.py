@@ -43,6 +43,7 @@ class TestSuperelements(unittest.TestCase):
         super1.add_pbarl(1000, 2000, 'ROD', [1.,])
         super1.add_mat1(2000, 3.0e7, None, 0.3)
         model.superelement_models[1] = super1
+
         #----------------------------------------------
 
         model.validate()

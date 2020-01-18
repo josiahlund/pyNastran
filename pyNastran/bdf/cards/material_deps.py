@@ -132,8 +132,8 @@ class MATS1(MaterialDependence):
         tid = integer_or_blank(card, 2, 'tid')
         Type = string(card, 3, 'Type')
 
-        if Type not in ['NLELAST', 'PLASTIC']:
-            raise ValueError('MATS1 Type must be [NLELAST, PLASTIC]; Type=%r' % Type)
+        if Type not in ['NLELAST', 'PLASTIC', 'PLSTRN']:
+            raise ValueError('MATS1 Type must be [NLELAST, PLASTIC, PLSTRN]; Type=%r' % Type)
         if Type == 'NLELAST':
             # should we even read these?
             h = None
@@ -178,7 +178,9 @@ class MATS1(MaterialDependence):
             Type = 'NLELAST'
         elif Type == 2:
             Type = 'PLASTIC'
-        else:
+        elif Type == 3:
+            Type = 'PLSTRN'
+        else:  # pragma: no cover
             raise RuntimeError('Invalid Type:  Type=%s; must be 1=NLELAST '
                                'or 2=PLASTIC' % (Type))
         return MATS1(mid, tid, Type, h, hr, yf, limit1, limit2, comment=comment)

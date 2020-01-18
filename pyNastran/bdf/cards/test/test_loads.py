@@ -14,7 +14,7 @@ from pyNastran.bdf.cards.collpase_card import collapse_thru_by
 from pyNastran.bdf.cards.test.utils import save_load_deck
 #from pyNastran.bdf.errors import DuplicateIDsError
 
-from pyNastran.op2.op2 import OP2
+from pyNastran.op2.op2 import read_op2 # OP2,
 
 bdf = BDF(debug=False)
 TEST_PATH = pyNastran.__path__[0]
@@ -412,8 +412,7 @@ class TestLoads(unittest.TestCase):
         """tests a PLOAD4 with a CPENTA"""
         bdf_filename = os.path.join(MODEL_PATH, 'pload4', 'cpenta.bdf')
         op2_filename = os.path.join(MODEL_PATH, 'pload4', 'cpenta.op2')
-        op2 = OP2(debug=False, log=log)
-        op2.read_op2(op2_filename)
+        op2 = read_op2(op2_filename, log=log)
 
         model = BDF(debug=False)
         model.read_bdf(bdf_filename)
@@ -509,11 +508,9 @@ class TestLoads(unittest.TestCase):
         """tests a PLOAD4 with a CTRIA3"""
         bdf_filename = os.path.join(MODEL_PATH, 'pload4', 'ctria3.bdf')
         op2_filename = os.path.join(MODEL_PATH, 'pload4', 'ctria3.op2')
-        op2 = OP2(debug=False, log=log)
-        op2.read_op2(op2_filename)
+        op2 = read_op2(op2_filename, log=log)
 
-        model = BDF(debug=False)
-        model.read_bdf(bdf_filename)
+        model = read_bdf(bdf_filename, log=log)
         # p0 = (model.nodes[21].xyz + model.nodes[22].xyz + model.nodes[23].xyz) / 3.
         p0 = model.nodes[21].xyz
 
@@ -561,11 +558,9 @@ class TestLoads(unittest.TestCase):
         """tests a PLOAD4 with a CQUAD4"""
         bdf_filename = os.path.join(MODEL_PATH, 'pload4', 'cquad4.bdf')
         op2_filename = os.path.join(MODEL_PATH, 'pload4', 'cquad4.op2')
-        op2 = OP2(debug=False, log=log)
-        op2.read_op2(op2_filename)
+        op2 = read_op2(op2_filename, log=log)
 
-        model = BDF(debug=False)
-        model.read_bdf(bdf_filename)
+        model = read_bdf(bdf_filename, log=log)
         # p0 = (model.nodes[21].xyz + model.nodes[22].xyz + model.nodes[23].xyz) / 3.
         p0 = model.nodes[21].xyz
 
@@ -713,11 +708,9 @@ class TestLoads(unittest.TestCase):
         """tests a PLOAD4 with a CHEXA"""
         bdf_filename = os.path.join(MODEL_PATH, 'pload4', 'chexa.bdf')
         op2_filename = os.path.join(MODEL_PATH, 'pload4', 'chexa.op2')
-        op2 = OP2(debug=False, log=log)
-        op2.read_op2(op2_filename)
+        op2 = read_op2(op2_filename, log=log)
 
-        model = BDF(debug=False)
-        model.read_bdf(bdf_filename)
+        model = read_bdf(bdf_filename, log=log)
         p0 = model.nodes[21].xyz
         nx_minus = [
             (22, 27), (27, 22),
@@ -1281,12 +1274,15 @@ class TestLoads(unittest.TestCase):
 
     def test_sload(self):
         """tests SLOAD"""
-        model = BDF(debug=False)
+        log = get_logger(level='warning')
+        model = BDF(log=log)
         model.add_spoint([11, 12])
         sid = 14
         nids = 11 # SPOINT
         mags = 20.
-        unused_sload = model.add_sload(sid, nids, mags, comment='an sload')
+        sload = model.add_sload(sid, nids, mags, comment='an sload')
+        sload.raw_fields()
+        sload.repr_fields()
 
         sid = 14
         nids = [11, 12] # SPOINT, GRID

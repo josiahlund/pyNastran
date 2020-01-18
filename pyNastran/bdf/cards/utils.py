@@ -78,6 +78,7 @@ def wipe_empty_fields(card):
     -------
     short_card : List[str]
         the card with no trailing blank fields
+
     """
     short_card = []  # type: List[Optional[str]]
     for field in card:

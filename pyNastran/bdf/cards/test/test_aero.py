@@ -128,7 +128,7 @@ class TestAero(unittest.TestCase):
         aecomp1.write_card()
 
         model.validate()
-        save_load_deck(model, run_save_load_hdf5=True)
+        save_load_deck(model)
 
         #-----------
         aecomp2 = AECOMP(name, list_type, aelist_ids, comment='cssch card')
@@ -325,7 +325,7 @@ class TestAero(unittest.TestCase):
         model.add_grid(3, [0., 0., 0.])
 
         model.validate()
-        save_load_deck(model, run_save_load_hdf5=True)
+        save_load_deck(model)
 
     def test_aero_1(self):
         """checks the AERO card"""
@@ -1575,7 +1575,7 @@ class TestAero(unittest.TestCase):
         model.cross_reference()
         model.uncross_reference()
         model.safe_cross_reference()
-        save_load_deck(model, run_save_load_hdf5=True)
+        save_load_deck(model)
 
     def test_flfact(self):
         """checks the FLFACT card"""

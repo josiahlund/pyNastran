@@ -178,16 +178,21 @@ class Part(object):
         # bars
         self.r2d2 = None
 
-        # shells
+        # ---shells---
+        # plane strain
         self.cps3 = None
         self.cpe3 = None
         self.cpe4 = None
         self.cpe4r = None
+
+        # plane stress
+        self.cps4r = None
+
+        # other
         self.coh2d4 = None
         self.cohax4 = None
         self.cax3 = None
         self.cax4r = None
-        self.cps4r = None
 
         # solids
         self.c3d10h = None
@@ -196,10 +201,12 @@ class Part(object):
         # eids
         self.r2d2_eids = None
 
-        self.cps3_eids =  None
         self.cpe3_eids = None
         self.cpe4_eids = None
         self.cpe4r_eids = None
+
+        self.cps3_eids =  None
+
         self.coh2d4_eids = None
         self.cohax4_eids = None
         self.cax3_eids = None
@@ -216,10 +223,12 @@ class Part(object):
             ('r2d2', 2),  #  similar to a CBAR
 
             #  shells
-            ('cps3', 3),
             ('cpe3', 3),
             ('cpe4', 4),
             ('cpe4r', 4),
+
+            ('cps3', 3),
+
             ('coh2d4', 4), #  cohesive zone
             ('cohax4', 4), #  cohesive zone
             ('cax3', 3),

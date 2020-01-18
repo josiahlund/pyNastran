@@ -174,6 +174,24 @@ def _mirror_nodes_plane(model, mirror_model, plane, use_nid_offset=True):
     """
     Mirrors the GRIDs about an arbitrary plane
 
+    Parameters
+    ----------
+    model : BDF
+        ???
+    mirror_model : BDF
+        ???
+    plane : str
+        ???
+    use_nid_offset : bool
+        ???
+
+    Returns
+    -------
+    nid_offset : int
+        the node id offset
+    plane : str
+        the sorted plane; ZX -> xz
+
     .. warning:: doesn't consider coordinate systems;
                   it could, but you'd need 20 new coordinate systems
     .. warning:: doesn't mirror SPOINTs, EPOINTs
