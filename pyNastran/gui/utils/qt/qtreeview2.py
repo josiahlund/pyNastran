@@ -363,13 +363,13 @@ def get_many_cases(data):
     [8]
 
     """
-    name, case, rows = data
+    unused_name, case, rows = data
     if case is None:
         # remove many results
         # (Geometry, None, [results...])
         cases = []
-        for irow, row in enumerate(rows):
-            name, row_id, data2 = row
+        for unused_irow, row in enumerate(rows):
+            unused_name, unused_row_id, unused_data2 = row
             cases += get_many_cases(row)
     else:
         cases = [case]

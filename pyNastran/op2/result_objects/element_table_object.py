@@ -25,7 +25,7 @@ class ElementTableArray(BaseElement):  # displacement style table
         self.ntotal = 0
         self.nelements = 0  # result specific
 
-    def __eq__(self, table):
+    def __eq__(self, table):  # pragma: no cover
         assert self.is_sort1 == table.is_sort1
         is_nan = (self.nonlinear_factor is not None and
                   np.isnan(self.nonlinear_factor) and
@@ -227,6 +227,10 @@ class RealElementTableArray(ElementTableArray):  # displacement style table
     @property
     def is_complex(self):
         return False
+
+    @property
+    def nnodes_per_element(self):
+        return 1
 
     def data_type(self):
         return 'float32'

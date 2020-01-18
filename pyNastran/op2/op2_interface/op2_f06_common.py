@@ -21,9 +21,7 @@ class OP2_F06_Common(object):
         #: subcase_id
         self.isubcase_name_map = {}
         self.generalized_tables = {}
-        self.subtitles = defaultdict(list)
         self.case_control_deck = CaseControlDeck([], log=self.log)
-        self.labels = {}
         self.expected_times = {}
         self.params = {}
         self.table_names = []
@@ -72,7 +70,7 @@ class OP2_F06_Common(object):
         **Example 1**
         >>> self.eigenvectors = get_result('eigenvectors')
 
-        **Example 1**
+        **Example 2**
         >>> self.ato.displacements = get_result('ato.displacements')
 
         """

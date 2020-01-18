@@ -1234,7 +1234,7 @@ class OP2Reader(object):
         #print('--------------------')
 
         self.read_markers([-2, 1, 0])
-        self.read_table_name(['BGPDT', 'BGPDTS', 'BGPDTOLD'])
+        self.read_table_name(['BGPDT', 'BGPDTS', 'BGPDTOLD', 'BGPDTOUT'])
 
         #print('--------------------')
 

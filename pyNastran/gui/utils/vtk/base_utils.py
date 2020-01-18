@@ -11,16 +11,15 @@ from vtk.util.numpy_support import (
 
 IS_TESTING = 'test' in sys.argv[0]
 VTK_VERSION = [int(val) for val in vtk.VTK_VERSION.split('.')]
-if VTK_VERSION[0] < 7 and not IS_TESTING:
+if VTK_VERSION[0] < 7:
     msg = 'VTK version=%r is no longer supported (use vtk 7 or 8)' % vtk.VTK_VERSION
     raise NotImplementedError(msg)
-elif VTK_VERSION[0] in [5, 6, 7, 8]:
-    # should work in 5/6
+elif VTK_VERSION[0] in [7, 8]:
     # tested in 7.1.1
     vtkConstants = vtk
 #elif VTK_VERSION[0] == vtk_9?:
     #vtkConstants = vtk.vtkConstants
-else:
+else:  # pragma: no cover
     msg = 'VTK version=%r is not supported (use vtk 7 or 8)' % vtk.VTK_VERSION
     raise NotImplementedError(msg)
 
@@ -59,13 +58,13 @@ def get_numpy_idtype_for_vtk():
         dtype = 'int32' # TODO: can we include endian?
     elif isize == 8:
         dtype = 'int64'
-    else:
+    else:  # pragma: no cover
         msg = 'isize=%s' % str(isize)
         raise NotImplementedError(msg)
     return dtype
 
 
-def numpy_to_vtk(num_array, deep=0, array_type=None):
+def numpy_to_vtk(num_array, deep=0, array_type=None):  # pragma: no cover
     """Converts a contiguous real numpy Array to a VTK array object.
 
     This function only works for real arrays that are contiguous.

@@ -71,6 +71,7 @@ def update_subtitle_with_adaptivity_index(subtitle, superelement_adaptivity_inde
     adpativity_index : str
         the mesh adaptivity index
         'ADAPTIVITY INDEX=      1'
+
     Returns
     -------
     subtitle : str
@@ -165,7 +166,6 @@ def update_label2(label2, isubcase):
         #else:
             #print('label2   = %r' % label2)
             #print('subcasee = %r' % subcase_expected)
-            #asdf
     return label2
 
 def grids_comp_array_to_index(grids1, comps1, grids2, comps2,

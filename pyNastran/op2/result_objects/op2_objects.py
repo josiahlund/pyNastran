@@ -44,7 +44,8 @@ class BaseScalarObject(Op2Codes):
         #self.ntotal = 0
         #assert isinstance(self.name, (text_type, binary_type)), 'name=%s type=%s' % (self.name, type(self.name))
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
+                          filter_properties=False):
         if keys_to_skip is None:
             keys_to_skip = []
         elif isinstance(keys_to_skip, string_types):
@@ -53,7 +54,8 @@ class BaseScalarObject(Op2Codes):
         my_keys_to_skip = [
             'object_methods', 'object_attributes',
         ]
-        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+                                 filter_properties=filter_properties)
 
     def object_methods(self, mode='public', keys_to_skip=None):
         if keys_to_skip is None:
@@ -297,7 +299,7 @@ class ScalarObject(BaseScalarObject):
 
     def apply_data_code(self):
         if self.table_name is not None and self.table_name != self.data_code['table_name']:
-            print(self.data_code)
+            #print(self.data_code)
             msg = 'old_table_name=%r new_table_name=%r' % (
                 self.table_name, self.data_code['table_name'])
             raise RuntimeError(msg)

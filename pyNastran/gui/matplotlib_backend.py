@@ -1,9 +1,9 @@
 """
-Selects a matplotlib backend so you can run without a GUI/tkinter.
-
-Unfortunately, it currently requires qtpy to use Qt4Agg or Qt5Agg.
-It's only used for interactive testing at the moment, so that can be
-fixed later.
+Selects a matplotlib backend so you can run without a GUI/tkinter.  Supports:
+ - PyQt5
+ - PySide2
+ - WX
+ - Tkinter
 
 """
 from pyNastran.gui import IS_DEV
@@ -14,9 +14,15 @@ else:
     # fails if using the terminal and PyQt/PySide & qtpy are installed
     # how do I check if there is a terminal vs just running in command line?
     #
-    # probably should support tkinter, which is the default matplotlib backend
     try:
         from pyNastran.gui.qt_version import qt_int
         matplotlib_backend = 'Qt%iAgg' % qt_int
     except ImportError:
-        matplotlib_backend = 'Agg'
+        try:
+            # hasn't been tested on a machine without a backend...
+            # default matplotlib backend
+            import tkinter
+            matplotlib_backend = 'tkAgg'
+        except ImportError:
+            # no-gui backend
+            matplotlib_backend = 'Agg'

@@ -116,7 +116,7 @@ def create_res_obj(islot, headers, header, A, fmt_dict, result_type,
             secondary dimension
             N/A : 1D array
             3 : deflection
-    headers : List[str]???
+    headers : List[str]
         the titles???
     fmt_dict : dict[header] = fmt
         the format of the arrays

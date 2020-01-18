@@ -12,7 +12,7 @@ IS_DEV = (
 #IS_TRAVIS = 'TRAVIS' in os.environ
 #IS_RTD = 'READTHEDOCS' in os.environ
 
-if is_pynastrangui_exe:
+if is_pynastrangui_exe:  # pragma: no cover
     PKG_PATH = sys._MEIPASS #@UndefinedVariable
     SCRIPT_PATH = os.path.join(PKG_PATH, 'scripts')
     ICON_PATH = os.path.join(PKG_PATH, 'icons')

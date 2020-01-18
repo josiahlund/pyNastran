@@ -142,14 +142,15 @@ class ViewActions(object):
             self.vtk_interactor.Render()
         self.gui.log_command('rotate(%s)' % rotate_deg)
 
-    def zoom(self, value):
+    def zoom(self, value, render=True):
         camera = self.GetCamera()
         camera.Zoom(value)
         camera.Modified()
-        self.vtk_interactor.Render()
+        if render:
+            self.vtk_interactor.Render()
         self.gui.log_command('zoom(%s)' % value)
 
-    def set_focal_point(self, focal_point):
+    def set_focal_point(self, focal_point, render=True):
         """
         Parameters
         ----------
@@ -163,9 +164,10 @@ class ViewActions(object):
         # now we can actually modify the camera
         camera.SetFocalPoint(focal_point[0], focal_point[1], focal_point[2])
         camera.OrthogonalizeViewUp()
-        self.vtk_interactor.Render()
+        if render:
+            self.vtk_interactor.Render()
 
-    def on_surface(self):
+    def on_surface(self, render=True):
         """sets the main/toggle actors to surface"""
         if self.is_wireframe:
             self.gui.log_command('on_surface()')
@@ -179,9 +181,10 @@ class ViewActions(object):
 
                     prop.SetRepresentationToSurface()
             self.is_wireframe = False
-            self.vtk_interactor.Render()
+            if render:
+                self.vtk_interactor.Render()
 
-    def on_wireframe(self):
+    def on_wireframe(self, render=True):
         """sets the main/toggle actors to wirefreme"""
         if not self.is_wireframe:
             self.gui.log_command('on_wireframe()')
@@ -197,7 +200,8 @@ class ViewActions(object):
                 #prop.GetPointSize()
                 #prop.SetPointSize(5.0)
                 #prop.ShadingOff()
-            self.vtk_interactor.Render()
+            if render:
+                self.vtk_interactor.Render()
             self.is_wireframe = True
 
     #---------------------------------------------------------------------------

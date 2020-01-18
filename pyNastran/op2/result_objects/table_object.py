@@ -801,9 +801,9 @@ class RealTableArray(TableArray):
                 if sgridtype in ['G', 'H', 'L']:
                     f06_file.write('%14s %6s     %-13s  %-13s  %-13s  %-13s  %-13s  %s\n' % (
                         write_float_12e(dt), sgridtype, dx, dy, dz, rx, ry, rz))
-                elif sgridtype == 'S':
+                elif sgridtype in ['S', 'M', 'E']:
                     f06_file.write('%14s %6s     %s\n' % (node_id, sgridtype, dx))
-                else:
+                else:  # pragma: no cover
                     raise NotImplementedError(sgridtype)
             f06_file.write(page_stamp % page_num)
             page_num += 1
@@ -838,7 +838,7 @@ class RealTableArray(TableArray):
                         node_id, sgridtype, dx, dy, dz, rx, ry, rz))
                 elif sgridtype == 'S':
                     f06_file.write('%14i %6s     %s\n' % (node_id, sgridtype, dx))
-                else:
+                else:  # pragma: no cover
                     raise NotImplementedError(sgridtype)
             f06_file.write(page_stamp % page_num)
             page_num += 1
