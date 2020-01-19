@@ -26,6 +26,8 @@ if sys.version_info < (3, 0):
 #    min for Python 3.6
 #  - 2.1: adds plt.subplots support (untested?)
 #  - 2.2: min for Python 3.7
+# pandas:
+#  - 0.20, <0.25 - we'll check if the user has pandas installed (also at runtime)
 
 # the packages that change requirements based on python version
 REQS = {
@@ -154,7 +156,8 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
 
             iversion_check = int_version('scipy', version_check)
             #srequired_version = int_version('scipy', required_version)
-            print('scipy %r %r' % (sver, iversion_check))
+            #print('scipy %r %r' % (sver, iversion_check))
+            #print(iver, iversion_check)
             if iver < iversion_check:
                 print("scipy.version.short_version = %r < %r" % (
                     scipy.version.short_version, version_check))
@@ -194,13 +197,20 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         import cpylog
         iver = int_version('cpylog', cpylog.__version__)
         all_reqs['cpylog'] = str_version(iver)
-        if iver <= [1, 0, 2] or iver >= [1, 3]:
-            print("cpylog.__version__ = %r != '1.0.2'" % cpylog.__version__)
+        if PY2 and not([1, 0, 2] <= iver < [1, 3]):
+            print("cpylog.__version__ = %r '> 1.0.2, < 1.3'" % cpylog.__version__)
             all_reqs['cpylog'] = '>= 1.0.2, <1.3'
             install_requires.append('cpylog >= 1.0.2,<1.3')
+        elif [1, 0, 2] <= iver:
+            print("cpylog.__version__ = %r != '1.0.2'" % cpylog.__version__)
+            all_reqs['cpylog'] = '>= 1.0.2'
+            install_requires.append('cpylog >= 1.0.2')
     except ImportError:
-        install_requires.append('cpylog >= 1.0.2,<1.3')  # 1.0.2 used
-
+        # 1.0.2 used
+        if PY2:
+            install_requires.append('cpylog >= 1.0.2,<1.3')
+        else:
+            install_requires.append('cpylog >= 1.0.2')
 
     try:
         import docopt
@@ -229,24 +239,39 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
 
     if is_rtd:
         pass
+    try:
+        import pandas
+        iver = int_version('pandas', pandas.__version__)
+        all_reqs['pandas'] = str_version(iver)
+        if not([0, 20] <= iver < [0, 25]):
+            print("pandas.__version__ = %r >= '0.20, <0.25'" % pandas.__version__)
+            all_reqs['pandas'] = 'pandas > 0.20, <0.25'
+            install_requires.append('pandas > 0.20, <0.25')
+    except ImportError:
+        install_requires.append('pandas > 0.20, <0.25')
+
+    if is_rtd:
+        pass
     elif is_gui:
         try:
             import PIL
-            iver = int_version('PIL', PIL.__version__)
-            all_reqs['PIL'] = str_version(iver)
-            if PY2 and iver > [7, 0]:
-                print("PIL.__version__ = %r > 1.4.0, < '7.0'" % PIL.__version__)
-                all_reqs['PIL'] = 'PIL >=1.4.0, < 7.0'
-                install_requires.append('PIL >=1.4.0, < 7.0')
+            iver = int_version('pillow', PIL.__version__)
+            print('pillow...', iver)
+            all_reqs['pillow'] = str_version(iver)
+            if PY2 and not ([1, 4, 0] and iver < [7, 0]):
+                print("pillow.__version__ = %r '>= 1.4.0, < 7.0'" % PIL.__version__)
+                all_reqs['pillow'] = 'pillow >=1.4.0, < 7.0'
+                install_requires.append('pillow >=1.4.0, < 7.0')
             elif iver < [1, 4, 0]:
-                print("PIL.__version__ = %r > '1.4.0'" % PIL.__version__)
-                all_reqs['PIL'] = 'PIL >=1.4.0'
-                install_requires.append('PIL >= 1.4.0')
+                print("pillow.__version__ = %r > '1.4.0'" % PIL.__version__)
+                all_reqs['pillow'] = 'pillow >=1.4.0'
+                install_requires.append('pillow >= 1.4.0')
         except ImportError:
+            print('missing pillow...')
             if PY2:
-                install_requires.append('PIL >= 1.4.0, < 7.0')  # 1.5.0 used
+                install_requires.append('pillow >= 1.4.0, < 7.0')  # 1.5.0 used
             else:
-                install_requires.append('PIL >= 1.4.0')  # 1.5.0 used
+                install_requires.append('pillow >= 1.4.0')  # 1.5.0 used
 
     if PY2:
         try:
@@ -279,7 +304,7 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         try:
             import imageio
             if imageio.__version__ < '2.2.0':
-                #print("imageio.version = %r < '2.2.0'" % imageio.__version__)
+                print("imageio.version = %r < '2.2.0'" % imageio.__version__)
                 all_reqs['imageio'] = '>= 2.2.0'
                 install_requires.append('imageio >= 2.2.0')
             else:
@@ -295,5 +320,5 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         #install_requires.append('coverage')
 
     #print(all_reqs)
-    print('install_requires =', install_requires)
+    print('install_requires = %s' %  str(install_requires))
     return all_reqs, install_requires

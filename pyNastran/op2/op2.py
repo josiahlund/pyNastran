@@ -23,7 +23,6 @@ Defines the main OP2 class.  Defines:
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
-import os
 import sys
 from typing import List, Any, Optional
 from six import PY2, string_types
@@ -33,7 +32,7 @@ import numpy as np
 
 import pyNastran
 from pyNastran.utils import (
-    object_attributes, object_methods, ipython_info)
+    object_attributes, object_methods, ipython_info, int_version)
 from pyNastran.utils.numpy_utils import integer_types
 from pyNastran.op2.result_objects.monpnt import MONPNT1, MONPNT3
 
@@ -481,6 +480,11 @@ class OP2(OP2_Scalar):
             build_dataframe = False
             if ipython_info():
                 build_dataframe = True
+            if build_dataframe:
+                import pandas
+                iver = int_version('pandas', pandas.__version__)
+                if not([0, 20] <= iver < [0, 25]):
+                    raise ImportError('pandas=%r and must be >= 0.20 and <0.25' % pandas.__version__)
 
         if encoding is None:
             encoding = sys.getdefaultencoding()

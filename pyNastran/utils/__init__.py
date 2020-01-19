@@ -11,7 +11,6 @@ import os
 import io
 import sys
 from codecs import open
-from itertools import count
 
 from typing import List, Union, Optional
 from six import PY2, string_types, StringIO
@@ -30,6 +29,31 @@ def ipython_info():
         return get_ipython()
     except NameError:
         return None
+
+def int_version(name, version):
+    """splits the version into a tuple of integers"""
+    sversion = version.split('-')[0]
+    #numpy
+    #scipy
+    #matplotlib
+    #qtpy
+    #vtk
+    #cpylog
+    #pyNastran
+    if 'rc' not in name:
+        # it's gotta be something...
+        # matplotlib3.1rc1
+        sversion = sversion.split('rc')[0]
+
+    try:
+        return [int(val) for val in sversion.split('.')]
+    except ValueError:
+        raise SyntaxError('cannot determine version for %s %s' % (name, sversion))
+
+
+def str_version(version):
+    """converts a tuple of intergers to a version number"""
+    return '.'.join(str(versioni) for versioni in version)
 
 def is_file_obj(filename):
     """does this object behave like a file object?"""
