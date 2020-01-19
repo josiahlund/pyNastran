@@ -278,7 +278,7 @@ def cmd_line_renumber(argv=None, quiet=False):
 
     size = 16
     if data['--size']:
-        size = int(data['SIZE'])
+        size = int(data['--size'])
 
     assert size in [8, 16], size
     #cards_to_skip = [

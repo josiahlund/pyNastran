@@ -744,20 +744,26 @@ class BDFAttributes(object):
             'csupext' : ['CSUPEXT'],
 
             # loads
-            'load_combinations' : ['LOAD', 'LSEQ'],
+            'load_combinations' : ['LOAD', 'LSEQ', 'CLOAD'],
             'loads' : [
                 'FORCE', 'FORCE1', 'FORCE2',
                 'MOMENT', 'MOMENT1', 'MOMENT2',
                 'GRAV', 'ACCEL', 'ACCEL1',
                 'PLOAD', 'PLOAD1', 'PLOAD2', 'PLOAD4',
-                'PLOADX1', 'RFORCE', 'RFORCE1', 'SLOAD',
-                'GMLOAD', 'SPCD', 'LOADCYN',
+                'RFORCE', 'RFORCE1', 'SLOAD',
+                'GMLOAD', 'SPCD', 'LOADCYN', 'LOADCYH', 'DEFORM',
 
                 # thermal
-                'TEMP', 'QBDY1', 'QBDY2', 'QBDY3', 'QHBDY',
+                'TEMP', 'TEMPB3', 'QBDY1', 'QBDY2', 'QBDY3', 'QHBDY',
                 'QVOL',
+
+                # axisymmetric
+                'PLOADX1', 'FORCEAX', 'PRESAX', 'TEMPAX',
                 ],
-            'dloads' : ['DLOAD', ],
+            'cyjoin' : ['CYJOIN'],
+            'cyax' : ['CYAX'],
+            'modtrak' : ['MODTRAK'],
+            'dloads' : ['DLOAD'],
             # stores RLOAD1, RLOAD2, TLOAD1, TLOAD2, and ACSRCE entries.
             'dload_entries' : ['ACSRCE', 'TLOAD1', 'TLOAD2', 'RLOAD1', 'RLOAD2',
                                'QVECT', 'RANDPS', 'RANDT1'],
@@ -829,9 +835,10 @@ class BDFAttributes(object):
             'dtable' : ['DTABLE'],
             'dconstrs' : ['DCONSTR', 'DCONADD'],
             'desvars' : ['DESVAR'],
+            'topvar' : ['TOPVAR'],
             'ddvals' : ['DDVAL'],
             'dlinks' : ['DLINK'],
-            'dresps' : ['DRESP1', 'DRESP2', 'DRESP3',],
+            'dresps' : ['DRESP1', 'DRESP2', 'DRESP3'],
             'dvprels' : ['DVPREL1', 'DVPREL2'],
             'dvmrels' : ['DVMREL1', 'DVMREL2'],
             'dvcrels' : ['DVCREL1', 'DVCREL2'],

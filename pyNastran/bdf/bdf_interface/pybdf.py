@@ -493,28 +493,28 @@ class BDFInputPy(object):
             msg += 'cwd: %r\n' % os.getcwd()
             msg += 'include_dir: %r\n' % self.include_dir
             msg += print_bad_path(bdf_filename_inc)
-            print(msg)
+            self.log.error(msg)
             raise IOError(msg)
         elif bdf_filename_inc.endswith('.op2'):
             msg = 'Invalid filetype: bdf_filename=%r' % bdf_filename_inc
-            print(msg)
+            self.log.error(msg)
             raise IOError(msg)
         bdf_filename = bdf_filename_inc
 
         if bdf_filename in self.active_filenames:
             msg = 'bdf_filename=%s is already active.\nactive_filenames=%s' \
                 % (bdf_filename, self.active_filenames)
-            print(msg)
+            self.log.error(msg)
             raise RuntimeError(msg)
         elif os.path.isdir(_filename(bdf_filename)):
             current_filename = self.active_filename if len(self.active_filenames) > 0 else 'None'
             msg = 'Found a directory: bdf_filename=%r\ncurrent_file=%s' % (
                 bdf_filename_inc, current_filename)
-            print(msg)
+            self.log.error(msg)
             raise IOError(msg)
         elif not os.path.isfile(_filename(bdf_filename)):
             msg = 'Not a file: bdf_filename=%r' % bdf_filename
-            print(msg)
+            self.log.error(msg)
             raise IOError(msg)
 
     def _open_file(self, bdf_filename, basename=False, check=True, encoding=None):

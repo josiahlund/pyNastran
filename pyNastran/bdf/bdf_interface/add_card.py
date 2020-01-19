@@ -2000,6 +2000,11 @@ class AddCards(AddMethods):
         self._add_property_object(prop)
         return prop
 
+    def add_baror(self, pid, is_g0, g0, x, offt='GGG', comment=''):
+        baror = BAROR(pid, is_g0, g0, x, offt=offt, comment=comment)
+        self._add_baror_object(baror)
+        return baror
+
     def add_cbarao(self, eid, scale, x, comment=''):
         # type: (int, str, List[float], str) -> CBARAO
         """
@@ -2204,8 +2209,8 @@ class AddCards(AddMethods):
                   e1=None, e2=None, f1=None, f2=None,
                   k1=1., k2=1., s1=0., s2=0.,
                   nsia=0., nsib=None, cwa=0., cwb=None,
-                  m1a=0., m2a=None, m1b=0., m2b=None,
-                  n1a=0., n2a=None, n1b=0., n2b=None,
+                  m1a=0., m2a=0., m1b=None, m2b=None,
+                  n1a=0., n2a=0., n1b=None, n2b=None,
                   comment=''):
         """
         .. todo:: fix 0th entry of self.so, self.xxb
@@ -2241,15 +2246,15 @@ class AddCards(AddMethods):
             about nsm center of gravity at Point A/B.
         cwa / cwb : float; default=0. / cwa
             warping coefficient for end A/B.
-        m1a / m2a : float; default=0. / m1a
+        m1a / m2a : float; default=0. / 0.
             y/z coordinate of center of gravity of
             nonstructural mass for end A.
-        m1b / m2b : float; default=0. / m1b
+        m1b / m2b : float; default=m1a / m2a
             y/z coordinate of center of gravity of
             nonstructural mass for end B.
-        n1a / n2a : float; default=0. / n1a
+        n1a / n2a : float; default=0. / 0.
             y/z coordinate of neutral axis for end A.
-        n1b / n2b : float; default=0. / n1b
+        n1b / n2b : float; default=n1a / n2a
             y/z coordinate of neutral axis for end B.
         comment : str; default=''
             a comment for the card
@@ -2259,8 +2264,8 @@ class AddCards(AddMethods):
                      c1, c2, d1, d2, e1, e2, f1, f2,
                      k1=k1, k2=k2, s1=s1, s2=s2,
                      nsia=nsia, nsib=nsib, cwa=cwa, cwb=cwb,
-                     m1a=m1a, m2a=m2a, m1b=m1b,
-                     m2b=m2b, n1a=n1a, n2a=n2a, n1b=n1b, n2b=n2b, comment=comment)
+                     m1a=m1a, m2a=m2a, m1b=m1b, m2b=m2b,
+                     n1a=n1a, n2a=n2a, n1b=n1b, n2b=n2b, comment=comment)
         self._add_property_object(prop)
         return prop
 
@@ -2688,6 +2693,11 @@ class AddCards(AddMethods):
                       tflag=tflag, T1=T1, T2=T2, T3=T3, T4=T4, comment=comment)
         self._add_element_object(elem)
         return elem
+
+    def add_snorm(self, nid, normal, cid=0, comment=''):
+        snorm = SNORM(nid, normal, cid=cid, comment=comment)
+        self._add_normal_object(snorm)
+        return snorm
 
     def add_pshell(self, pid, mid1=None, t=None, mid2=None, twelveIt3=1.0,
                    mid3=None, tst=0.833333, nsm=0.0,
@@ -7795,8 +7805,8 @@ class AddCards(AddMethods):
         self._add_sempln_object(sempln)
         return sempln
 
-    def add_setree(self, seid, ids, comment=''):
-        setree = SETREE(seid, ids, comment=comment)
+    def add_setree(self, seid, seids, comment=''):
+        setree = SETREE(seid, seids, comment=comment)
         self._add_setree_object(setree)
         return setree
 
