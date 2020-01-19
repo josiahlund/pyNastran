@@ -633,6 +633,25 @@ class Settings(object):
             msg += '  %r = %r\n' % (key, value)
         return msg
 
+def update_axes_text_size(axes,
+                          coord_text_scale,
+                          width=1.0, height=0.25):
+    """updates the coordinate system text size"""
+    # width doesn't set the width
+    # it being very large (old=0.1) makes the width constraint inactive
+
+    for unused_coord_id, axis in axes.items():
+        #print(f'coord_text_scale coord_id={unused_coord_id} coord_text_scale={coord_text_scale}')
+        texts = [
+            axis.GetXAxisCaptionActor2D(),
+            axis.GetYAxisCaptionActor2D(),
+            axis.GetZAxisCaptionActor2D(),
+        ]
+        # this doesn't set the width
+        # this being very large (old=0.1) makes the width constraint inactive
+        for text in texts:
+            text.SetWidth(coord_text_scale * width)
+            text.SetHeight(coord_text_scale * height)
 
 def isfloat(value):
     """is the value floatable"""

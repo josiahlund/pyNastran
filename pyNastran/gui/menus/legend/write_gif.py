@@ -8,14 +8,20 @@ Defines:
 from __future__ import print_function
 import os
 from six import string_types
+
 import numpy as np
 try:
     import imageio
+    import PIL
     IS_IMAGEIO = True
 except ImportError:
     IS_IMAGEIO = False
+
+from pyNastran import is_pynastrangui_exe
 from pyNastran.utils.numpy_utils import integer_types
 
+if is_pynastrangui_exe:  # pragma: no cover
+    assert IS_IMAGEIO, 'imageio is not istalled for the exe'
 
 def setup_animation(scale, istep=None,
                     animate_scale=True, animate_phase=False, animate_time=False,
@@ -545,9 +551,6 @@ def write_gif(gif_filename, png_filenames, time=2.0,
         the pictures to make the gif from
     time : float; default=2.0
         the runtime of the gif (seconds)
-
-    Options
-    -------
     onesided : bool; default=True
         should the animation go up and back down
         True : the video will use images [0...N]
@@ -556,24 +559,26 @@ def write_gif(gif_filename, png_filenames, time=2.0,
         0 : loop infinitely
         1 : loop 1 time
         2 : loop 2 times
-
-    Final Control Options
-    ---------------------
     delete_images : bool; default=False
         cleanup the png files at the end
     make_gif : bool; default=True
         actually make the gif at the end
 
-    Other local variables
-    ---------------------
-    duration : float
-        frame time (seconds)
+    Returns
+    -------
+    success : bool
+        was the gif made
+
     """
     if not IS_IMAGEIO:
         return False
 
     #assert fps >= 1, fps
     nframes = len(png_filenames)
+    assert nframes > 0, png_filenames
+
+    # duration : float
+    # frame time (seconds)
     duration = time / nframes
 
     gif_dirname = os.path.dirname(os.path.abspath(gif_filename))

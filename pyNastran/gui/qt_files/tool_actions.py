@@ -13,7 +13,7 @@ from qtpy.compat import getsavefilename
 from pyNastran.utils import print_bad_path, check_path
 from pyNastran.utils.numpy_utils import integer_types
 from pyNastran.gui.gui_objects.coord_properties import CoordProperties
-from pyNastran.gui.utils.vtk.vtk_utils import numpy_to_vtk_points
+from pyNastran.gui.utils.vtk.vtk_utils import numpy_to_vtk_points, update_axis_text_size
 from pyNastran.gui.utils.load_results import load_user_geom
 from pyNastran.gui.gui_objects.alt_geometry_storage import AltGeometry
 from pyNastran.utils.numpy_utils import loadtxt_nice
@@ -100,9 +100,9 @@ class ToolActions(object):
 
         """
         self.settings.dim_max = dim_max
-        scale = self.settings.coord_scale * dim_max
-
-        transform = make_vtk_transform(origin, matrix_3x3)
+        coord_scale = self.settings.coord_scale * dim_max
+        coord_text_scale = self.settings.coord_text_scale
+        linewidth = self.settings.coord_linewidth
 
         create_actor = True
         if coord_id in self.gui.axes:
@@ -113,49 +113,9 @@ class ToolActions(object):
             axes.DragableOff()
             axes.PickableOff()
 
-        #axes.GetLength() # pi
-        #axes.GetNormalizedShaftLength() # (0.8, 0.8, 0.8)
-        #axes.GetNormalizedTipLength() # (0.2, 0.2, 0.2)
-        #axes.GetOrigin() # (0., 0., 0.)
-        #axes.GetScale() # (1., 1., 1.)
-        #axes.GetShaftType() # 1
-        #axes.GetTotalLength() # (1., 1., 1.)
-
-        axes.SetUserTransform(transform)
-        axes.SetTotalLength(scale, scale, scale)
-        if coord_type == 'xyz':
-            if label:
-                xlabel = u'x%s' % label
-                ylabel = u'y%s' % label
-                zlabel = u'z%s' % label
-                axes.SetXAxisLabelText(xlabel)
-                axes.SetYAxisLabelText(ylabel)
-                axes.SetZAxisLabelText(zlabel)
-        else:
-            if coord_type == 'Rtz':  # cylindrical
-                #x = u'R'
-                #y = u'θ'
-                #z = u'z'
-                x = 'R'
-                y = 't'
-                z = 'z'
-
-            elif coord_type == 'Rtp':  # spherical
-                #x = u'R'
-                #y = u'θ'
-                #z = u'Φ'
-                x = 'R'
-                y = 't'
-                z = 'p'
-            else:  # pragma: no cover
-                raise RuntimeError('invalid axis type; coord_type=%r' % coord_type)
-
-            xlabel = '%s%s' % (x, label)
-            ylabel = '%s%s' % (y, label)
-            zlabel = '%s%s' % (z, label)
-            axes.SetXAxisLabelText(xlabel)
-            axes.SetYAxisLabelText(ylabel)
-            axes.SetZAxisLabelText(zlabel)
+        transform = make_vtk_transform(origin, matrix_3x3)
+        _set_base_axes(axes, transform, coord_type, label,
+                       coord_scale, coord_text_scale, linewidth)
 
         self.gui.transform[coord_id] = transform
         self.gui.axes[coord_id] = axes
@@ -166,7 +126,7 @@ class ToolActions(object):
             is_visible = True
         else:
             label = 'Coord %s' % label
-        self.gui.geometry_properties[label] = CoordProperties(label, coord_type, is_visible, scale)
+        self.gui.geometry_properties[label] = CoordProperties(label, coord_type, is_visible, coord_scale)
         self.gui.geometry_actors[label] = axes
         if create_actor:
             self.rend.AddActor(axes)
@@ -245,8 +205,6 @@ class ToolActions(object):
         show_msg : bool; default=True
             log the command
 
-        TODO: screenshot doesn't work well with the coordinate system text size
-
         """
         fname, flt = self._get_screenshot_filename(fname)
 
@@ -256,7 +214,7 @@ class ToolActions(object):
         render_large.SetInput(self.rend)
 
         out = self._screenshot_setup(magnify, render_large)
-        line_widths0, point_sizes0, coord_scale0, axes_actor, magnify = out
+        line_widths0, point_sizes0, coord_scale0, coord_text_scale0, line_width0, axes_actor, magnify = out
 
         nam, ext = os.path.splitext(fname)
         ext = ext.lower()
@@ -279,7 +237,8 @@ class ToolActions(object):
         #self.log_info("Saved screenshot: " + fname)
         if show_msg:
             self.gui.log_command('on_take_screenshot(%r, magnify=%s)' % (fname, magnify))
-        self._screenshot_teardown(line_widths0, point_sizes0, coord_scale0, axes_actor)
+        self._screenshot_teardown(line_widths0, point_sizes0,
+                                  coord_scale0, coord_text_scale0, line_width0, axes_actor)
 
     def _get_screenshot_filename(self, fname):
         """helper method for ``on_take_screenshot``"""
@@ -317,7 +276,7 @@ class ToolActions(object):
             #print("fname=%r" % fname)
             #print("flt=%r" % flt)
         else:
-            base, ext = os.path.splitext(os.path.basename(fname))
+            unused_base, ext = os.path.splitext(os.path.basename(fname))
             if ext.lower() in ['png', 'jpg', 'jpeg', 'tif', 'tiff', 'bmp', 'ps']:
                 flt = ext.lower()
             else:
@@ -329,8 +288,6 @@ class ToolActions(object):
         if magnify is None:
             magnify_min = 1
             magnify = self.settings.magnify if self.settings.magnify > magnify_min else magnify_min
-        else:
-            magnify = magnify
 
         if not isinstance(magnify, integer_types):
             msg = 'magnify=%r type=%s' % (magnify, type(magnify))
@@ -338,9 +295,16 @@ class ToolActions(object):
         self.settings.update_text_size(magnify=magnify)
 
         coord_scale0 = self.settings.coord_scale
-        #coord_text_scale0 = self.settings.coord_text_scale
-        self.settings.update_coord_scale(
-            coord_scale=coord_scale0*magnify, render=False)
+        coord_text_scale0 = self.settings.coord_text_scale
+        linewidth0 = self.settings.coord_linewidth
+        self.settings.scale_coord(magnify, render=False)
+        self.settings.update_coord_text_scale(coord_text_scale0*magnify, render=False)
+        #self.settings.scale_coord_text(magnify, render=False)
+        #self.settings.update_coord_scale(
+            #coord_scale=coord_scale0*magnify,
+            #coord_text_scale=coord_text_scale0*magnify,
+            #linewidth=linewidth0*magnify,
+            #render=False)
         render_large.SetMagnification(magnify)
 
         # multiply linewidth by magnify
@@ -366,12 +330,12 @@ class ToolActions(object):
         # hide corner axis
         axes_actor = self.gui.corner_axis.GetOrientationMarker()
         axes_actor.SetVisibility(False)
-        return line_widths0, point_sizes0, coord_scale0, axes_actor, magnify
+        return line_widths0, point_sizes0, coord_scale0, coord_text_scale0, linewidth0, axes_actor, magnify
 
-    def _screenshot_teardown(self, line_widths0, point_sizes0, coord_scale0, axes_actor):
+    def _screenshot_teardown(self, line_widths0, point_sizes0,
+                             coord_scale0, coord_text_scale0, linewidth0, axes_actor):
         """helper method for ``on_take_screenshot``"""
         self.settings.update_text_size(magnify=1.0)
-
         # show corner axes
         axes_actor.SetVisibility(True)
 
@@ -386,7 +350,13 @@ class ToolActions(object):
                 pass
             else:
                 raise NotImplementedError(geom_actor)
-        self.settings.update_coord_scale(coord_scale=coord_scale0, render=True)
+        self.settings.scale_coord(magnify=1.0, render=False)
+        self.settings.update_coord_text_scale(coord_text_scale0, render=True)
+        #self.settings.scale_coord_text(magnify=1.0, render=True)
+        #self.settings.update_coord_scale(coord_scale=coord_scale0,
+                                         #coord_text_scale=coord_text_scale0,
+                                         #linewidth=linewidth0,
+                                         #render=True)
 
     #---------------------------------------------------------------------------
     def on_load_user_geom(self, csv_filename=None, name=None, color=None):
@@ -490,59 +460,14 @@ class ToolActions(object):
         #if nelements > 0:
             #self.alt_grids[geom_name].Allocate(npoints, 1000)
 
-        # set points
-        points = numpy_to_vtk_points(xyz, dtype='<f')
+        alt_grid = self.gui.alt_grids[point_name]
+        geom_grid = self.gui.alt_grids[geom_name]
 
-        if nelements > 0:
-            alt_grid = self.gui.alt_grids[point_name]
-            geom_grid = self.gui.alt_grids[geom_name]
-            for i in range(nnodes):
-                elem = vtk.vtkVertex()
-                elem.GetPointIds().SetId(0, i)
-                alt_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
-                geom_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
-        else:
-            for i in range(nnodes):
-                elem = vtk.vtkVertex()
-                elem.GetPointIds().SetId(0, i)
-                alt_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
-        if nbars:
-            for i, bar in enumerate(bars[:, 1:]):
-                g1 = nid_map[bar[0]]
-                g2 = nid_map[bar[1]]
-                elem = vtk.vtkLine()
-                elem.GetPointIds().SetId(0, g1)
-                elem.GetPointIds().SetId(1, g2)
-                geom_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
-
-        if ntris:
-            for i, tri in enumerate(tris[:, 1:]):
-                g1 = nid_map[tri[0]]
-                g2 = nid_map[tri[1]]
-                g3 = nid_map[tri[2]]
-                elem = vtk.vtkTriangle()
-                elem.GetPointIds().SetId(0, g1)
-                elem.GetPointIds().SetId(1, g2)
-                elem.GetPointIds().SetId(2, g3)
-                geom_grid.InsertNextCell(5, elem.GetPointIds())
-
-        if nquads:
-            for i, quad in enumerate(quads[:, 1:]):
-                g1 = nid_map[quad[0]]
-                g2 = nid_map[quad[1]]
-                g3 = nid_map[quad[2]]
-                g4 = nid_map[quad[3]]
-                elem = vtk.vtkQuad()
-                point_ids = elem.GetPointIds()
-                point_ids.SetId(0, g1)
-                point_ids.SetId(1, g2)
-                point_ids.SetId(2, g3)
-                point_ids.SetId(3, g4)
-                geom_grid.InsertNextCell(9, elem.GetPointIds())
-
-        alt_grid.SetPoints(points)
-        if nelements > 0:
-            self.gui.alt_grids[geom_name].SetPoints(points)
+        add_user_geometry(
+            alt_grid, geom_grid,
+            xyz, nid_map, nnodes,
+            bars, tris, quads,
+            nelements, nbars, ntris, nquads)
 
         # create actor/mapper
         self._add_alt_geometry(alt_grid, point_name)
@@ -698,16 +623,21 @@ class ToolActions(object):
         actor = self.gui.geometry_actors[name]
         prop = actor.GetProperty()
         prop.SetRepresentationToPoints()
+        prop.RenderPointsAsSpheresOn()
+        prop.SetLighting(False)
+        #prop.SetInterpolationToFlat()
         prop.SetPointSize(point_size)
 
     #---------------------------------------------------------------------------
     def _add_alt_geometry(self, grid, name, color=None, line_width=None,
                           opacity=None, representation=None):
         """NOTE: color, line_width, opacity are ignored if name already exists"""
+        has_geometry_actor = name in self.gui.geometry_actors
+
         is_pickable = self.gui.geometry_properties[name].is_pickable
         quad_mapper = vtk.vtkDataSetMapper()
 
-        if name in self.gui.geometry_actors:
+        if has_geometry_actor:
             alt_geometry_actor = self.gui.geometry_actors[name]
             alt_geometry_actor.GetMapper().SetInputData(grid)
         else:
@@ -749,6 +679,9 @@ class ToolActions(object):
 
         if representation == 'point':
             prop.SetRepresentationToPoints()
+            prop.RenderPointsAsSpheresOn()
+            prop.SetLighting(False)
+            #prop.SetInterpolationToFlat()
             prop.SetPointSize(point_size)
         elif representation in ['surface', 'toggle']:
             prop.SetRepresentationToSurface()
@@ -757,7 +690,8 @@ class ToolActions(object):
             prop.SetRepresentationToWireframe()
             prop.SetLineWidth(line_width)
 
-        self.rend.AddActor(alt_geometry_actor)
+        if not has_geometry_actor:
+            self.rend.AddActor(alt_geometry_actor)
         vtk.vtkPolyDataMapper().SetResolveCoincidentTopologyToPolygonOffset()
 
         if geom.is_visible:
@@ -785,6 +719,70 @@ class ToolActions(object):
         return self.gui.vtk_interactor
 
 
+def add_user_geometry(alt_grid, geom_grid,
+                      xyz, nid_map, nnodes,
+                      bars, tris, quads,
+                      nelements, nbars, ntris, nquads):
+    """helper method for ``_add_user_geometry``"""
+    # set points
+    points = numpy_to_vtk_points(xyz, dtype='<f')
+
+    if nelements > 0:
+        for i in range(nnodes):
+            elem = vtk.vtkVertex()
+            elem.GetPointIds().SetId(0, i)
+            alt_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
+            geom_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
+    else:
+        for i in range(nnodes):
+            elem = vtk.vtkVertex()
+            elem.GetPointIds().SetId(0, i)
+            alt_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
+
+    if nbars:
+        for i, bar in enumerate(bars[:, 1:]):
+            g1 = nid_map[bar[0]]
+            g2 = nid_map[bar[1]]
+            elem = vtk.vtkLine()
+            elem.GetPointIds().SetId(0, g1)
+            elem.GetPointIds().SetId(1, g2)
+            geom_grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
+
+    if ntris:
+        for i, tri in enumerate(tris[:, 1:]):
+            g1 = nid_map[tri[0]]
+            g2 = nid_map[tri[1]]
+            g3 = nid_map[tri[2]]
+            elem = vtk.vtkTriangle()
+            elem.GetPointIds().SetId(0, g1)
+            elem.GetPointIds().SetId(1, g2)
+            elem.GetPointIds().SetId(2, g3)
+            geom_grid.InsertNextCell(5, elem.GetPointIds())
+
+    if nquads:
+        for i, quad in enumerate(quads[:, 1:]):
+            g1 = nid_map[quad[0]]
+            g2 = nid_map[quad[1]]
+            g3 = nid_map[quad[2]]
+            g4 = nid_map[quad[3]]
+            elem = vtk.vtkQuad()
+            point_ids = elem.GetPointIds()
+            point_ids.SetId(0, g1)
+            point_ids.SetId(1, g2)
+            point_ids.SetId(2, g3)
+            point_ids.SetId(3, g4)
+            geom_grid.InsertNextCell(9, elem.GetPointIds())
+
+    alt_grid.SetPoints(points)
+    if nelements > 0:
+        geom_grid.SetPoints(points)
+    return points
+
+
+def set_vtk_property_to_unicode(prop, font_filei):
+    prop.SetFontFile(font_filei)
+    prop.SetFontFamily(vtk.VTK_FONT_FILE)
+
 def make_vtk_transform(origin, matrix_3x3):
     """makes a vtkTransform"""
     transform = vtk.vtkTransform()
@@ -802,6 +800,61 @@ def make_vtk_transform(origin, matrix_3x3):
     else:
         raise RuntimeError('unexpected coordinate system')
     return transform
+def _set_base_axes(axes,
+                   transform,
+                   coord_type, label,
+                   coord_scale, coord_text_scale, linewidth):
+    #axes.GetNormalizedTipLength() # (0.2, 0.2, 0.2)
+    #axes.GetOrigin() # (0., 0., 0.)
+    #axes.GetScale() # (1., 1., 1.)
+    #axes.GetShaftType() # 1
+    #axes.GetTotalLength() # (1., 1., 1.)
+
+    axes.SetUserTransform(transform)
+    axes.SetTotalLength(coord_scale, coord_scale, coord_scale)
+    if coord_type == 'xyz':
+        if label:
+            xlabel = u'x%s' % label
+            ylabel = u'y%s' % label
+            zlabel = u'z%s' % label
+            axes.SetXAxisLabelText(xlabel)
+            axes.SetYAxisLabelText(ylabel)
+            axes.SetZAxisLabelText(zlabel)
+    else:
+        if coord_type == 'Rtz':  # cylindrical
+            #x = u'R'
+            #y = u'θ'
+            #z = u'z'
+            x = 'R'
+            y = 't'
+            z = 'z'
+
+        elif coord_type == 'Rtp':  # spherical
+            #x = u'R'
+            #y = u'θ'
+            #z = u'Φ'
+            x = 'R'
+            y = 't'
+            z = 'p'
+        else:  # pragma: no cover
+            raise RuntimeError('invalid axis type; coord_type=%r' % coord_type)
+
+        xlabel = '%s%s' % (x, label)
+        ylabel = '%s%s' % (y, label)
+        zlabel = '%s%s' % (z, label)
+        axes.SetXAxisLabelText(xlabel)
+        axes.SetYAxisLabelText(ylabel)
+        axes.SetZAxisLabelText(zlabel)
+
+    update_axis_text_size(axes, coord_text_scale)
+
+    xaxis = axes.GetXAxisShaftProperty()
+    yaxis = axes.GetYAxisShaftProperty()
+    zaxis = axes.GetZAxisShaftProperty()
+    #lw = xaxis.GetLineWidth()  #  1.0
+    xaxis.SetLineWidth(linewidth)
+    yaxis.SetLineWidth(linewidth)
+    zaxis.SetLineWidth(linewidth)
 
 def _remove_invalid_filename_characters(basename):
     """

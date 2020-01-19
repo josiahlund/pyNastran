@@ -15,7 +15,8 @@ def numpy_to_vtk_points(nodes, points=None, dtype='<f', deep=1):
     assert isinstance(nodes, np.ndarray), type(nodes)
     if points is None:
         points = vtk.vtkPoints()
-        nnodes = nodes.shape[0]
+        nnodes, ndim = nodes.shape
+        assert ndim == 3, nodes.shape
         points.SetNumberOfPoints(nnodes)
 
         # if we're in big endian, VTK won't work, so we byte swap
@@ -256,3 +257,22 @@ def find_point_id_closest_to_xyz(grid, cell_id, node_xyz):
             #point_min = point
     point_id = cell.GetPointId(imin)
     return point_id
+
+def update_axis_text_size(axis,
+                          coord_text_scale,
+                          width=1.0, height=0.25):
+    """updates the coordinate system text size"""
+    # width doesn't set the width
+    # it being very large (old=0.1) makes the width constraint inactive
+
+    texts = [
+        axis.GetXAxisCaptionActor2D(),
+        axis.GetYAxisCaptionActor2D(),
+        axis.GetZAxisCaptionActor2D(),
+    ]
+    # this doesn't set the width
+    # this being very large (old=0.1) makes the width constraint inactive
+    for text in texts:
+        text.SetWidth(coord_text_scale * width)
+        text.SetHeight(coord_text_scale * height)
+
