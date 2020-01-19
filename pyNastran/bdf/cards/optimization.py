@@ -1730,7 +1730,26 @@ class DRESP1(OptConstraint):
                       comment=comment, validate=False)
 
     def _verify(self, xref):
-        pass
+        if not xref:
+            return
+        node_types = {
+            'DISP', 'FRDISP', 'PSDDISP', 'RMSDISP', 'TDISP', # 'RFDISP',
+            'FRVELO', 'RMSVELO', 'PSDVELO', 'TVELO',
+            'FRACCL', 'RMSACCL', 'PSDACCL', 'TACCL',
+            'FRSPCF',
+            'SPCFORCE', 'TSPCF',
+        }
+        no_validate = {
+            'FRMASS', 'WEIGHT', 'EIGN', 'LAMA', 'VOLUME', 'FREQ', 'ERP',
+            'FLUTTER', 'CFAILURE', 'CSTRAT', 'CEIG', 'DIVERG', 'STABDER', 'TRIM',
+            'ESE', 'TOTSE',
+            'GPFORCE', 'GPFORCP',}
+        elem_props = {'STRESS', 'TSTRE', 'FRSTRE', 'CSTRESS',
+                      'STRAIN', 'CSTRAIN',
+                      'FORCE', 'TFORC', 'FRFORC',
+                      }
+        if self.response_type in no_validate:
+            return
 
     def calculate(self, op2_model, subcase_id):
         rtype = self.rtype
@@ -2199,6 +2218,9 @@ class DRESP2(OptConstraint):
         self.dequation = dequation
         self.region = region
         self.method = method
+
+        # Constants used when FUNC = BETA or FUNC = MATCH in combination with METHOD = BETA
+        # MSC 2016.1 Defaults: C1 = 1.0, C2=0.005, and C3=10.0)
         self.c1 = c1
         self.c2 = c2
         self.c3 = c3
@@ -2471,7 +2493,7 @@ class DRESP2(OptConstraint):
                 c3 = set_blank_if_default(self.c3, 10.)
 
         list_fields = ['DRESP2', self.dresp_id, self.label, self.DEquation(),
-                       self.region, method, c1, c2, self.c3]
+                       self.region, method, c1, c2, c3]
         list_fields += self._pack_params()
         return list_fields
 
@@ -2715,6 +2737,7 @@ class DRESP3(OptConstraint):
     def safe_cross_reference(self, model, xref_errors):
         self.cross_reference(model)
 
+    def cross_reference(self, model):
         """
         Cross links the card so referenced cards can be extracted directly
 
@@ -3363,7 +3386,7 @@ class DVCREL2(DVXREL2):
                 label = string(card, i, label_name)
                 #print("%s = %s" % (label_name, label))
                 if label:
-                    assert label is not 'DTABLE'
+                    assert label != 'DTABLE'
                     labels.append(label)
         return DVCREL2(oid, element_type, pid, cp_name, dequation, dvids, labels,
                        cp_min, cp_max, comment=comment)
@@ -3980,14 +4003,17 @@ class DVMREL2(DVXREL2):
             raise NotImplementedError('mat_type=%r is not supported' % self.mat_type)
         return mid
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
+                          filter_properties=False):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
 
         my_keys_to_skip = ['Type']
         return super(DVMREL2, self).object_attributes(
-            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+            filter_properties=filter_properties,
+        )
 
     def DEquation(self):
         if self.dequation_ref is None:
@@ -4223,8 +4249,9 @@ class DVPREL1(DVXREL1):
             try:
                 pname_fid_map = prop.pname_fid_map
             except AttributeError:
-                raise NotImplementedError('prop_type=%r name=%r has not implemented pname_fid_map/update_by_pname_fid' % (
-                    self.prop_type, self.pname_fid))
+                raise NotImplementedError('prop_type=%r name=%r has not implemented '
+                                          'pname_fid_map/update_by_pname_fid' % (
+                                              self.prop_type, self.pname_fid))
 
             try:
                 key = pname_fid_map[self.pname_fid]

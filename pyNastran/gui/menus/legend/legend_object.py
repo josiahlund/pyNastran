@@ -150,8 +150,8 @@ class LegendObject(object):
          default_title, min_value, max_value, default_min, default_max) = self.get_legend_fringe(
              self.gui.icase_fringe)
 
-        nlabels, labelsize, ncolors, colormap = scalar_bar
-        default_nlabels, default_labelsize, default_ncolors, default_colormap = defaults_scalar_bar
+        #nlabels, labelsize, ncolors, colormap = scalar_bar
+        #default_nlabels, default_labelsize, default_ncolors, default_colormap = defaults_scalar_bar
 
         scale, phase, default_scale, default_phase = self.get_legend_disp(
             self.gui.icase_disp)

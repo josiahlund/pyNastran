@@ -62,20 +62,6 @@ def global_to_basic_spherical(coord, xyz_global, dtype='float64'):
     ex, ey, ez = _primary_axes(coord)
 
     rtp = coord.transform_node_to_global(xyz_global)
-    #deg_to_rad = 1. / 57.29577951
-    #cr0 = cos(rtp[0] * deg_to_rad)
-    #cr1 = cos(rtp[1] * deg_to_rad)
-    #sr0 = sin(rtp[0] * deg_to_rad)
-    #sr1 = sin(rtp[1] * deg_to_rad)
-    #
-    #er = ex * cr0 * cr1 + \
-    #     ey * sr0 * sr1 + \
-    #     ez * sr1
-    #et = ex * cr0 * cr1 - \
-    #     ey * sr0 * cr1
-    #ep = ez * cr1 - \
-    #     ex * cr0 * sr1 - \
-    #     ey * sr0 * sr1
     theta = radians(rtp[1])
     phi = radians(rtp[2])
 
@@ -1332,8 +1318,11 @@ class CylindricalCoord(object):
         """R-theta-z to rho-theta-phi transform"""
         r, t, z = rtz
         rho = (r**2 + z**2)**0.5
-        theta = np.degrees(acos(z / rho))
         phi = t
+        if rho > 0:
+            theta = np.degrees(acos(z / rho))
+        else:
+            theta = 0.
         return np.array([rho, theta, phi], dtype='float64')
 
     @staticmethod

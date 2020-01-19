@@ -339,7 +339,7 @@ class Sidebar(QWidget):
         if update_name:
             self.on_update_name(None)
 
-        if setup_layout and 0:
+        if setup_layout and 0:  # pragma: no cover
             #print('setup_layout******')
             ## TODO: screws up the width of the window
             choices = ['keys2', 'purse2', 'cellphone2', 'credit_card2', 'money2']

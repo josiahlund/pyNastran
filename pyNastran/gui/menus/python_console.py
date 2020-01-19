@@ -149,14 +149,8 @@ class PythonConsoleWidget(QDockWidget):
         self.execute_python_button = QPushButton('Execute')
         self.execute_and_clear_python_button = QPushButton('Execute and Clear')
 
-        if is_pygments and IS_SCINTILLA:
-            #self.enter_data = QSyntaxHighlighting()
-            self.enter_data = SimplePythonEditorWidget()
-        else:
-            self.enter_data = QTextEdit()
-            font = QFont()
-            font.setFamily('Courier')
-            self.enter_data.setFont(font)
+        self.enter_data = get_code_block()
+
         self.setup_connections()
         self.layout()
 
@@ -232,6 +226,16 @@ class PythonConsoleWidget(QDockWidget):
     #def on_clear(self):
         #print(4)
 
+def get_code_block():
+    if is_pygments and IS_SCINTILLA:
+        #self.enter_data = QSyntaxHighlighting()
+        enter_data = SimplePythonEditorWidget()
+    else:
+        enter_data = QTextEdit()
+        font = QFont()
+        font.setFamily('Courier')
+        enter_data.setFont(font)
+    return enter_data
 def main():  # pragma: no cover
     """tests function that doesn't bleed over"""
     # kills the program when you hit Cntl+C from the command line

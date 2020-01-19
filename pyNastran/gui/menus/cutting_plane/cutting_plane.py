@@ -12,7 +12,6 @@ The preferences menu handles:
 from __future__ import print_function
 import os
 
-#import PySide
 from qtpy.QtCore import Qt
 from qtpy import QtGui
 from qtpy.QtWidgets import (

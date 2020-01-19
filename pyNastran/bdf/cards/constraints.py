@@ -438,12 +438,14 @@ class MPC(Constraint):
 
         self.nodes_ref = None
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
+                          filter_properties=False):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
         my_keys_to_skip = ['gids_ref', 'gids', 'constraints', 'enforced']
-        return super(Constraint, self).object_attributes(mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+        return super(Constraint, self).object_attributes(mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+                                                         filter_properties=filter_properties)
 
     def object_methods(self, mode='public', keys_to_skip=None):
         """.. seealso:: `pyNastran.utils.object_methods(...)`"""
@@ -503,7 +505,7 @@ class MPC(Constraint):
                 break
             nid = integer(card, ifield + 3, 'G%i' % i)
             component = components_or_blank(card, ifield + 4, 'constraint%i' % i, '0')  # scalar point
-            coefficient = double_or_blank(card, ifield + 5, 'coefficient%i' % i)
+            coefficient = double_or_blank(card, ifield + 5, 'coefficient%i' % i, 0.0)
             nodes.append(nid)
             components.append(component)
             coefficients.append(coefficient)

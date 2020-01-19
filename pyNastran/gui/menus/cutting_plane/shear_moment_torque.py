@@ -12,7 +12,6 @@ The preferences menu handles:
 from __future__ import print_function
 import os
 
-#import PySide
 from qtpy.QtCore import Qt
 from qtpy import QtGui
 from qtpy.QtWidgets import (
@@ -23,12 +22,7 @@ from pyNastran.gui.utils.qt.pydialog import PyDialog, make_combo_box, make_font
 from pyNastran.gui.utils.qt.qpush_button_color import QPushButtonColor
 from pyNastran.gui.utils.qt.qelement_edit import QElementEdit, QNodeEdit
 from pyNastran.gui.utils.qt.dialogs import save_file_dialog
-from pyNastran.gui.utils.qt.checks.qlineedit import (
-    check_save_path, #check_path,
-    #check_int, check_positive_int_or_blank,
-    check_float,# check_float_ranged,
-    #check_name_str, check_name_length, check_format, check_format_str,
-)
+from pyNastran.gui.utils.qt.checks.qlineedit import check_save_path, check_float
 from pyNastran.gui.menus.cutting_plane.cutting_plane import get_zaxis, _check_color
 from pyNastran.gui.utils.wildcards import wildcard_csv
 
@@ -139,6 +133,10 @@ class ShearMomentTorqueWindow(PyDialog):
         self.p1_label = QLabel("Origin:")
         self.p3_label = QLabel("End:")
         self.p2_label = QLabel("XZ Plane:")
+        self.p1_label.setToolTip('Defines the starting point for the shear, moment, torque plot')
+        self.p3_label.setToolTip('Defines the end point for the shear, moment, torque plot')
+        self.p2_label.setToolTip('Defines the XZ plane for the shears/moments')
+
         self.zaxis_label = QLabel("Z Axis:")
 
         self.method_pulldown = QComboBox()
@@ -301,7 +299,7 @@ class ShearMomentTorqueWindow(PyDialog):
 
         #hbox_csv = QHBoxLayout()
         grid2 = QGridLayout()
-        irow = 0
+        #irow = 0
 
         #grid2.addWidget(self.node_label, irow, 0)
         #grid2.addWidget(self.node_edit, irow, 1)
@@ -586,7 +584,7 @@ class ShearMomentTorqueWindow(PyDialog):
             self.out_data['method'] = method
             self.out_data['p1'] = [p1_cid, p1]
             self.out_data['p2'] = [p2_cid, p2]
-            self.out_data['p3'] = [p2_cid, p3]
+            self.out_data['p3'] = [p3_cid, p3]
             self.out_data['zaxis'] = [zaxis_cid, zaxis]
             self.out_data['plane_color'] = self.plane_color_float
             self.out_data['plane_opacity'] = plane_opacity

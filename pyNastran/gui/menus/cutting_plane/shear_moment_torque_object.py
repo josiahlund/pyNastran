@@ -131,7 +131,27 @@ class ShearMomentTorqueObject(object):
                                  cid_p1=0, cid_p2=0, cid_p3=0, cid_zaxis=0,
                                  nplanes=20, plane_color=None, plane_opacity=0.5,
                                  csv_filename=None, show=True):
-        """Creates a shear moment torque plot for the active plot result"""
+        """
+        Creates a shear moment torque plot for the active plot result
+
+        Parameters
+        ----------
+        model_name : str
+            the name of the model
+        p1: (3,) float ndarray
+            defines the starting point for the shear, moment, torque plot
+        p3: (3,) float ndarray
+            defines the end point for the shear, moment, torque plot
+        p2: (3,) float ndarray
+            defines the XZ plane for the shears/moments
+        zaxis: (3,) float ndarray
+            the direction of the z-axis
+        cid_p1 / cid_p2 / cid_p3
+            the coordinate systems for p1, p2, and p3
+        method : str
+           'CORD2R' : typical CORD2R
+            'Z-Axis Projection' : project p2 on the z-axis
+        """
         log = self.gui.log
         if plane_color is None:
             plane_color = PURPLE_FLOAT
