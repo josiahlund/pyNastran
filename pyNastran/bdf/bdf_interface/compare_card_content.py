@@ -60,28 +60,13 @@ def compare_params(fem1, fem2):
         card2 = fem2.params[key]
         assert_fields(card1, card2)
 
-
-def compare_card_content(fem1, fem2):
-    check_obj_names = [
-        'params', 'nodes', 'spoints', 'epoints', 'points', 'gridb',
-        #'elements', 'rigid_elements',
-        'nsms', 'nsmadds',
-        'properties', 'properties_mass', 'materials', 'creep_materials',
-        'loads', 'coords',
-        'spcs', 'spcadds', 'spcoffs', 'mpcs', 'mpcadds', 'dareas', 'dphases',
-        'nlparms', 'tsteps', 'tstepnls', 'dmigs', 'dequations',
-        'sets', 'asets', 'bsets', 'csets', 'qsets', 'usets',
-        'se_sets', 'se_bsets', 'se_csets', 'se_qsets', 'se_usets',
-        'tables', 'tables_d', 'tables_m', 'random_tables', 'methods', 'cMethods']
-    for name in check_obj_names:
-        check_length(fem1, fem2, name)
-
-    compare_params(fem1, fem2)
+def compare_nodes(fem1, fem2):
     for key in fem1.nodes:
         card1 = fem1.nodes[key]
         card2 = fem2.nodes[key]
         assert_fields(card1, card2)
 
+def compare_elements(fem1, fem2):
     for key in fem1.elements:
         card1 = fem1.elements[key]
         card2 = fem2.elements[key]
@@ -92,11 +77,23 @@ def compare_card_content(fem1, fem2):
         card2 = fem2.rigid_elements[key]
         assert_fields(card1, card2)
 
+    for key in fem1.masses:
+        card1 = fem1.masses[key]
+        card2 = fem2.masses[key]
+        assert_fields(card1, card2)
+
+def compare_properties(fem1, fem2):
     for key in fem1.properties:
         card1 = fem1.properties[key]
         card2 = fem2.properties[key]
         assert_fields(card1, card2)
 
+    for key in fem1.properties_mass:
+        card1 = fem1.properties_mass[key]
+        card2 = fem2.properties_mass[key]
+        assert_fields(card1, card2)
+
+def compare_materials(fem1, fem2):
     for key in fem1.materials:
         card1 = fem1.materials[key]
         card2 = fem2.materials[key]
@@ -106,6 +103,27 @@ def compare_card_content(fem1, fem2):
         card1 = fem1.creep_materials[key]
         card2 = fem2.creep_materials[key]
         assert_fields(card1, card2)
+
+def compare_card_content(fem1, fem2):
+    check_obj_names = [
+        'params', 'nodes', 'spoints', 'epoints', 'points', 'gridb',
+        #'elements', 'rigid_elements',
+        'nsms', 'nsmadds',
+        'properties', 'properties_mass', 'materials', 'creep_materials',
+        'loads', 'coords',
+        'spcs', 'spcadds', 'spcoffs', 'mpcs', 'mpcadds', 'dareas', 'dphases',
+        'nlparms', 'tsteps', 'tstepnls', 'dmig', 'dmij', 'dmik', 'dmiji', 'dequations',
+        'sets', 'asets', 'bsets', 'csets', 'qsets', 'usets',
+        'se_sets', 'se_bsets', 'se_csets', 'se_qsets', 'se_usets',
+        'tables', 'tables_d', 'tables_m', 'random_tables', 'methods', 'cMethods']
+    for name in check_obj_names:
+        check_length(fem1, fem2, name)
+
+    compare_params(fem1, fem2)
+    compare_nodes(fem1, fem2)
+    compare_elements(fem1, fem2)
+    compare_properties(fem1, fem2)
+    compare_materials(fem1, fem2)
 
     nid_map = fem2.nid_map
     for key in fem1.loads:
@@ -269,9 +287,9 @@ def compare_card_content(fem1, fem2):
 
 def compare_matrices(fem1, fem2):
     """verifies that the DMIG, DMIJ, DMIJI, and DMIK matrices are the same"""
-    for key in fem1.dmigs:
-        card1 = fem1.dmigs[key]
-        card2 = fem2.dmigs[key]
+    for key in fem1.dmig:
+        card1 = fem1.dmig[key]
+        card2 = fem2.dmig[key]
         assert str(card1) == str(card2)
         #assert_fields(card1, card2)
 
@@ -280,19 +298,19 @@ def compare_matrices(fem1, fem2):
         #card2 = fem2.dmis[key]
         #assert str(card1) == str(card2)
 
-    for key in fem1.dmijs:
-        card1 = fem1.dmijs[key]
-        card2 = fem2.dmijs[key]
+    for key in fem1.dmij:
+        card1 = fem1.dmij[key]
+        card2 = fem2.dmij[key]
         assert str(card1) == str(card2)
 
-    for key in fem1.dmijis:
-        card1 = fem1.dmijis[key]
-        card2 = fem2.dmijis[key]
+    for key in fem1.dmiji:
+        card1 = fem1.dmiji[key]
+        card2 = fem2.dmiji[key]
         assert str(card1) == str(card2)
 
-    for key in fem1.dmiks:
-        card1 = fem1.dmiks[key]
-        card2 = fem2.dmiks[key]
+    for key in fem1.dmik:
+        card1 = fem1.dmik[key]
+        card2 = fem2.dmik[key]
         assert str(card1) == str(card2)
 
 

@@ -1,0 +1,1 @@
+from pyNastran.bdf.bdf_interface.compare_card_content import compare_card_content

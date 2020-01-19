@@ -78,7 +78,7 @@ class TestSets(unittest.TestCase):
         set3a.write_card()
         set3a.validate()
         set3b.validate()
-        save_load_deck(model)
+        save_load_deck(model, run_test_bdf=False)
 
     def test_set3_02(self):
         """checks the SET3 card"""
