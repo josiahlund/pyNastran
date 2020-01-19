@@ -83,13 +83,13 @@ class BaseCard(object):
         """card checking method that should be overwritten"""
         pass
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
-        # type: (str, Optional[List[str]]) -> List[str]
+    def object_attributes(self, mode='public', keys_to_skip=None, filter_properties=False):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
         my_keys_to_skip = []  # type: List[str]
-        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+                                 filter_properties=filter_properties)
 
     def object_methods(self, mode='public', keys_to_skip=None):
         # type: (str, Optional[List[str]]) -> List[str]

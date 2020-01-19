@@ -4015,6 +4015,22 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
 
         return cards_out
 
+    def create_subcases(self, subcase_ids=None):
+        """creates a series of subcases"""
+        if subcase_ids is None:
+            subcase_ids = []
+        elif isinstance(subcase_ids, int):
+            subcase_ids = [subcase_ids]
+
+        if self.case_control_deck is None:
+            self.case_control_deck = CaseControlDeck([], log=self.log)
+
+        subcases = {}
+        for subcase_id in subcase_ids:
+            subcase = self.case_control_deck.create_new_subcase(subcase_id)
+            subcases[subcase_id] = subcase
+        return subcases
+
     def _parse_cards_hdf5(self, cards, unused_card_count):
         """creates card objects and adds the parsed cards to the deck"""
         self.echo = False

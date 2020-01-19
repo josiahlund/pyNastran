@@ -72,10 +72,12 @@ def load_bdf_from_hdf5_file(h5_file, model):
         'desvars' : hdf5_load_desvars,
 
         'dmigs' : hdf5_load_dmigs,
+        'dmiax' : hdf5_load_dmigs,
         'dmijs' : hdf5_load_dmigs,
         'dmiks' : hdf5_load_dmigs,
         'dmijis' : hdf5_load_dmigs,
         'dmis' : hdf5_load_dmigs,
+        'dti' : hdf5_load_dti,
 
         'dconstrs' : hdf5_load_dconstrs,
         'dresps' : hdf5_load_dresps,
@@ -264,7 +266,7 @@ def _load_minor_attributes(unused_key, group, model, encoding):
                 ## TODO: swap out
                 #model.add_card(card_lines, card_name, comment=comment,
                                #ifile=None, is_list=True, has_none=True)
-                model.reject_card_lines(card_name, card_lines, comment)
+                model.reject_card_lines(card_name, card_lines, comment=comment)
             continue
         elif keyi == 'reject_cards':
             reject_keys = list(sub_group.keys())
@@ -528,10 +530,6 @@ def hdf5_load_materials(model, group, encoding):
                     G66=0.,
                     rho=rhoi, A=ai, tref=trefi, ge=gei, comment='')
 
-        elif card_type in ['MAT8', 'MAT9']:
-            model.log.warning('skipping materials/%s because its vectorized '
-                              'and needs a loader' % card_type)
-            continue
         else:
             #model.add_mat4(mid, k, cp=0.0, rho=1.0, H=None, mu=None, hgen=1.0,
                            #ref_enthalpy=None, tch=None, tdelta=None, qlat=None, comment='')
@@ -886,9 +884,35 @@ def hdf5_load_dmigs(model, group, unused_encoding):
             raise NotImplementedError('DMIG UACCEL')
         elif class_type == 'DMI':
             _load_dmi(model, name, sub_group)
+        elif class_type == 'DMIAX':
+            _load_dmiax(model, name, sub_group)
         else:
             _load_dmig(model, name, sub_group, class_type)
     model.card_count[class_type] = len(keys)
+
+
+def _load_dmig_uaccel(model, sub_group):
+    """loads the DMIG,UACCEL"""
+    keysi = list(sub_group.keys())
+    tin = _cast(sub_group['tin'])
+    keysi.remove('tin')
+    ncol = None
+    if 'ncol' in keysi:
+        keysi.remove('ncol')
+        ncol = _cast(sub_group['ncol'])
+
+    load_sequences = {}
+    for idi in keysi:
+        lseq = int(idi)
+        sub_groupi = sub_group[idi]
+        dofs = _cast(sub_groupi['dofs'])
+        nids = _cast(sub_groupi['nids'])
+        values = _cast(sub_groupi['values'])
+        load_sequences[lseq] = list([
+            [nid, dof, value] for (nid, dof, value)
+            in zip(nids, dofs, values)])
+    dmig_uaccel = model.add_dmig_uaccel(tin, ncol, load_sequences, comment='')
+    str(dmig_uaccel)
 
 def _load_dmi(model, name, sub_group):
     """loads the DMI"""
@@ -945,6 +969,59 @@ def _load_dmig(model, name, sub_group, class_type):
     str(dmig)
     #model.dmigs[name] = dmig
 
+def _load_dmiax(model, name, sub_group):
+    """loads the DMIAX"""
+    class_obj = CARD_MAP['DMIAX']
+    ncols = None
+    if 'ncols' in sub_group:
+        ncols = _cast(sub_group['ncols'])
+    matrix_form = _cast(sub_group['matrix_form'])
+    tin = _cast(sub_group['tin'])
+    tout = _cast(sub_group['tout'])
+
+    gcni = _cast(sub_group['GCNi_j'])
+    gcnj = _cast(sub_group['GCNj'])
+    i_none_flags = _cast(sub_group['i_none_flags'])
+    j_none_flags = _cast(sub_group['j_none_flags'])
+    dmiax_GCNi = []
+    dmiax_GCNj = []
+
+    k = 0
+    for GCNj, is_none_flag_j in zip(gcnj, j_none_flags):
+        gj, cj, nj = GCNj
+        if is_none_flag_j:
+            nj = None
+        dmiax_GCNj.append((gj, cj, nj))
+    del GCNj, is_none_flag_j, nj
+
+    j_old = -1
+    gcni_group = []
+    for GCNi_j, is_none_flag_j in zip(gcni, i_none_flags):
+        gi, ci, ni, j = GCNi_j
+        is_none_flag_i = i_none_flags[k]
+        if is_none_flag_i:
+            ni = None
+        if j != j_old:
+            j_old = j
+            gcni_group = []
+            dmiax_GCNi.append(gcni_group)
+        gcni_group.append((gi, ci, ni))
+    #print('GCNj =', dmiax_GCNj)
+    #print('GCNi =', dmiax_GCNi)
+
+    Real = _cast(sub_group['Real'])
+    Complex = None
+    if 'Complex' in sub_group:
+        Complex = _cast(sub_group['Complex'])
+
+    ifo = matrix_form
+    from pyNastran.bdf.bdf import DMIAX
+    dmiax = DMIAX(name, matrix_form, tin, tout, ncols,
+                  dmiax_GCNj, dmiax_GCNi, Real, Complex=Complex)
+    model.dmiax[name] = dmiax
+    str(dmiax)
+    #print(dmiax)
+
 def hdf5_load_dconstrs(model, group, encoding):
     """loads the dconstrs"""
     keys = group.keys()
@@ -987,6 +1064,55 @@ def hdf5_load_dconstrs(model, group, encoding):
             raise RuntimeError('error loading %s' % card_type)
 
         model.card_count[card_type] = len(keys)
+
+def _cast_strings(group, encoding):
+    bytes_list = _cast(group).tolist()
+    str_list = [bytesi.decode(encoding) for bytesi in bytes_list]
+    return str_list
+
+def hdf5_load_dti(model, group, encoding):
+    """loads the dti"""
+    group_keys = group.keys()
+    if len(group_keys) == 0:
+        #model.log.warning('skipping loading %s' % group)
+        raise RuntimeError('error loading %s' % group)
+
+    names = _cast_strings(group['keys'], encoding)
+    values = group['values']
+    for name in names:
+        sub_group = values[name]
+        records = sub_group.keys()
+
+        fields = {}
+        #print('records', records)
+        for irecord in records:
+            sub_groupi = sub_group[irecord]
+            #print(sub_group, sub_groupi)
+            if 'keys' in sub_groupi:
+                lst = _load_indexed_list(irecord, sub_groupi, encoding)
+                lst2 = [val.decode(encoding) if isinstance(val, bytes) else val for val in lst]
+            else:
+                if isinstance(sub_groupi, h5py._hl.dataset.Dataset):
+                    #print(sub_group, sub_groupi)
+                    lst2 = _cast(sub_groupi).tolist()
+                else:
+                    #print(sub_group, sub_groupi, len(sub_groupi.keys()))
+                    keys = sub_groupi.keys()
+                    #print(keys)
+                    lst = []
+                    for key in keys:
+                        sub_groupii = sub_groupi[key]
+                        if len(sub_groupii.shape) == 0:
+                            lst.append(None)
+                        else:
+                            lst.append(_cast(sub_groupii))
+                    #lst = _cast(sub_groupi)
+                    #print(lst)
+                    lst2 = lst
+            fields[irecord] = lst2
+        assert len(fields) > 0, fields
+        model.add_dti(name, fields)
+    model.card_count['DTI'] = len(names)
 
 def hdf5_load_usets(model, group, encoding):
     """loads the usets"""
@@ -1889,8 +2015,13 @@ def hdf5_load_elements(model, elements_group, encoding):
             for eid, pid, nids, theta in zip(eids, pids, nodes, thetas):
                 model.add_cquadx8(eid, pid, nids, theta=theta, comment='')
 
-        elif card_type in ['CPLSTN3', 'CPLSTN4']:
-            func = model.add_cplstn3 if card_type == 'CPLSTN3' else model.add_cplstn4
+        elif card_type in ['CPLSTN3', 'CPLSTN4',
+                           'CPLSTS3', 'CPLSTS4']:
+            func_map = {
+                'CPLSTN3' : model.add_cplstn3,
+                'CPLSTN4' : model.add_cplstn4,
+            }
+            func = func_map[card_type]
 
             eids = _cast(elements['eid'])
             pids = _cast(elements['pid'])
@@ -1898,8 +2029,13 @@ def hdf5_load_elements(model, elements_group, encoding):
             nodes = _cast(elements['nodes']).tolist()
             for eid, pid, nids, theta in zip(eids, pids, nodes, thetas):
                 func(eid, pid, nids, theta=theta, comment='')
-        elif card_type in ['CPLSTN6', 'CPLSTN8']:
-            func = model.add_cplstn6 if card_type == 'CPLSTN6' else model.add_cplstn8
+        elif card_type in ['CPLSTN6', 'CPLSTN8',
+                           'CPLSTS6', 'CPLSTS8']:
+            func_map = {
+                'CPLSTN6' : model.add_cplstn6,
+                'CPLSTN8' : model.add_cplstn8,
+            }
+            func = func_map[card_type]
 
             eids = _cast(elements['eid'])
             pids = _cast(elements['pid'])

@@ -46,27 +46,36 @@ dict_int_obj_attrs = [
     #'reject_count',
     'dresps',
 
+    # optimization
+    'dconadds', 'ddvals', 'dequations', 'dscreen',
+    'dvcrels', 'dvmrels', 'dvprels',
+    # aero
     'aecomps', 'aefacts', 'aelists', 'aeparams',
-    'aestats', 'aesurf', 'aesurfs', 'ao_element_flags', 'bconp', 'bcrparas', 'bctadds',
-    'bctparas', 'bctsets', 'blseg', 'bsurf', 'bsurfs', 'cMethods',
+    'aestats', 'aesurf', 'aesurfs',
+    'divergs', 'dlinks',
+    'flfacts', 'paeros',
+
+    # contact
+    'bconp', 'bcrparas', 'bctadds',
+    'bctparas', 'bctsets', 'blseg', 'bsurf', 'bsurfs',
+
+    # other
+    'ao_element_flags', 'cMethods',
     'convection_properties',
-    'csuper', 'csupext', 'dareas',
-    'dconadds', 'ddvals', 'delays', 'dequations', 'divergs', 'dlinks',
+    'dareas',
     'dmigs', 'dmijis', 'dmijs', 'dmiks', 'dmis',
-    'dphases',
-    'dscreen', 'dti', 'dvcrels', 'dvmrels', 'dvprels',
-    'epoints', 'flfacts',
-    'gridb',
+    'dti', 
+    'dphases', 'delays',
+    'epoints', 'gridb',
     'nlparms', 'nlpcis',
     'normals',
-    'nxstrats', 'paeros',
+    'nxstrats',
     'pbusht', 'pdampt', 'pelast', 'phbdys', 'points',
     'properties_mass',
     'radcavs', 'radmtx', 'random_tables',
     'ringaxs', 'ringfl',
     'rotors',
-    'se_sets', 'se_usets', 'sebndry', 'sebulk', 'seconct', 'seelt',
-    'seexcld', 'selabel', 'seload', 'seloc', 'sempln', 'senqset', 'setree', 'sets',
+    'sets',
     'spcoffs',
     'spoints',
     'suport1',
@@ -74,6 +83,11 @@ dict_int_obj_attrs = [
     'tics',
     'tstepnls', 'tsteps',
     'view3ds', 'views',
+
+    # superelements
+    'csuper', 'csupext',
+    'se_sets', 'se_usets', 'sebndry', 'sebulk', 'seconct', 'seelt',
+    'seexcld', 'selabel', 'seload', 'seloc', 'sempln', 'senqset', 'setree',
 ]
 
 scalar_obj_keys = [
@@ -156,7 +170,8 @@ def export_bdf_to_hdf5_file(hdf5_file, model, exporter=None):
         unused
 
     """
-    unused_attrs = object_attributes(model, mode='both', keys_to_skip=None)
+    unused_attrs = object_attributes(model, mode='both', keys_to_skip=None,
+                                     filter_properties=True)
     encoding = model.get_encoding()
 
     if 'GRID' in model.card_count:
@@ -552,7 +567,8 @@ def _h5_export_class(sub_group, model, key, value, skip_attrs, encoding, debug=T
         keys_to_skip = []
         if hasattr(value, '_properties'):
             keys_to_skip = value._properties
-        h5attrs = value.object_attributes(mode='both', keys_to_skip=keys_to_skip)
+        h5attrs = value.object_attributes(mode='both', keys_to_skip=keys_to_skip,
+                                          filter_properties=True)
         if hasattr(value, '_properties'):
             h5attrs.remove('_properties')
         #sub_group = hdf5_file.create_group(key)
@@ -817,7 +833,7 @@ def _hdf5_export_group(hdf5_file, model, group_name, encoding, debug=False):
         #model.log.debug('skipping %s to hdf5' % group_name)
 
 def _hdf5_export_object_dict(group, model, name, obj_dict, keys, encoding):
-    i = 0
+    #i = 0
     skip_attrs = ['comment', '_field_map']
 
     keys_write = list(keys)

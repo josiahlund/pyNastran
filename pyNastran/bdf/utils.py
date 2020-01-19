@@ -19,6 +19,68 @@ from pyNastran.bdf.cards.collpase_card import collapse_colon_packs
 from pyNastran.bdf.bdf_interface.utils import deprecated
 from pyNastran.utils.numpy_utils import integer_types
 
+def transform_load(F, M, cid, cid_new, model):
+    """
+    Transforms a force/moment from an arbitrary coordinate system to another
+    coordinate system.
+
+    Parameters
+    ----------
+    Fxyz : (3, ) float ndarray
+        the force in an arbitrary coordinate system
+    Mxyz : (3, ) float ndarray
+        the moment in an arbitrary coordinate system
+    cid : int
+        the coordinate ID for xyz
+    cid_new : int
+        the desired coordinate ID
+    model : BDF()
+        the BDF model object
+
+    Returns
+    -------
+    Fxyz_local : (3, ) float ndarray
+        the force in an arbitrary coordinate system
+    Mxyz_local : (3, ) float ndarray
+        the force in an arbitrary coordinate system
+
+    """
+    if cid == cid_new: # same coordinate system
+        return F, M
+
+    # find the vector r for doing:
+    #     M = r x F
+    cp_ref = _coord(model, cid)
+    coord_to_ref = _coord(model, cid_new)
+    r = cp_ref.origin - coord_to_ref.origin
+
+    # change R-theta-z to xyz
+    Fxyz_local_1 = cp_ref.coord_to_xyz(F)
+    Mxyz_local_1 = cp_ref.coord_to_xyz(M)
+
+    # pGlobal = pLocal1 * beta1 + porigin1
+    # pGlobal = pLocal2 * beta2 + porigin2
+    # pLocal1 * beta1 + porigin1 = pLocal2 * beta2 + porigin2
+    # plocal1 * beta1 + porigin1 - porigin2 = plocal2 * beta2
+    # (plocal1 * beta1 + porigin1 - porigin2) * beta2.T = plocal2
+    #
+    # origin transforms only apply to nodes, so...
+    # Fglobal = Flocal1 * beta1
+    # Flocal2 = (Flocal1 * beta1) * beta2.T
+
+    Fxyz_global = dot(Fxyz_local_1, cp_ref.beta())
+    Fxyz_local_2 = dot(dot(Fxyz_local_1, cp_ref.beta()), coord_to_ref.beta().T)
+
+    # find the moment about the new origin due to the force
+    unused_Mxyz_global = cross(r, Fxyz_global)
+    dMxyz_local_2 = cross(r, Fxyz_local_2)
+    Mxyz_local_2 = Mxyz_local_1 + dMxyz_local_2
+
+    # rotate the delta moment into the local frame
+    unused_M_local = coord_to_ref.xyz_to_coord(Mxyz_local_2)
+
+    return Fxyz_local_2, Mxyz_local_2
+
 
 def parse_patran_syntax(node_sets, pound=None):
     # type: (str, Optional[int]) -> np.ndarray

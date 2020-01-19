@@ -203,6 +203,7 @@ class ACSRCE(BaseCard):
         #self.load_ids_ref = self.load_ids
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.power = self.Power()
         self.dphase = self.DPhase()
         self.delay = self.Delay()

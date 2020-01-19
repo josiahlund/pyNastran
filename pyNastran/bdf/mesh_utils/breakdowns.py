@@ -29,6 +29,7 @@ def get_length_breakdown(model, property_ids=None, stop_if_no_length=True):
         the pid to length dictionary
 
     TODO: What about CONRODs?
+
     """
     #skip_elements = [
         #'CTRIA3', 'CTRIA6', 'CTRIAR',
@@ -37,6 +38,7 @@ def get_length_breakdown(model, property_ids=None, stop_if_no_length=True):
         #'CDAMP1', 'CDAMP2', 'CDAMP3', 'CDAMP4', 'CDAMP5',
         #'CBUSH', 'CBUSH1D', 'CBUSH2D',
         #'CRAC2D', 'CRAC3D',
+        #'CBEAM3',
     #]
     skip_props = {
         'PSOLID', 'PLPLANE', 'PPLANE', 'PELAS',
@@ -45,10 +47,19 @@ def get_length_breakdown(model, property_ids=None, stop_if_no_length=True):
         'PFAST', 'PGAP', 'PRAC2D', 'PRAC3D', 'PCONEAX', 'PLSOLID',
         'PCOMPS', 'PVISC',
         'PSHELL', 'PCOMP', 'PCOMPG', 'PSHEAR',
-        'PBEND',
+
+        # Nastran 95
+        'PIHEX',
+
+        # lines - should be included
+        'PBEND', # 'PBEAM3',
+
+        # acoustic
+        'PACABS', 'PAABSF', 'PACBAR',
     }
-    bar_properties = ['PBAR', 'PBARL', 'PBEAM', 'PBEAML',
-                      'PROD', 'PTUBE', 'PBRSECT', 'PBMSECT', 'PBCOMP']
+    bar_properties = {'PBAR', 'PBARL', 'PBEAM', 'PBEAML',
+                      'PROD', 'PTUBE', 'PBRSECT', 'PBMSECT', 'PBCOMP',
+                      'PBEAM3'}
     pid_eids = model.get_element_ids_dict_with_pids(
         property_ids, stop_if_no_eids=stop_if_no_length,
         msg=' which is required by get_length_breakdown')
@@ -124,8 +135,18 @@ def get_area_breakdown(model, property_ids=None, stop_if_no_area=True, sum_bar_a
         'PELAST', 'PDAMPT', 'PBUSHT', 'PDAMP5',
         'PFAST', 'PGAP', 'PRAC2D', 'PRAC3D', 'PCONEAX', 'PLSOLID',
         'PCOMPS', 'PVISC', 'PBCOMP', 'PBEND',
+
+        # Nastran 95
+        'PIHEX',
+
+        # lines - should be included
+        'PBEND', # 'PBEAM3',
+
+        # acoustic
+        'PACABS', 'PAABSF', 'PACBAR',
     }
-    bar_properties = {'PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE'}
+    bar_properties = {
+        'PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE', 'PBEAM3'}
 
     pid_eids = model.get_element_ids_dict_with_pids(
         property_ids, stop_if_no_eids=stop_if_no_area,
@@ -196,16 +217,23 @@ def get_volume_breakdown(model, property_ids=None, stop_if_no_volume=True):
         property_ids, stop_if_no_eids=stop_if_no_volume,
         msg=' which is required by get_volume_breakdown')
 
-    no_volume = [
+    no_volume = {
         'PLPLANE', 'PPLANE', 'PELAS',
         'PDAMP', 'PBUSH', 'PBUSH1D', 'PBUSH2D',
         'PELAST', 'PDAMPT', 'PBUSHT', 'PDAMP5',
         'PFAST', 'PGAP', 'PRAC2D', 'PRAC3D', 'PCONEAX',
         'PVISC', 'PBCOMP', 'PBEND',
-    ]
-    bar_properties = [
+
+        # lines - should be included
+        'PBEND', 'PBEAM3',
+
+
+        # acoustic
+        'PACABS', 'PAABSF', 'PACBAR',
+    }
+    bar_properties = {
         'PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE', # 'PBEAM3'
-    ]
+    }
 
     pids_to_volume = {}
     skipped_eid_pid = set()
@@ -241,7 +269,12 @@ def get_volume_breakdown(model, property_ids=None, stop_if_no_volume=True):
             area = prop.Area()
             volumesi = [area * length for length in lengths]
             volumes.extend(volumesi)
-        elif prop.type in ['PSOLID', 'PCOMPS', 'PLSOLID']:
+        elif prop.type in ['PBEAM3']:
+            for eid in eids:
+                elem = model.elements[eid]
+                volumei = elem.Volume()
+                volumes.append(volumei)
+        elif prop.type in ['PSOLID', 'PCOMPS', 'PLSOLID', 'PIHEX']:
             for eid in eids:
                 elem = model.elements[eid]
                 if elem.type in ['CTETRA', 'CPENTA', 'CHEXA']:
@@ -329,7 +362,14 @@ def get_mass_breakdown(model, property_ids=None, stop_if_no_mass=True, detailed=
         'PDAMP', 'PBUSH', 'PBUSH1D', 'PBUSH2D',
         'PELAST', 'PDAMPT', 'PBUSHT', 'PDAMP5',
         'PFAST', 'PGAP', 'PRAC2D', 'PRAC3D', 'PCONEAX',
-        'PVISC', 'PBCOMP', 'PBEND', }
+        'PVISC',
+
+        # lines - should be included
+        'PBCOMP', 'PBEND', 'PBEAM3',
+
+        # acoustic
+        'PACABS', 'PAABSF', 'PACBAR',
+    }
     bar_properties = {'PBAR', 'PBARL', 'PBEAM', 'PBEAML', 'PROD', 'PTUBE'}
     for pid, eids in pid_eids.items():
         prop = model.properties[pid]

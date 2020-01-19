@@ -7,9 +7,9 @@ from collections import defaultdict
 import numpy as np
 import scipy
 
-
-from pyNastran.utils import is_binary_file
 from cpylog import get_logger2
+from pyNastran.utils import is_binary_file
+
 
 def read_stl(stl_filename, remove_elements_with_bad_normals=False,
              log=None, debug=False):
@@ -234,7 +234,7 @@ class STL(object):
         This is intended as a submethod to help handle the problem of bad normals
         """
         nodes = self.nodes
-        self.log.debug("get_normals...elements.shape %s" % str(elements.shape))
+        #self.log.debug("get_normals...elements.shape %s" % str(elements.shape))
         p1 = nodes[elements[:, 0]]
         p2 = nodes[elements[:, 1]]
         p3 = nodes[elements[:, 2]]
@@ -242,7 +242,7 @@ class STL(object):
         v13 = p3 - p1
         v123 = np.cross(v12, v13)
         normals_norm = np.linalg.norm(v123, axis=1)
-        inan = np.where(normals_norm == 0)[0]
+        inan = np.where(normals_norm == 0.)[0]
         return v123, normals_norm, inan
 
     def remove_elements_with_bad_normals(self):
@@ -330,7 +330,6 @@ class STL(object):
                 normals[inotnan, 0] /= normals_norm[inotnan]
                 normals[inotnan, 1] /= normals_norm[inotnan]
                 normals[inotnan, 2] /= normals_norm[inotnan]
-
         return normals
 
 
@@ -666,7 +665,8 @@ class STL(object):
         elements2 = []
         elements3 = []
         for element in self.elements:
-            epoints = nodes[element, xyzi][0]
+            # the 3 "y" locations for the element
+            epoints = nodes[element, xyzi] # [0]
             je = np.where(epoints <= tol)[0]
             if len(je) < 3:  # not a symmetry element, so we save it
                 elements2.append(element)

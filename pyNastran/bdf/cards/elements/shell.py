@@ -2954,6 +2954,7 @@ class CPLSTN4(QuadShell):
         msg = ('CPLSTN4 %8i%8i%8i%8i%8i%8i%8s\n' % tuple(data))
         return self.comment + msg
 
+
 class CPLSTN6(TriShell):
     type = 'CPLSTN6'
 
@@ -3071,7 +3072,6 @@ class CPLSTN6(TriShell):
         list_fields = (['CPLSTN6', self.eid, self.Pid()] + self.node_ids + [
             theta])
         return list_fields
-
 
     def write_card(self, size=8, is_double=False):
         card = self.repr_fields()

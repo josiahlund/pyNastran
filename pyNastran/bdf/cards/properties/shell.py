@@ -13,8 +13,9 @@ All shell properties are Property objects.
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
-import warnings
+import copy
 from itertools import count
+import warnings
 from typing import List, Optional, Union, Any
 import numpy as np
 
@@ -1011,10 +1012,10 @@ class PCOMP(CompositeShellProperty):
 
         mids_ref = copy.deepcopy(self.mids_ref)
         assert mids_ref is not None, 'The following material hasnt been cross-referenced:\n%s' % str(self)
-        if self.is_symmetrical:
+        if self.is_symmetrical():
             mids_ref += mids_ref[::-1]
 
-        assert len(mids) == len(mids_ref)
+        assert len(mids) == len(mids_ref), 'mids=%s (%s) mids_ref:\n%s; %s' % (mids, len(mids), mids_ref, len(mids_ref))
         for mid, mid_ref, thetai, thickness, zmean, z0i, z1i in zip(mids, mids_ref, theta,
                                                                     thicknesses, zmeans, z0, z1):
             Qbar = self.get_Qbar_matrix(mid_ref, thetai)

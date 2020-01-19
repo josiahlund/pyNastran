@@ -35,6 +35,8 @@ class BDFInputPy(object):
                  consider_superelements=True, log=None, debug=False):
         # type: (bool, bool, str, str, bool, Any, bool) -> None
         """
+        BDF reader class that only handles lines and not building cards or parsing cards
+
         Parameters
         ----------
         read_includes : bool

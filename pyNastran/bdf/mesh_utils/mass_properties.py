@@ -18,6 +18,9 @@ from pyNastran.utils.numpy_utils import integer_types
 from pyNastran.utils.mathematics import integrate_positive_unit_line
 
 NO_MASS = {
+    # has mass
+    'CCONEAX',
+
     # no mass
     'GRID', 'PARAM', 'FORCE', 'FORCE1', 'FORCE2', 'MOMENT1', 'MOMENT2', 'LOAD',
     'DVPREL1', 'DVPREL2', 'DVCREL1', 'DVCREL2', 'DVMREL1', 'DVMREL2', 'DCONSTR', 'DESVAR',
@@ -60,6 +63,10 @@ NO_MASS = {
     'DVPREL1', 'DVPREL2', 'DVMREL1', 'DVMREL2', 'DVCREL1', 'DVCREL2',
     'DESVAR', 'DCONADD', 'DRESP1', 'DRESP2', 'DRESP3', 'DEQATN', 'DSCREEN',
     'SUPORT', 'SUPORT1',
+    'CYJOIN',
+
+    # acoustic
+    'CHACAB', 'CAABSF',
 }
 
 def transform_inertia(mass, xyz_cg, xyz_ref, xyz_ref2, I_ref):

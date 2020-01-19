@@ -81,6 +81,8 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
         'BCTPARA', 'BCRPARA', 'BSURF', 'BSURFS', 'BCTADD',
         'BCTSET', 'BFRIC',
 
+        'TABRNDG', 'DTI', 'TABLEH1',
+
     }
     # this are things that haven't been referenced yet
     not_implemented_types = {
@@ -96,6 +98,18 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
         'DSCREEN', 'DTI', 'NSMADD',
         'AESURFS', 'CSSCHD',
         'CGEN', 'NXSTRAT',
+
+        # axisymmetric
+        'FORCEAX',
+
+        # acoustic
+        'PACABS',
+
+        # superelements
+        'SELOC',
+
+        # parametric
+        'FEEDGE', 'FEFACE'
     }
     set_types_simple = [
         'SET1', 'SET3',
@@ -135,6 +149,8 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
         'CONROD', 'CCONEAX',
         'CBAR', 'CBEAM', 'CBEND',
 
+        # acoustic
+        'CHACAB',
     }
     tableht_used = set([])
     tableh1_used = set([])
@@ -496,7 +512,7 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
 
 
 def _store_elements(card_type, model, ids, nids_used, pids_used, mids_used, cids_used):
-    if card_type in ['CTETRA', 'CPENTA', 'CPYRAM', 'CHEXA']:
+    if card_type in ['CTETRA', 'CPENTA', 'CPYRAM', 'CHEXA', 'CHACAB']:
         for eid in ids:
             elem = model.elements[eid]
             nids_used.update(elem.node_ids)
@@ -756,6 +772,7 @@ def _store_masses(card_type, model, ids, nids_used, pids_mass_used, cids_used):
 def _remove(model,
             nids_used, cids_used,
             pids_used, pids_mass_used, mids_used, spcs_used, mpcs_used,
+            pconv_used, tableht_used, tableh1_used,
             unused_desvars_used,
             remove_nids=True, remove_cids=True,
             remove_pids=True, remove_mids=True,
@@ -820,5 +837,31 @@ def _remove(model,
 
 def _remove_thermal(model, pconv_used, tableht_used, tableh1_used):
     """removes some thermal cards"""
-    pass
+    pconv = {pid for pid, prop in model.convection_properties.items() if prop.type == 'PCONV'}
+    tableht = {tid for tid, table in model.tables.items() if table.type == 'TABLEHT'}
+    tableh1 = {tid for tid, table in model.tables.items() if table.type == 'TABLEH1'}
+
+    pconv_to_remove = list(pconv - pconv_used)
+    tableht_to_remove = list(tableht - tableht_used)
+    tableh1_to_remove = list(tableh1 - tableh1_used)
+
+    remove_pconv = True
+    if remove_pconv and pconv_to_remove:
+        for pid in pconv_to_remove:
+            del model.convection_properties[pid]
+        pconv_to_remove.sort()
+        model.log.debug('removing convection_properties %s' % pconv_to_remove)
+
+    remove_tableh1 = True
+    remove_tableht = True
+    if remove_tableh1 and tableh1_to_remove:
+        for pid in tableh1_to_remove:
+            del model.tables[pid]
+        tableh1_to_remove.sort()
+        model.log.debug('removing TABLEH1 %s' % tableh1_to_remove)
+    if remove_tableht and tableht_to_remove:
+        for pid in tableht_to_remove:
+            del model.tables[pid]
+        tableht_to_remove.sort()
+        model.log.debug('removing TABLEH1 %s' % tableht_to_remove)
     return

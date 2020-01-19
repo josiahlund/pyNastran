@@ -39,7 +39,7 @@ from pyNastran.bdf.bdf_interface.subcase_cards import (
     split_by_mixed_commas_parentheses,
 )
 from pyNastran.utils import object_attributes
-from cpylog import get_logger
+
 
 class CaseControlDeck(object):
     """CaseControlDeck parsing and extraction class"""
@@ -255,8 +255,10 @@ class CaseControlDeck(object):
     def get_subcase_parameter(self, isubcase, param_name, obj=False):
         """
         Get the [value, options] of a subcase's parameter.  For example, for
-        STRESS(PLOT,POST)=ALL, param_name=STRESS, value=ALL, options=['PLOT',
-        'POST']
+        STRESS(PLOT,POST)=ALL:
+            param_name=STRESS
+            value=ALL
+            options=['PLOT', 'POST']
 
         Parameters
         ----------
@@ -443,7 +445,7 @@ class CaseControlDeck(object):
         DISP = ALL
 
         """
-        (j, key, value, options, param_type) = self._parse_data_from_user(param)
+        (unused_j, key, value, options, param_type) = self._parse_data_from_user(param)
         subcase_list = self.get_subcase_list()
         for isubcase in subcase_list:
             self._add_parameter_to_subcase(key, value, options, param_type,
@@ -1120,6 +1122,16 @@ def verify_card2(key, value, options, line):
         'EXTSEOUT', 'FLSTCNT PREFDB', 'AESYMXY',
         'DSYM',
     ]
+    all_none_cards = [
+        'STRESS', 'STRAIN', 'SPCFORCES', 'DISPLACEMENT', 'MPCFORCES', 'SVECTOR',
+        'VELOCITY', 'ACCELERATION', 'FORCE', 'ESE', 'OLOAD', 'SEALL', 'GPFORCE',
+        'GPSTRESS', 'GPSTRAIN', 'FLUX', 'AEROF', 'THERMAL', 'STRFIELD',
+        'NOUTPUT', 'SEDV', 'APRES', 'HTFLOW', 'NLSTRESS', 'GPKE',
+        'SACCELERATION', 'SDISPLACEMENT', 'SEMG', 'HARMONICS', 'PRESSURE', 'VUGRID',
+        'ELSUM', 'SVELOCITY', 'STRFIELD REAL', 'SENSITY', 'MONITOR',
+        'NLLOAD', 'GPSDCON', 'BOUTPUT',
+    ]
+
     if key in ['BCONTACT', 'CURVELINESYMBOL']:
         value2 = integer(value, line)
 
@@ -1131,13 +1143,7 @@ def verify_card2(key, value, options, line):
     # these may have a value of all/none/integer, nothing else
     # except commas are allowed
     # 'DISP=ALL', 'DISP=NONE', 'DISP=1', 'DISP=1,2'
-    elif key in ['STRESS', 'STRAIN', 'SPCFORCES', 'DISPLACEMENT', 'MPCFORCES', 'SVECTOR',
-                 'VELOCITY', 'ACCELERATION', 'FORCE', 'ESE', 'OLOAD', 'SEALL', 'GPFORCE',
-                 'GPSTRESS', 'GPSTRAIN', 'FLUX', 'AEROF', 'THERMAL', 'STRFIELD',
-                 'NOUTPUT', 'SEDV', 'APRES', 'HTFLOW', 'NLSTRESS', 'GPKE',
-                 'SACCELERATION', 'SDISPLACEMENT', 'SEMG', 'HARMONICS', 'PRESSURE', 'VUGRID',
-                 'ELSUM', 'SVELOCITY', 'STRFIELD REAL', 'SENSITY', 'MONITOR',
-                 'NLLOAD', 'GPSDCON', 'BOUTPUT']:
+    elif key in all_none_cards:
         if value not in ['ALL', 'NONE']:
             if ',' in value:
                 sline = value.split(',')
@@ -1232,6 +1238,7 @@ def split_equal_space(line, word, example):
 
 def integer(str_value, line):
     # (str, str) -> int
+    """casts the value as an integer"""
     try:
         value = int(str_value)
     except ValueError:

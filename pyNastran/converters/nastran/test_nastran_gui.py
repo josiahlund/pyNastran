@@ -9,12 +9,14 @@ matplotlib.use('Agg')
 import vtk
 
 from cpylog import SimpleLogger
+
 import pyNastran
 from pyNastran.bdf.cards.test.test_aero import get_zona_model
 from pyNastran.bdf.errors import DuplicateIDsError
 from pyNastran.gui.testing_methods import FakeGUIMethods
 from pyNastran.converters.nastran.nastran_io import NastranIO, BDF
-#from cpylog import get_logger2
+RED = (1., 0., 0.)
+
 
 class NastranGUI(NastranIO, FakeGUIMethods):
     def __init__(self, inputs=None):
@@ -39,7 +41,6 @@ class TestNastranGUI(unittest.TestCase):
         is_loaded = test.settings.load(settings)
         assert is_loaded is True
 
-        RED = (1., 0., 0.)
         test.settings.set_annotation_size_color(size=10, color=None)
         #test.settings.set_annotation_size_color(size=10, color=RED)
 

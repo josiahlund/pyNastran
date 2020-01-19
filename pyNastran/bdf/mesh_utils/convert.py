@@ -160,9 +160,10 @@ def scale_model(model, xyz_scale, mass_scale, time_scale, weight_scale, gravity_
         _convert_coordinates(model, xyz_scale)
 
     if convert_elements:
-        _convert_elements(model, xyz_scale, mass_scale, weight_scale)
+        _convert_elements(model, xyz_scale, time_scale, mass_scale, weight_scale)
     if convert_properties:
-        _convert_properties(model, xyz_scale, mass_scale, weight_scale)
+        _convert_properties(model, xyz_scale, time_scale, mass_scale, weight_scale,
+                            temperature_scale)
     if convert_materials:
         _convert_materials(model, xyz_scale, mass_scale, weight_scale, temperature_scale)
 
@@ -171,7 +172,7 @@ def scale_model(model, xyz_scale, mass_scale, time_scale, weight_scale, gravity_
     if convert_constraints:
         _convert_constraints(model, xyz_scale)
     if convert_loads:
-        _convert_loads(model, xyz_scale, weight_scale)
+        _convert_loads(model, xyz_scale, time_scale, weight_scale, temperature_scale)
     #_convert_sets(model)
     if convert_optimization:
         _convert_optimization(model, xyz_scale, mass_scale, weight_scale)
@@ -268,7 +269,7 @@ def _convert_coordinates(model, xyz_scale):
         #else:
             #raise NotImplementedError(coord)
 
-def _convert_elements(model, xyz_scale, mass_scale, weight_scale):
+def _convert_elements(model, xyz_scale, time_scale, mass_scale, weight_scale):
     """
     Converts the elements
 
@@ -285,7 +286,6 @@ def _convert_elements(model, xyz_scale, mass_scale, weight_scale):
     *intentionally
 
     """
-    time_scale = 1.
     force_scale = weight_scale
     area_scale = xyz_scale ** 2
     velocity_scale = xyz_scale / time_scale
@@ -308,11 +308,15 @@ def _convert_elements(model, xyz_scale, mass_scale, weight_scale):
         'CSHEAR', 'CQUAD', 'CQUADX', 'CTRIAX', 'CTRIAX6',
         'CTETRA', 'CPENTA', 'CHEXA', 'CPYRAM',
         'CRAC2D', 'CRAC3D',
+        'CHBDYG', 'CHBDYE', 'CHBDYP',
 
         # TODO: NX-verify
         'CTRAX3', 'CTRAX6',
         'CPLSTN3', 'CPLSTN6', 'CPLSTN4', 'CPLSTN8',
         'CQUADX4', 'CQUADX8',
+
+        # acoustic
+        'CHACAB',
     }
     skip_masses = {'CMASS1', 'CMASS3'}
 
@@ -395,6 +399,18 @@ def _convert_elements(model, xyz_scale, mass_scale, weight_scale):
                 elem.x = [x*xyz_scale for x in elem.x]
             elem.wa *= xyz_scale
             elem.wb *= xyz_scale
+        elif elem_type == 'CBEAM3':
+            #print(elem.get_stats())
+            if elem.x is not None:  # vector
+                elem.x = [x*xyz_scale for x in elem.x]
+            elem.wa *= xyz_scale
+            elem.wb *= xyz_scale
+            elem.wc *= xyz_scale
+            # s
+            # tw
+        elif elem_type == 'CBEND':
+            if elem.x is not None:  # vector
+                elem.x = [x*xyz_scale for x in elem.x]
         elif elem_type == 'CBUSH':
             if elem.x[0] is not None:  # vector
                 elem.x = [x*xyz_scale for x in elem.x]
@@ -428,7 +444,8 @@ def _convert_elements(model, xyz_scale, mass_scale, weight_scale):
         else:
             raise NotImplementedError(elem)
 
-def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
+def _convert_properties(model, xyz_scale, time_scale, mass_scale, weight_scale,
+                        temperature_scale):
     """
     Converts the properties
 
@@ -442,7 +459,7 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
     """
     if len(model.properties) == 0:
         return
-    time_scale = 1.
+
     force_scale = weight_scale
     moment_scale = force_scale * xyz_scale
     area_scale = xyz_scale ** 2
@@ -468,6 +485,9 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
 
         # TODO: NX-verify
         'PPLANE',
+
+        # acoustic
+        'PACABS',
     }
 
     # we don't need to convert PBUSHT, PELAST, PDAMPT
@@ -497,6 +517,7 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
 
         elif prop_type == 'PBEAM':
             _convert_pbeam(prop, xyz_scale, area_scale, area_moi_scale, nsm_bar_scale)
+
         elif prop_type == 'PBEAML':
             prop.dim *= xyz_scale
             prop.nsm *= nsm_bar_scale
@@ -581,6 +602,12 @@ def _convert_properties(model, xyz_scale, mass_scale, weight_scale):
 
             #: transverse stiffness of closed gap
             prop.kt *= stiffness_scale
+
+        elif prop_type in ['PBEND', 'PBCOMP', 'PBUSH2D']:
+            model.log.warning('skipping %s convert' % prop_type)
+        elif prop_type == 'PCOMPS':
+            prop.thicknesses *= xyz_scale
+            prop.tref *= temperature_scale
         else:
             raise NotImplementedError(prop_type)
 
@@ -772,7 +799,8 @@ def _convert_materials(model, xyz_scale, mass_scale, weight_scale, temperature_s
             mat.G56 *= stress_scale
             mat.G66 *= stress_scale
             mat.rho *= density_scale
-            mat.A *= a_scale
+            mat.A = [ai * a_scale if ai is not None else None
+                     for ai in mat.A]
             mat.tref *= temperature_scale
         elif mat.type == 'MAT3D':
             mat.e1 *= stress_scale
@@ -795,6 +823,8 @@ def _convert_materials(model, xyz_scale, mass_scale, weight_scale, temperature_s
             #mat.a3 = a3
             mat.tref *= temperature_scale
             #mat.ge = ge
+        elif mat.type == 'MAT10':
+            model.log.warning('skipping %s convert' % mat.type)
         else:
             raise NotImplementedError(mat)
 
@@ -833,7 +863,7 @@ def _get_dload_scale(dload, xyz_scale, velocity_scale, accel_scale, force_scale)
         raise RuntimeError(dload)
     return scale
 
-def _convert_loads(model, xyz_scale, weight_scale):
+def _convert_loads(model, xyz_scale, time_scale, weight_scale, temperature_scale):
     """
     Converts the loads
 
@@ -846,7 +876,6 @@ def _convert_loads(model, xyz_scale, weight_scale):
     * probably not done
 
     """
-    time_scale = 1.
     frequency_scale = 1. / time_scale
     force_scale = weight_scale
     moment_scale = xyz_scale * weight_scale
@@ -1127,6 +1156,16 @@ def _scale_caero(caero, xyz_scale, xyz_aefacts):
             #: or blank. (Integer > 0)
             if caero.lint > 0:
                 xyz_aefacts.add(caero.lint)
+        elif caero.type == 'CAERO3':
+            caero.p1 *= xyz_scale
+            caero.p4 *= xyz_scale
+            caero.x12 *= xyz_scale
+            caero.x43 *= xyz_scale
+        elif caero.type == 'CAERO5':
+            caero.p1 *= xyz_scale
+            caero.p4 *= xyz_scale
+            caero.x12 *= xyz_scale
+            caero.x43 *= xyz_scale
         else:
             raise NotImplementedError('\n' + str(caero))
     except TypeError:  # pragma: no cover

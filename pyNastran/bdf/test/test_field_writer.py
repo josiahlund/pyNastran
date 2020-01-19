@@ -3,9 +3,11 @@ from __future__ import (nested_scopes, generators, division, absolute_import,
 import random
 import unittest
 
+from pyNastran.bdf.field_writer import print_card
 from pyNastran.bdf.field_writer_8 import (print_field_8, print_float_8,
                                           set_default_if_blank,
-                                          set_blank_if_default, is_same, print_card_8)
+                                          set_blank_if_default, is_same, print_card_8,
+                                          print_scientific_8)
 from pyNastran.bdf.field_writer_16 import print_field_16, print_card_16, print_float_16, print_scientific_16
 from pyNastran.bdf.field_writer_double import print_card_double
 
@@ -257,10 +259,15 @@ class Testfield_writer_8(unittest.TestCase):
         self.assertFalse(is_same('MAT', 'MAT1'))
 
     def test_card_double(self):
-        card = print_card_double(['GRID', 1, None, 120.322, -4.82872, 1.13362])
-        card_expected = 'GRID*                  1                1.2032200000D+02-4.828720000D+00\n'
-        card_expected += '*       1.1336200000D+00\n'
-        self.assertEqual(card, card_expected)
+        fields = ['GRID', 1, None, 120.322, -4.82872, 1.13362]
+        card_expected = (
+            'GRID*                  1                1.2032200000D+02-4.828720000D+00\n'
+            '*       1.1336200000D+00\n'
+        )
+        card1 = print_card(fields, size=16, is_double=True)
+        card2 = print_card_double(fields)
+        self.assertEqual(card1, card_expected)
+        self.assertEqual(card2, card_expected)
 
         #card = print_card_double(['CHEXA', 1, 2, 2, 3, 4, 1, 8, 5,
                                            #6, 7])
@@ -285,27 +292,35 @@ class Testfield_writer_8(unittest.TestCase):
         #self.assertEqual(card, card_expected)
 
         #=============================
-        #                            mid   E1      E2      nu12 G12      G1z      G2z      rho
-        card = print_card_8(['MAT8', 6, 1.7e+7, 1.7e+7, .98, 340000., 180000., 180000., 0.0001712,
-        #                            a1    a2    tref
-                                     None, 71.33])
-        card_expected = ''
-        card_expected += 'MAT8           6   1.7+7   1.7+7     .98 340000. 180000. 180000..0001712\n'
-        card_expected += '                   71.33\n'
-        self.assertEqual(card, card_expected)
+        #           mid   E1      E2      nu12 G12      G1z      G2z      rho
+        fields = [
+            'MAT8', 6, 1.7e+7, 1.7e+7, .98, 340000., 180000., 180000., 0.0001712,
+            # a1    a2    tref
+            None, 71.33]
+        card_expected = (
+            'MAT8           6   1.7+7   1.7+7     .98 340000. 180000. 180000..0001712\n'
+            '                   71.33\n'
+        )
+        card1 = print_card_8(fields)
+        card2 = print_card(fields)
+        self.assertEqual(card1, card_expected)
+        self.assertEqual(card2, card_expected)
 
+        fields = ['MAT8', 6, 1.7e+7, 1.7e+7, .98, 340000., 180000., 180000., 0.0001712,
+                  # a1    a2    tref
+                  None, 71.33]
+        card1 = print_card_16(fields)
+        card2 = print_card(fields, size=16)
 
-        card = print_card_16(['MAT8', 6, 1.7e+7, 1.7e+7, .98, 340000., 180000., 180000., 0.0001712,
-        #                            a1    a2    tref
-                                     None, 71.33])
-
-        card_expected = ''
-        card_expected += 'MAT8*                  6       17000000.       17000000.             .98\n'
-        card_expected += '*                340000.         180000.         180000.        .0001712\n'
-        card_expected += '*                                  71.33\n'
-        card_expected += '*\n'
+        card_expected = (
+            'MAT8*                  6       17000000.       17000000.             .98\n'
+            '*                340000.         180000.         180000.        .0001712\n'
+            '*                                  71.33\n'
+            '*\n'
+        )
         # bad
-        self.assertEqual(card, card_expected)
+        self.assertEqual(card1, card_expected)
+        self.assertEqual(card2, card_expected)
         #=============================
         #layer = mid, t, theta sout
         #                      mid E1              E2                  nu12
@@ -359,6 +374,19 @@ class Testfield_writer_8(unittest.TestCase):
             output = print_float_8(x)
             self.assertEqual(len(output), 8, msg='output=%r len(output)=%i' % (output, len(output)))
             self.assertEqual(output, expectedi, msg='num=%s output=%r expected=%r' % (x, output, expectedi))
+
+    def test_scientific_8(self):
+        expected_num = [
+            ('      0.', 0.),
+            ('    1.-1', 0.1),
+            ('   1.1-1', 0.11),
+            ('1.2345-1', 0.123451),
+            ('1.2346-1', 0.123459),
+        ]
+        for expected, num in expected_num:
+            actual = print_scientific_8(num)
+            assert len(actual) == 8, actual
+            assert actual == expected, 'actual=%r expected=%r num=%r' % (actual, expected, num)
 
     def test_scientific_16(self):
         small_exponent = -17

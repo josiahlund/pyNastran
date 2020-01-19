@@ -27,6 +27,7 @@ from pyNastran.bdf.mesh_utils.loads import sum_forces_moments, sum_forces_moment
 from pyNastran.bdf.mesh_utils.breakdowns import (
     get_length_breakdown, get_area_breakdown, get_volume_breakdown, get_mass_breakdown)
 from pyNastran.bdf.mesh_utils.skin_solid_elements import write_skin_solid_faces
+from pyNastran.bdf.utils import transform_load
 
 
 class BDFMethods(BDFAttributes):
@@ -200,6 +201,11 @@ class BDFMethods(BDFAttributes):
         >>>     mass, cg, inertia = model.mass_properties(element_ids=eids)
 
         """
+        self.deprecated(
+            'mass, cg, inertia = model.mass_properties(...)',
+            'from pyNastran.bdf.mesh_utils.mass_properties import mass_properties\n'
+            'mass, cg, inertia = mass_properties(model, ...)',
+            '1.3')
         mass, cg, inertia = mass_properties(
             self,
             element_ids=element_ids, mass_ids=mass_ids,
@@ -282,6 +288,11 @@ class BDFMethods(BDFAttributes):
         >>>     mass, cg, inertia = model.mass_properties(element_ids=eids)
 
         """
+        self.deprecated(
+            'mass, cg, inertia = model.mass_properties_no_xref(...)',
+            'from pyNastran.bdf.mesh_utils.mass_properties import mass_properties_no_xref\n'
+            'mass, cg, inertia = mass_properties_no_xref(model, ...)',
+            '1.3')
         mass, cg, inertia = mass_properties_no_xref(
             self, element_ids=element_ids, mass_ids=mass_ids,
             reference_point=reference_point,
@@ -378,6 +389,11 @@ class BDFMethods(BDFAttributes):
            will be considered, even if not included in the element set
 
         """
+        self.deprecated(
+            'mass, cg, inertia = model.mass_properties_nsm(...)',
+            'from pyNastran.bdf.mesh_utils.mass_properties import mass_properties_nsm\n'
+            'mass, cg, inertia = mass_properties_nsm(model, ...)',
+            '1.3')
         mass, cg, inertia = mass_properties_nsm(
             self, element_ids=element_ids, mass_ids=mass_ids, nsm_id=nsm_id,
             reference_point=reference_point,
@@ -402,17 +418,12 @@ class BDFMethods(BDFAttributes):
         #mass, cg, I = self.mass_properties(reference_point=p0, sym_axis=None)
 
     def sum_forces_moments_elements(self, p0, loadcase_id, eids, nids,
-                                    include_grav=False, xyz_cid0=None):
-        # type: (int, int, List[int], List[int], bool, Union[None, Dict[int, np.ndarray]]) -> Tuple[np.ndarray, np.ndarray]
+                                    include_grav=False, xyz_cid0=None, cid=0):
         """
         Sum the forces/moments based on a list of nodes and elements.
 
         Parameters
         ----------
-        eids : List[int]
-            the list of elements to include (e.g. the loads due to a PLOAD4)
-        nids : List[int]
-            the list of nodes to include (e.g. the loads due to a FORCE card)
         p0 : int; (3,) ndarray
            the point to sum moments about
            type = int
@@ -421,6 +432,12 @@ class BDFMethods(BDFAttributes):
                the x, y, z location in the global frame
         loadcase_id : int
             the LOAD=ID to analyze
+        eids : List[int]
+            the list of elements to include (e.g. the loads due to a PLOAD4)
+        nids : List[int]
+            the list of nodes to include (e.g. the loads due to a FORCE card)
+        cid : int; default=0
+            the coordinate system for the summation
         include_grav : bool; default=False
             includes gravity in the summation (not supported)
         xyz_cid0 : None / Dict[int] = (3, ) ndarray
@@ -475,13 +492,21 @@ class BDFMethods(BDFAttributes):
         .. todo:: not done...
 
         """
+        self.deprecated(
+            'forces, moments = model.sum_forces_moments_elements(...)',
+            'from pyNastran.bdf.mesh_utils.loads import sum_forces_moments_elements\n'
+            'forces, moments = sum_forces_moments_elements(model, ...)',
+            '1.3')
         forces, moments = sum_forces_moments_elements(self, p0, loadcase_id, eids, nids,
                                                       include_grav=include_grav, xyz_cid0=xyz_cid0)
+        if cid == 0:
+            return forces, moments
+        cid0 = 0
+        forces, moments = transform_load(forces, moments, cid0, cid, self)
         return forces, moments
 
     def sum_forces_moments(self, p0, loadcase_id, include_grav=False,
-                           xyz_cid0=None):
-        # type: (int, int, bool, Union[None, Dict[int, np.ndarray]]) -> Tuple[np.ndarray, np.ndarray]
+                           xyz_cid0=None, cid=0):
         """
         Sums applied forces & moments about a reference point p0 for all
         load cases.
@@ -497,6 +522,8 @@ class BDFMethods(BDFAttributes):
             the reference point
         loadcase_id : int
             the LOAD=ID to analyze
+        cid : int; default=0
+            the coordinate system for the summation
         include_grav : bool; default=False
             includes gravity in the summation (not supported)
         xyz_cid0 : None / Dict[int] = (3, ) ndarray
@@ -517,8 +544,17 @@ class BDFMethods(BDFAttributes):
         Pressure acts in the normal direction per model/real/loads.bdf and loads.f06
 
         """
+        self.deprecated(
+            'forces, moments = model.sum_forces_moments(...)',
+            'from pyNastran.bdf.mesh_utils.loads import sum_forces_moments\n'
+            'forces, moments = sum_forces_moments(model, ...)',
+            '1.3')
         forces, moments = sum_forces_moments(self, p0, loadcase_id,
                                              include_grav=include_grav, xyz_cid0=xyz_cid0)
+        if cid == 0:
+            return forces, moments
+        cid0 = 0
+        forces, moments = transform_load(forces, moments, cid0, cid, self)
         return forces, moments
 
     def get_element_faces(self, element_ids=None, allow_blank_nids=True):
@@ -588,6 +624,11 @@ class BDFMethods(BDFAttributes):
             the string encoding
 
         """
+        self.deprecated(
+            'model.write_skin_solid_faces(...)',
+            'from pyNastran.bdf.mesh_utils.skin_solid_elements import write_skin_solid_faces\n'
+            'write_skin_solid_faces(model, ...)',
+            '1.3')
         write_skin_solid_faces(
             self, skin_filename,
             write_solids=write_solids, write_shells=write_shells,

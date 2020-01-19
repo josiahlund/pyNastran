@@ -146,6 +146,7 @@ class PDAMP5(DamperProperty):
         """
         Defines the damping multiplier and references the material properties
         for damping. CDAMP5 is intended for heat transfer analysis only.
+
         """
         DamperProperty.__init__(self)
         if comment:

@@ -1651,29 +1651,16 @@ class RSPLINE(RigidElement):
         #self.Gmi = self.Gmi_node_ids
         #del self.Gni_ref, self.Gmi_ref
 
-    #@property
-    #def Gni_node_ids(self):
-        #if len(self.Gni) == 0:
-            #return []
-        #return self._node_ids(nodes=self.Gni, allow_empty_nodes=True)
-
-    #@property
-    #def Gmi_node_ids(self):
-        #if len(self.Gmi) == 0:
-            #return []
-        #return self._node_ids(nodes=self.Gmi, allow_empty_nodes=True)
-
     @property
     def independent_nodes(self):
         """gets the independent node ids"""
+        # TODO: not quite right as it doesn't support blank entries
         return [self.independent_nid]
-        #return self.Gni_node_ids
 
     @property
     def dependent_nodes(self):
         """gets the dependent node ids"""
-        #nodes = self.Gmi_node_ids
-        #return nodes
+        # TODO: not quite right as it doesn't support blank entries
         return self.dependent_nids
 
     def raw_fields(self):
@@ -1844,6 +1831,7 @@ class RSSCON(RigidElement):
         return self.solid_eid
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.shell_eid = self.EidShell()
         self.solid_eid = self.EidSolid()
         self.shell_eid_ref = None

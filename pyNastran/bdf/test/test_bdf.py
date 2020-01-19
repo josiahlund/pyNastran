@@ -843,7 +843,10 @@ def run_fem2(bdf_model, out_model, xref, punch,
 
     if mesh_form is not None:
         fem2.write_bdf(out_model_2, interspersed=False, size=size, is_double=is_double)
-        os.remove(out_model_2)
+        try:
+            os.remove(out_model_2)
+        except PermissionError:  # pragma: no cover
+            fem2.log.warning('cannot remove %s due to a permissions error' % out_model_2)
     #fem2.write_as_ctria3(out_model_2)
     return fem2
 
@@ -995,7 +998,7 @@ def check_case(sol, subcase, fem2, p0, isubcase, subcases,
                                           RuntimeError, log, ierror, nerrors)
     elif sol in [3, 103]:
         msg = 'sol=%s\n%s' % (sol, subcase)
-        ierror = check_for_optional_param(('METHOD', 'RSMETHOD', 'RIGID', 'BOLTID'), subcase, msg,
+        ierror = check_for_optional_param(('METHOD', 'RSMETHOD', 'RIGID', 'BOLTID', 'BGSET'), subcase, msg,
                                           RuntimeError, log, ierror, nerrors)
     elif sol == 105: # buckling
         _assert_has_spc(subcase, fem2)
@@ -1018,7 +1021,7 @@ def check_case(sol, subcase, fem2, p0, isubcase, subcases,
     elif sol == 106: # freq
         assert 'NLPARM' in subcase, subcase
         msg = 'sol=%s\n%s' % (sol, subcase)
-        ierror = check_for_optional_param(('LOAD', 'TEMPERATURE(LOAD)'), subcase, msg,
+        ierror = check_for_optional_param(('LOAD', 'TEMPERATURE(LOAD)', 'CLOAD'), subcase, msg,
                                           RuntimeError, log, ierror, nerrors)
     elif sol == 107: # ???
         _assert_has_spc(subcase, fem2)
