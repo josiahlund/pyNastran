@@ -7,6 +7,8 @@ PY3 = True
 if sys.version_info < (3, 0):
     PY2 = True
     PY3 = False
+PY36 = sys.version_info[:2] == (3, 6)
+#PY37 = sys.version_info[:2] == (3, 7)
 
 # features in packages used by pyNastran
 # numpy
@@ -197,7 +199,7 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         import cpylog
         iver = int_version('cpylog', cpylog.__version__)
         all_reqs['cpylog'] = str_version(iver)
-        if PY2 and not([1, 0, 2] <= iver < [1, 3]):
+        if (PY2 or PY36) and not([1, 0, 2] <= iver < [1, 3]):
             print("cpylog.__version__ = %r '> 1.0.2, < 1.3'" % cpylog.__version__)
             all_reqs['cpylog'] = '>= 1.0.2, <1.3'
             install_requires.append('cpylog >= 1.0.2,<1.3')

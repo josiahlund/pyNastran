@@ -238,7 +238,7 @@ def cmd_line_renumber(argv=None, quiet=False):
     if argv is None:
         argv = sys.argv
 
-    from docopt import docopt
+    from docopt import docopt, __version__
     import pyNastran
     msg = (
         "Usage:\n"
@@ -278,7 +278,10 @@ def cmd_line_renumber(argv=None, quiet=False):
 
     size = 16
     if data['--size']:
-        size = int(data['--size'])
+        if __version__ == '0.6.2':  # docopt
+            size = int(data['--size'])
+        else:  # docopt-ng 0.7.2
+            size = int(data['SIZE'])
 
     assert size in [8, 16], size
     #cards_to_skip = [
@@ -1084,6 +1087,7 @@ def cmd_line(argv=None, quiet=False):
         print(argv)
         sys.exit(msg)
         #raise NotImplementedError('arg1=%r' % sys.argv[1])
+
 
 if __name__ == '__main__':  # pragma: no cover
     sys.argv = sys.argv[1:]

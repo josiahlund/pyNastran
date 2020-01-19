@@ -39,7 +39,7 @@ matrix:
     - name: "Python 2.7 (PySide)"
       python: '2.7'
       env:
-      - NUMPY='numpy scipy matplotlib h5py vtk pyside pandas<0.25 imageio PIL<7.0'
+      - NUMPY='numpy scipy matplotlib h5py vtk pyside pandas<0.25 imageio==2.3 PIL<7.0'
       - LIB='libblas-dev liblapack-dev'
       - LIBH5='libhdf5-dev'
 
