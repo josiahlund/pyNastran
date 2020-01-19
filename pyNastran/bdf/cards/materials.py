@@ -444,7 +444,7 @@ class MAT1(IsotropicMaterial):
     @classmethod
     def export_to_hdf5(cls, h5_file, model, mids):
         """exports the materials in a vectorized way"""
-        comments = []
+        #comments = []
         e = []
         g = []
         nu = []
@@ -639,7 +639,7 @@ class MAT1(IsotropicMaterial):
             the BDF object
 
         """
-        msg = ', which is required by MAT1 mid=%s' % self.mid
+        #msg = ', which is required by MAT1 mid=%s' % self.mid
         #self.mcsid = model.Coord(self.mcsid, msg=msg)  # used only for PARAM,CURVPLOT
         if self.mid in model.MATS1:
             self.mats1_ref = model.MATS1[self.mid]  # not using a method...
@@ -850,7 +850,7 @@ class MAT2(AnisotropicMaterial):
     @classmethod
     def export_to_hdf5(cls, h5_file, model, mids):
         """exports the materials in a vectorized way"""
-        comments = []
+        #comments = []
         G = []
         rho = []
         a = []
@@ -988,7 +988,7 @@ class MAT2(AnisotropicMaterial):
             the BDF object
 
         """
-        msg = ', which is required by MAT2 mid=%s' % self.mid
+        #msg = ', which is required by MAT2 mid=%s' % self.mid
         if self.mid in model.MATT2:
             self.matt2_ref = model.MATT2[self.mid]  # not using a method...
 
@@ -1135,7 +1135,7 @@ class MAT3(OrthotropicMaterial):
     @classmethod
     def export_to_hdf5(cls, h5_file, model, mids):
         """exports the elements in a vectorized way"""
-        comments = []
+        #comments = []
         ex = []
         eth = []
         ez = []
@@ -1712,7 +1712,7 @@ class MAT8(OrthotropicMaterial):
         'RHO' : 'rho', #6 : 'rho',
         'A1' : 'a1',
         'A2' : 'a2',
-        'A3' : 'a3',
+        #'A3' : 'a3',
 
         #'TREF' : 'tref', #8 : 'tref',
         #'E' : 'e', #3 : 'e',

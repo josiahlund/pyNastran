@@ -4,6 +4,7 @@ from codecs import open
 import unittest
 from six import PY2, StringIO
 
+from cpylog import get_logger
 import pyNastran
 from pyNastran.bdf.bdf import BDF, read_bdf, get_logger2
 from pyNastran.bdf.bdf_interface.pybdf import BDFInputPy

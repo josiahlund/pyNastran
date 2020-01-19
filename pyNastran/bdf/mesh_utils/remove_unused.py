@@ -61,7 +61,6 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
         'SPOINT', 'EPOINT', 'DESVAR',
         'SET1', 'FREQ', 'FREQ1', 'FREQ2',
         'TSTEP', 'TSTEPNL', 'NLPCI',
-        #'LOAD', 'LSEQ', 'DLOAD', 'LOADCYN',
         'NLPARM', 'ROTORG', 'ROTORD',
         'DAREA', 'DEQATN',
         'DMIG', 'DMI', 'DMIJ', 'DMIK', 'DMIJI',
@@ -84,6 +83,7 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
         'TABRNDG', 'DTI', 'TABLEH1',
 
     }
+
     # this are things that haven't been referenced yet
     not_implemented_types = {
         # not checked------------------------------------------
@@ -269,20 +269,18 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
                 #tempd = self.tempds[temp_id]
 
         elif card_type == 'MPCADD':
-            pass
-            #for mpcadds in model.mpcadds.values():
-                #for mpcadd in mpcadds:
-                    #nids_used.update(mpc.node_ids)
+            for mpcadds in model.mpcadds.values():
+                for mpcadd in mpcadds:
+                    mpcs_used.update(mpcadd.mpc_ids)
         elif card_type == 'MPC':
             for mpcs in model.mpcs.values():
                 for mpc in mpcs:
                     nids_used.update(mpc.node_ids)
 
         elif card_type == 'SPCADD':
-            pass
-            #for spcadds in model.spcadds.values():
-                #for spcadd in spcadds:
-                    #nids_used.update(spc.node_ids)
+            for spcadds in model.spcadds.values():
+                for spcadd in spcadds:
+                    spcs_used.update(spcadd.spc_ids)
         elif card_type in ['SPC1', 'SPC', 'GMSPC', 'SPCAX']:
             for spcs in model.spcs.values():
                 for spc in spcs:
@@ -791,6 +789,9 @@ def _remove(model,
     pids_mass_to_remove = list(pids_mass - pids_mass_used)
     mids_to_remove = list(mids - mids_used)
     cids_to_remove = list(cids - cids_used)
+    spcs_to_remove = list(spcs - spcs_used)
+    mpcs_to_remove = list(mpcs - mpcs_used)
+
     if 0 in cids_to_remove:
         cids_to_remove.remove(0)
 

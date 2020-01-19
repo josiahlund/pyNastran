@@ -181,8 +181,8 @@ class MATS1(MaterialDependence):
         elif Type == 3:
             Type = 'PLSTRN'
         else:  # pragma: no cover
-            raise RuntimeError('Invalid Type:  Type=%s; must be 1=NLELAST '
-                               'or 2=PLASTIC' % (Type))
+            raise RuntimeError('Invalid Type:  Type=%s; must be 1=NLELAST, '
+                               '2=PLASTIC, or 3=PLSTRN' % (Type))
         return MATS1(mid, tid, Type, h, hr, yf, limit1, limit2, comment=comment)
 
     def Yf(self):
@@ -1400,7 +1400,7 @@ class MATT8(MaterialDependenceThermal):
         mid = integer(card, 1, 'mid')
         e1_table = integer_or_blank(card, 2, 'T(E1)')
         e2_table = integer_or_blank(card, 3, 'T(E2)')
-        nu12_table = integer_or_blank(card, 3, 'T(Nu12)')
+        nu12_table = integer_or_blank(card, 4, 'T(Nu12)')
         g12_table = integer_or_blank(card, 5, 'T(G12)')
         g1z_table = integer_or_blank(card, 6, 'T(G1z)')
         g2z_table = integer_or_blank(card, 7, 'T(G2z)')
@@ -1434,7 +1434,7 @@ class MATT8(MaterialDependenceThermal):
             the BDF object
 
         """
-        msg = ', which is required by MATT1 mid=%s' % self.mid
+        msg = ', which is required by MATT8 mid=%s' % self.mid
         self.mid_ref = model.Material(self.mid, msg=msg)
 
         if self.e1_table is not None:
@@ -1584,8 +1584,8 @@ class MATT8(MaterialDependenceThermal):
         return self.yc_table
 
     def raw_fields(self):
-        list_fields = ['MATT8', self.mid, self.E1_table(), self.E2_table(), self.G12_table(),
-                       self.G1z_table(), self.G2z_table(), self.Rho_table(),
+        list_fields = ['MATT8', self.mid, self.E1_table(), self.E2_table(), self.Nu12_table(),
+                       self.G12_table(), self.G1z_table(), self.G2z_table(), self.Rho_table(),
                        self.A1_table(), self.A2_table(), None,
                        self.Xt_table(), self.Xc_table(), self.Yt_table(), self.Yc_table(),
                        self.S_table(), self.Ge_table(), self.F12_table()]
@@ -1731,7 +1731,7 @@ class MATT9(MaterialDependenceThermal):
 
         ge_table = integer_or_blank(card, 31, 'T(GE)')
 
-        assert len(card) <= 30, 'len(MATT9 card) = %i\ncard=%s' % (len(card), card)
+        assert len(card) <= 32, 'len(MATT9 card) = %i\ncard=%s' % (len(card), card)
         return MATT9(mid, g11_table, g12_table, g13_table, g14_table, g15_table, g16_table,
                      g22_table, g23_table, g24_table, g25_table, g26_table,
                      g33_table, g34_table, g35_table, g36_table,

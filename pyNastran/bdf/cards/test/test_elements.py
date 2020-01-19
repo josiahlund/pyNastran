@@ -2,6 +2,7 @@
 import unittest
 import numpy as np
 
+from cpylog import get_logger
 from pyNastran.bdf.bdf import BDF, BDFCard
 from pyNastran.bdf.bdf import CGAP, PGAP, CDAMP1, CBUSH, CFAST
 from pyNastran.bdf.cards.test.utils import save_load_deck

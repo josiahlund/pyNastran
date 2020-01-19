@@ -213,6 +213,7 @@ class LineProperty(Property):
         """gets the material Poisson's ratio"""
         return self.mid_ref.nu
 
+
 def A_I1_I2_I12(prop, beam_type, dim):
     r"""
     ::
@@ -329,8 +330,8 @@ def _bar_areaL(class_name, beam_type, dim, prop):
     assert A > 0, 'beam_type=%r dim=%r A=%s\n%s' % (beam_type, dim, A, prop)
     return A
 
-def I1_I2_I12(prop, dim):
-    A, I1, I2, I12 = A_I1_I2_I12(prop, prop.beam_type, dim)
+def I1_I2_I12(prop):
+    A, I1, I2, I12 = A_I1_I2_I12(prop, prop.beam_type, prop.dim)
     return(I1, I2, I12)
 
 def rod_section(class_name, beam_type, dim, prop):
@@ -1470,6 +1471,10 @@ class PBARL(LineProperty):
         "HAT": 4,
         "HAT1": 5,
         "DBOX": 10,  # was 12
+
+        # approximate
+        #'I', 'CHAN', 'T', 'CHAN1', 'T1', 'CHAN2', 'T2', 'L' and 'BOX1'.
+        'L' : 4,
     }  # for GROUP="MSCBML0"
     #pname_fid_map = {
         #12 : 'DIM1',
@@ -1747,6 +1752,10 @@ class PBARL(LineProperty):
     def I22(self):
         # type: () -> float
         return self.I2()
+
+    def I1_I2_I12(self):
+        I1, I2, I12 = I1_I2_I12(self)
+        return I1, I2, I12
 
     def _points(self, beam_type, dim):
         if beam_type == 'BAR':  # origin ar center

@@ -48,7 +48,7 @@ def merge_stl_files(stl_filenames, stl_out_filename=None, remove_bad_elements=Fa
 
     n0 = 0
     for i, fname in enumerate(stl_filenames):
-        log.debug(f'reading file {i}: {fname}')
+        log.debug('reading file %s: %s' % (i, fname))
         model = STL(log=log)  # TODO: you shouldn't need to to reinstantiate the STL
         model.read_stl(fname)
         nnodes = model.nodes.shape[0]
