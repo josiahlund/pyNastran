@@ -232,7 +232,7 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
     elif is_gui:
         try:
             import PIL
-            iver = int_version('PIL', qtpy.__version__)
+            iver = int_version('PIL', PIL.__version__)
             all_reqs['PIL'] = str_version(iver)
             if PY2 and iver > [7, 0]:
                 print("PIL.__version__ = %r > 1.4.0, < '7.0'" % PIL.__version__)
