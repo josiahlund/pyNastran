@@ -109,7 +109,8 @@ class BDFCard(object):
 
         Returns
         -------
-        value : int/float/str
+        values : List[varies]
+            int/float/str
             the values on the ith-jth fields
 
         """

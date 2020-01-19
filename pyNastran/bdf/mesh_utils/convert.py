@@ -1069,6 +1069,14 @@ def _convert_loads(model, xyz_scale, time_scale, weight_scale, temperature_scale
                 #temperatures : {1901: 100.0}
                 for nid in load.temperatures:
                     load.temperatures[nid] *= temperature_scale
+            elif load_type == 'FORCEAX':
+                load.f_rtz *= force_scale
+            elif load_type in  skip_cards:
+                model.log.warning('skipping %s' % load)
+            elif load_type == 'TEMPAX':
+                load.temperature *= temperature_scale
+            elif load_type == 'PRESAX':
+                load.pressure *= pressure_scale
             else:
                 raise NotImplementedError(load)
 

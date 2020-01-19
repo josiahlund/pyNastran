@@ -3474,15 +3474,17 @@ class AddCards(AddMethods):
                     s_table=s_table, ge_table=ge_table, f12_table=f12_table, comment=comment)
         self._add_material_dependence_object(mat)
         return mat
+
     def add_matt9(self, mid,
-                  g11_table, g12_table, g13_table, g14_table, g15_table, g16_table,
-                  g22_table, g23_table, g24_table, g25_table, g26_table,
-                  g33_table, g34_table, g35_table, g36_table,
-                  g44_table, g45_table, g46_table,
-                  g55_table, g56_table,
-                  g66_table, rho_table,
-                  a1_table, a2_table, a3_table, a4_table, a5_table, a6_table,
-                  ge_table, comment=''):
+                  g11_table=None, g12_table=None, g13_table=None, g14_table=None,
+                  g15_table=None, g16_table=None, g22_table=None, g23_table=None,
+                  g24_table=None, g25_table=None, g26_table=None, g33_table=None,
+                  g34_table=None, g35_table=None, g36_table=None, g44_table=None,
+                  g45_table=None, g46_table=None, g55_table=None, g56_table=None,
+                  g66_table=None, rho_table=None,
+                  a1_table=None, a2_table=None, a3_table=None,
+                  a4_table=None, a5_table=None, a6_table=None,
+                  ge_table=None, comment=''):
         mat = MATT9(mid,
                     g11_table, g12_table, g13_table, g14_table, g15_table, g16_table,
                     g22_table, g23_table, g24_table, g25_table, g26_table,
@@ -4236,7 +4238,8 @@ class AddCards(AddMethods):
 
     def add_pload2(self, sid, pressure, eids, comment=''):
         """
-        Creates a PLOAD2 card, which defines an applied load normal to the quad/tri face
+        Creates a PLOAD2 card, which defines an applied load normal
+        to the quad/tri face
 
         Parameters
         ----------
@@ -6011,6 +6014,11 @@ class AddCards(AddMethods):
         self._add_table_sdamping_object(table)
         return table
 
+    def add_tableh1(self, tid, x, y, comment=''):
+        table = TABLEH1(tid, x, y, comment=comment)
+        self._add_table_object(table)
+        return table
+
     def add_freq(self, sid, freqs, comment=''):
         """
         Creates a FREQ card
@@ -6953,6 +6961,20 @@ class AddCards(AddMethods):
         self._add_bctpara_object(bctpara)
         return bctpara
 
+    def add_blseg(self, line_id, nodes, comment=''):
+        """Creates a BLSEG card"""
+        blseg = BLSEG(line_id, nodes, comment=comment)
+        self._add_blseg_object(blseg)
+        return blseg
+
+    def add_bconp(self, contact_id, slave, master, sfac, fric_id, ptype, cid,
+                  comment=''):
+        """Creates a BCONP card"""
+        bconp = BCONP(contact_id, slave, master, sfac, fric_id, ptype,
+                      cid, comment=comment)
+        self._add_bconp_object(bconp)
+        return bconp
+
     def add_bcrpara(self, crid, surf='TOP', offset=None, Type='FLEX',
                     grid_point=0, comment=''):
         """
@@ -7501,6 +7523,23 @@ class AddCards(AddMethods):
         boundary_condition = RADBC(nodamb, famb, cntrlnd, eids, comment=comment)
         self._add_thermal_bc_object(boundary_condition, boundary_condition.nodamb)
         return boundary_condition
+
+    def add_view(self, iview, icavity, shade='BOTH', nbeta=1, ngamma=1,
+                 dislin=0.0, comment=''):
+        """Creates a VIEW card"""
+        view = VIEW(iview, icavity, shade=shade, nbeta=nbeta, ngamma=ngamma,
+                    dislin=dislin, comment=comment)
+        self._add_view_object(view)
+        return view
+
+    def add_view3d(self, icavity, gitb=4, gips=4, cier=4, error_tol=0.1,
+                        zero_tol=1e-10, warp_tol=0.01, rad_check=3, comment=''):
+        """Creates a VIEW3D card"""
+        view3d = VIEW3D(icavity, gitb=gitb, gips=gips, cier=cier,
+                        error_tol=error_tol, zero_tol=zero_tol, warp_tol=warp_tol,
+                        rad_check=rad_check, comment=comment)
+        self._add_view3d_object(view3d)
+        return view3d
 
     def add_pconv(self, pconid, mid=None, form=0, expf=0.0, ftype=0, tid=None,
                   chlen=None, gidin=None, ce=0,

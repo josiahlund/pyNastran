@@ -50,6 +50,10 @@ class TestDampers(unittest.TestCase):
         assert node_ids == [1001, None], node_ids
         elem.write_card(size, 'dummy')
         elem.raw_fields()
+
+        pid = 1
+        tbid = 2
+        model.add_pdampt(pid, tbid, comment='pdampt')
         save_load_deck(model)
 
     def test_damper_02(self):
@@ -113,6 +117,11 @@ class TestDampers(unittest.TestCase):
         s2 = 4
         cdamp4 = model.add_cdamp4(eid, bdamp, [s1, s2], comment='cdamp4')
 
+        # two new CDAMP4s defined on one line
+        bdamp2 = 3.0e3
+        fields = ['CDAMP4', 104, bdamp, s1, s2, 105, bdamp2, s1, s2]
+        model.add_card(fields, 'CDAMP4')
+
         eid = 5
         pid = 5
         mid = 10
@@ -161,6 +170,14 @@ class TestDampers(unittest.TestCase):
         cbush1d = model.add_cbush1d(eid, pid, nids, cid=None, comment='cbush1d')
         pbush1d = model.add_pbush1d(pid, k=k, c=c, m=m, sa=sa, se=se,
                                     optional_vars=None, comment='pbush1d')
+
+        card_lines = [
+            'pbush1d, 204, 1.e+5, 1000., , , , , , +pb4',
+            '+pb4, shocka, table, 1000., , 1., , 214, , +pb41',
+            '+pb41, spring, table, 205',
+        ]
+        model.add_card_lines(card_lines, 'PBUSH1D', comment='', has_none=True)
+        str(model.properties[204])
 
         E = 3.0e7
         G = None
@@ -233,6 +250,7 @@ class TestDampers(unittest.TestCase):
 
         model.cross_reference()
         model.update_model_by_desvars()
+        assert 204 in model.properties, model.properties
 
         save_load_deck(model)
 

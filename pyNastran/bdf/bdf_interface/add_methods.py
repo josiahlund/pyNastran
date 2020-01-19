@@ -179,45 +179,57 @@ class AddMethods(BDFAttributes):
     def _add_setree_object(self, setree):
         key = setree.seid
         self.setree[key] = setree
+        self._type_to_id_map[setree.type].append(key)
     def _add_senqset_object(self, senqset):
         key = senqset.set_id
         self.senqset[key] = senqset
+        self._type_to_id_map[senqset.type].append(key)
     def _add_sebulk_object(self, sebulk):
         key = sebulk.seid
         self.sebulk[key] = sebulk
+        self._type_to_id_map[sebulk.type].append(key)
     def _add_sebndry_object(self, sebndry):
         key = (sebndry.seid_a, sebndry.seid_b)
         self.sebndry[key] = sebndry
     def _add_seloc_object(self, seloc):
         key = seloc.seid
         self.seloc[key] = seloc
+        self._type_to_id_map[seloc.type].append(key)
     def _add_sempln_object(self, sempln):
         key = sempln.seid
         self.sempln[key] = sempln
+        self._type_to_id_map[sempln.type].append(key)
 
     def _add_seconct_object(self, seconct):
         key = (seconct.seid_a, seconct.seid_b)
         self.seconct[key] = seconct
+        self._type_to_id_map[seconct.type].append(key)
     def _add_selabel_object(self, selabel):
         key = selabel.seid
         self.selabel[key] = selabel
+        self._type_to_id_map[selabel.type].append(key)
     def _add_seexcld_object(self, seexcld):
         key = (seexcld.seid_a, seexcld.seid_b)
         self.seexcld[key] = seexcld
+        self._type_to_id_map[seexcld.type].append(key)
 
     def _add_seelt_object(self, seelt):
         #self.seelt.append(seelt)
         key = seelt.seid
         self.seelt[key] = seelt
+        self._type_to_id_map[seelt.type].append(key)
     def _add_seload_object(self, seload):
         key = seload.seid
         self.seload[key] = seload
+        self._type_to_id_map[seload.type].append(key)
     def _add_csuper_object(self, csuper):
         key = csuper.seid
         self.csuper[key] = csuper
+        self._type_to_id_map[csuper.type].append(key)
     def _add_csupext_object(self, csupext):
         key = csupext.seid
         self.csupext[key] = csupext
+        self._type_to_id_map[csupext.type].append(key)
 
     def _add_plotel_object(self, elem, allow_overwrites=False):
         # type: (Any, bool) -> None
@@ -1339,8 +1351,10 @@ class AddMethods(BDFAttributes):
     def _add_table_object(self, table):
         """adds a TABLES1, TABLEST object"""
         key = table.tid
-        assert key not in self.tables, '\nTable=\n%s old_table=\n%s' % (
-            table, self.tables[key])
+        if key in self.tables:
+            if not table == self.tables[key]:
+                assert key not in self.tables, '\ntable=\n%s old_table=\n%s' % (
+                    table, self.tables[key])
         assert key > 0
         self.tables[key] = table
         self._type_to_id_map[table.type].append(key)

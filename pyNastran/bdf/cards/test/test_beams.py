@@ -816,7 +816,7 @@ class TestBeams(unittest.TestCase):
         G = None
         nu = 0.3
         model.add_mat1(mid, E, G, nu, rho=1.)
-        save_load_deck(model, run_mass_properties=False)
+        save_load_deck(model, run_mass_properties=False, run_test_bdf=False)
 
 
     def test_beam_mass_01(self):
@@ -1343,8 +1343,7 @@ class TestBeams(unittest.TestCase):
         pbend2.write_card()
         pbend2.write_card(size=16)
 
-        save_load_deck(model, punch=True, run_remove_unused=True,
-                       run_convert=False, run_renumber=True, run_mirror=True)
+        save_load_deck(model, punch=True, run_convert=False)
 
     def test_pbrsect(self):
         """tests a PBRSECT"""

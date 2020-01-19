@@ -836,6 +836,8 @@ def _get_mass_nsm(model, element_ids, mass_ids,
         mass = _mass_catch_all(model, etype, etypes_skipped,
                                element_ids, all_eids, eids,
                                mass, cg, I, reference_point)
+    elif etype in ['CSUPER', 'CSUPEXT']:
+        pass
     elif etype.startswith('C'):
         model.log.warning('etype=%r should be explicit' % etype)
         #raise RuntimeError('etype=%r should be explicit' % etype) ## TODO: this is temporary
@@ -1005,8 +1007,9 @@ def _get_cbeam_mass_no_nsm(model, elem, mass, cg, inertia, reference_point):
 
     is_failed, out = elem.get_axes(model)
     if is_failed:
-        model.log.error(out)
+        model.log.error(str(out))
         raise RuntimeError(out)
+
     wa, wb, _ihat, jhat, khat = out
     p1 = xyz1 + wa
     p2 = xyz2 + wb

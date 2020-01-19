@@ -179,6 +179,7 @@ class XrefMesh(BDFAttributes):
             self._cross_reference_optimization()
         if xref_nodes_with_elements:
             self._cross_reference_nodes_with_elements()
+        self._cross_reference_contact()
         self._cross_reference_superelements()
         #self.case_control_deck.cross_reference(self)
         self.pop_xref_errors()
@@ -323,9 +324,7 @@ class XrefMesh(BDFAttributes):
 
     def _cross_reference_nodes(self):
         # type: () -> None
-        """
-        Links the nodes to coordinate systems
-        """
+        """Links the nodes to coordinate systems"""
         grdset = self.grdset
         for node in itervalues(self.nodes):
             try:
@@ -565,6 +564,18 @@ class XrefMesh(BDFAttributes):
             dvprel.cross_reference(self)
         for unused_key, desvar in self.desvars.items():
             desvar.cross_reference(self)
+
+    def _safe_cross_reference_contact(self):
+        """cross references the contact objects"""
+        pass
+
+    def _cross_reference_contact(self):
+        """cross references the contact objects"""
+        pass
+
+    def _uncross_reference_contact(self):
+        """uncross references the contact objects"""
+        pass
 
     def _cross_reference_superelements(self):
         """cross references the superelement objects"""

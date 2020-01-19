@@ -1392,7 +1392,7 @@ def _put_keys_values_into_dict(model, name, keys, values, cast_int_keys=True):
     slot = getattr(model, name)
     card_count = model.card_count
 
-    # 'dmigs', 'dmiks', 'dmijs', 'dmijis', 'dmis'
+    # 'dmig', 'dmik', 'dmij', 'dmiji', 'dmi'
     if cast_int_keys and name not in ['dscreen', 'dti', 'aecomps', 'seconct', 'sebndry']:
         #print('keys =', keys, cast_int_keys, name)
         try:
@@ -1593,7 +1593,7 @@ def _get_casted_value(value, key_to_cast, encoding):
 def _load_from_class(value, card_type, encoding):
     """generic loader that only requires an ``_init_from_empty`` method"""
     keys_to_read = list(value.keys())
-    class_obj = CARD_MAP[card_type]
+    class_obj = CARD_MAP[card_type]  # see add_card.py ~line 200
     if hasattr(class_obj, '_init_from_empty'):
         class_instance = class_obj._init_from_empty()
     else:

@@ -89,8 +89,7 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
         # not checked------------------------------------------
         'PHBDY', 'CHBDYG', 'CHBDYP', 'CHBDYE', 'RADBC', # 'CONV',
         'QVOL', 'PCONVM', # 'PCONV',
-        #'PBCOMP', 'PDAMP5',
-        'CFAST', 'CBUSH1D', 'CBUSH2D',
+        #'PBCOMP', 'PDAMP5', 'CFAST',
         'AECOMP', 'CAERO2', 'CAERO3', 'CAERO4', 'CAERO5',
         'PAERO2', 'PAERO3', 'PAERO4', 'PAERO5',
         'DCONADD',
@@ -135,6 +134,7 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
     elements = {
         'CELAS1', 'CELAS2', 'CELAS3', 'CELAS4',
         'CDAMP1', 'CDAMP2', 'CDAMP3', 'CDAMP4', 'CDAMP5',
+        'CGAP', 'CBUSH', 'CBUSH1D', 'CBUSH2D', 'CFAST',
         'CVISC',
         'CSHEAR', 'CTUBE',
         'GENEL',
@@ -464,6 +464,12 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
                 #if prop.cores:
                     #for key, value in prop.cores.items():
                         #pids_used.add(value)
+        elif card_type == 'TABLEHT':
+            for idi in ids:
+                table = model.tables[idi]
+                tableh1_ids = table.y.tolist()
+                tableh1_used.update(tableh1_ids)
+                del tableh1_ids
         elif card_type == 'PCONV':
             for idi in ids:
                 pconv = model.convection_properties[idi]
@@ -619,6 +625,17 @@ def _store_elements(card_type, model, ids, nids_used, pids_used, mids_used, cids
             if elem.g0 is not None:
                 assert isinstance(elem.G0(), integer_types), elem.G0()
                 nids_used.add(elem.G0())
+    elif card_type == 'CBUSH':
+        for eid in ids:
+            elem = model.elements[eid]
+            elem = model.elements[eid]
+            nids_used.update(elem.node_ids)
+            if elem.g0 is not None:
+                assert isinstance(elem.G0(), integer_types), elem.G0()
+                nids_used.add(elem.G0())
+            pids_used.add(elem.Pid())
+            cids_used.add(elem.Cid())
+
     elif card_type in ['CBUSH1D', 'CBUSH2D']:
         for eid in ids:
             elem = model.elements[eid]

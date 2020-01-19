@@ -419,11 +419,11 @@ class BDFAttributes(object):
 
         # ----------------------------------------------------------------
         #: direct matrix input - DMIG
-        self.dmis = {}  # type: Dict[str, Any]
-        self.dmigs = {}  # type: Dict[str, Any]
-        self.dmijs = {}  # type: Dict[str, Any]
-        self.dmijis = {}  # type: Dict[str, Any]
-        self.dmiks = {}  # type: Dict[str, Any]
+        self.dmi = {}  # type: Dict[str, Any]
+        self.dmig = {}  # type: Dict[str, Any]
+        self.dmij = {}  # type: Dict[str, Any]
+        self.dmiji = {}  # type: Dict[str, Any]
+        self.dmik = {}  # type: Dict[str, Any]
         self.dti = {}  # type: Dict[str, Any]
         self._dmig_temp = defaultdict(list)  # type: Dict[str, List[str]]
 
@@ -447,173 +447,174 @@ class BDFAttributes(object):
         # ----------------------------------------------------------------
         #: tables
         # TABLES1, ...
-        self.tables = {}  # type: Dict[int, Any]
+        self.tables = {}  # type: Dict[int, TABLES1]
 
         # TABLEDx
-        self.tables_d = {}  # type: Dict[int, Any]
+        self.tables_d = {}  # type: Dict[int, Union[TABLED1, TABLED2, TABLED3, TABLED4]]
 
         # TABLEMx
-        self.tables_m = {}  # type: Dict[int, Any]
+        self.tables_m = {}  # type: Dict[int, Union[TABLEM1, TABLEM2, TABLEM3, TABLEM4]]
 
         #: random_tables
         self.random_tables = {}  # type: Dict[int, Any]
         #: TABDMP1
-        self.tables_sdamping = {}  # type: Dict[int, Any]
+        self.tables_sdamping = {}  # type: Dict[int, TABDMP1]
 
         # ----------------------------------------------------------------
         #: EIGB, EIGR, EIGRL methods
-        self.methods = {}  # type: Dict[int, Any]
+        self.methods = {}  # type: Dict[int, Union[EIGR, EIGRL, EIGB]]
         # EIGC, EIGP methods
-        self.cMethods = {}  # type: Dict[int, Any]
+        self.cMethods = {}  # type: Dict[int, Union[EIGC, EIGP]]
 
         # ---------------------------- optimization --------------------------
         # optimization
-        self.dconadds = {}  # type: Dict[int, Any]
-        self.dconstrs = {}  # type: Dict[int, Any]
-        self.desvars = {}  # type: Dict[int, Any]
-        self.ddvals = {}  # type: Dict[int, Any]
-        self.dlinks = {}  # type: Dict[int, Any]
-        self.dresps = {}  # type: Dict[int, Any]
+        self.dconadds = {}  # type: Dict[int, DCONADD]
+        self.dconstrs = {}  # type: Dict[int, DCONSTR]
+        self.desvars = {}  # type: Dict[int, DESVAR]
+        self.ddvals = {}  # type: Dict[int, DDVAL]
+        self.dlinks = {}  # type: Dict[int, DLINK]
+        self.dresps = {}  # type: Dict[int, Union[DRESP1, DRESP2, DRESP3]]
 
-        self.dtable = None  # type: Optional[Any]
-        self.dequations = {}  # type: Dict[int, Any]
+        self.dtable = None  # type: Optional[DTABLE]
+        self.dequations = {}  # type: Dict[int, DEQATN]
 
         #: stores DVPREL1, DVPREL2...might change to DVxRel
-        self.dvprels = {}  # type: Dict[int, Any]
-        self.dvmrels = {}  # type: Dict[int, Any]
-        self.dvcrels = {}  # type: Dict[int, Any]
-        self.dvgrids = {}  # type: Dict[int, Any]
-        self.doptprm = None  # type: Optional[Any]
-        self.dscreen = {}  # type: Dict[int, Any]
+        self.dvprels = {}  # type: Dict[int, Union[DVPREL1, DVPREL2]]
+        self.dvmrels = {}  # type: Dict[int, Union[DVMREL1, DVMREL2]]
+        self.dvcrels = {}  # type: Dict[int, Union[DVCREL1, DVCREL2]]
+        self.dvgrids = {}  # type: Dict[int, DVGRID]
+        self.doptprm = None  # type: Optional[DOPTPRM]
+        self.dscreen = {}  # type: Dict[int, DSCREEN]
 
         # ------------------------- nonlinear defaults -----------------------
         #: stores NLPCI
-        self.nlpcis = {}  # type: Dict[int, Any]
+        self.nlpcis = {}  # type: Dict[int, NLPCI]
         #: stores NLPARM
-        self.nlparms = {}  # type: Dict[int, Any]
+        self.nlparms = {}  # type: Dict[int, NLPARM]
         #: stores TSTEPs, TSTEP1s
-        self.tsteps = {}  # type: Dict[int, Any]
+        self.tsteps = {}  # type: Dict[int, Union[TSTEP, TSTEP1]]
         #: stores TSTEPNL
-        self.tstepnls = {}  # type: Dict[int, Any]
+        self.tstepnls = {}  # type: Dict[int, TSTEPNL]
         #: stores TF
-        self.transfer_functions = {}  # type: Dict[int, Any]
+        self.transfer_functions = {}  # type: Dict[int, TF]
         #: stores DELAY
-        self.delays = {}  # type: Dict[int, Any]
+        self.delays = {}  # type: Dict[int, DELAY]
 
-        #: stores ROTORG
-        self.rotors = {}  # type: Dict[int, Any]
+        #: stores ROTORD, ROTORG
+        self.rotors = {}  # type: Dict[int, Union[ROTORD, ROTORG]]
 
         # --------------------------- aero defaults --------------------------
         # aero cards
         #: stores CAEROx
-        self.caeros = {}  # type: Dict[int, Any]
+        self.caeros = {}  # type: Dict[int, Union[CAERO1, CAERO2, CAERO3, CAERO4, CAERO5]]
         #: stores PAEROx
-        self.paeros = {}  # type: Dict[int, Any]
+        self.paeros = {}  # type: Dict[int, Union[PAERO1, PAERO2, PAERO3, PAERO4, PAERO5]]
         # stores MONPNT1
-        self.monitor_points = []  # type: List[Any]
+        self.monitor_points = []  # type: List[Union[MONPNT1, MONPNT2, MONPNT3]]
 
         #: stores AECOMP
-        self.aecomps = {}  # type: Dict[int, Any]
+        self.aecomps = {}  # type: Dict[int, AECOMP]
         #: stores AEFACT
-        self.aefacts = {}  # type: Dict[int, Any]
+        self.aefacts = {}  # type: Dict[int, AEFACT]
         #: stores AELINK
-        self.aelinks = {}  # type: Dict[int, List[Any]]
+        self.aelinks = {}  # type: Dict[int, List[AELINK]]
         #: stores AELIST
-        self.aelists = {}  # type: Dict[int, Any]
+        self.aelists = {}  # type: Dict[int, AELIST]
         #: stores AEPARAM
-        self.aeparams = {}  # type: Dict[int, Any]
+        self.aeparams = {}  # type: Dict[int, AEPARAM]
         #: stores AESURF
-        self.aesurf = {}  # type: Dict[int, Any]
+        self.aesurf = {}  # type: Dict[int, AESURF]
         #: stores AESURFS
-        self.aesurfs = {}  # type: Dict[int, Any]
+        self.aesurfs = {}  # type: Dict[int, AESURFS]
         #: stores AESTAT
-        self.aestats = {}  # type: Dict[int, Any]
+        self.aestats = {}  # type: Dict[int, AESTAT]
         #: stores CSSCHD
-        self.csschds = {}  # type: Dict[int, Any]
+        self.csschds = {}  # type: Dict[int, CSSCHD]
 
         #: store SPLINE1,SPLINE2,SPLINE4,SPLINE5
-        self.splines = {}  # type: Dict[int, Any]
+        self.splines = {}  # type: Dict[int, Union[SPLINE1, SPLINE2, SPLINE3, SPLINE4, SPLINE5]]
         self.zona = ZONA(self)
 
         # axisymmetric
-        self.axic = None  # type: Optional[Any]
-        self.axif = None  # type: Optional[Any]
-        self.ringfl = {}  # type: Dict[int, Any]
+        self.axic = None  # type: Optional[AXIC]
+        self.axif = None  # type: Optional[AXIF]
+        self.ringfl = {}  # type: Dict[int, RINGFL]
         self._is_axis_symmetric = False
 
+        # cyclic
+        # acoustic
         # ------ SOL 144 ------
         #: stores AEROS
-        self.aeros = None  # type: Optional[Any]
+        self.aeros = None  # type: Optional[AEROS]
 
-        #: stores TRIM
-        self.trims = {}  # type: Dict[int, Any]
+        #: stores TRIM, TRIM2
+        self.trims = {}  # type: Dict[int, Union[TRIM, TRIM2]]
 
         #: stores DIVERG
-        self.divergs = {}  # type: Dict[int, Any]
+        self.divergs = {}  # type: Dict[int, DIVERG]
 
         # ------ SOL 145 ------
         #: stores AERO
-        self.aero = None  # type: Optional[Any]
+        self.aero = None  # type: Optional[AERO]
 
         #: stores FLFACT
-        #: .. todo:: can this be simplified ???
-        self.flfacts = {}  # type: Dict[int, Any]
+        self.flfacts = {}  # type: Dict[int, FLFACT]
 
         #: stores FLUTTER
-        self.flutters = {} # type: Dict[int, Any]
+        self.flutters = {} # type: Dict[int, FLUTTER]
 
         #: mkaeros
-        self.mkaeros = []  # type: List[Any]
+        self.mkaeros = []  # type: List[Union[MKAERO1,MKAERO2]]
 
         # ------ SOL 146 ------
         #: stores GUST cards
-        self.gusts = {}  # type: Dict[int, Any]
+        self.gusts = {}  # type: Dict[int, GUST]
 
         # ------------------------- thermal defaults -------------------------
         # BCs
         #: stores thermal boundary conditions - CONV,RADBC
-        self.bcs = {}  # type: Dict[int, Any]
+        self.bcs = {}  # type: Dict[int, Union[CONV, RADBC]]
 
         #: stores PHBDY
-        self.phbdys = {}  # type: Dict[int, Any]
+        self.phbdys = {}  # type: Dict[int, PHBDY]
         #: stores convection properties - PCONV, PCONVM ???
-        self.convection_properties = {}  # type: Dict[int, Any]
+        self.convection_properties = {}  # type: Dict[int, Union[PCONV, PCONVM]]
         #: stores TEMPD
-        self.tempds = {}  # type: Dict[int, Any]
+        self.tempds = {}  # type: Dict[int, TEMPD]
 
         #: stores VIEW
-        self.views = {}
+        self.views = {}  # type: Dict[int, VIEW]
         #: stores VIEW3D
-        self.view3ds = {}
+        self.view3ds = {}  # type: Dict[int, VIEW3D]
         self.radset = None
-        self.radcavs = {}
-        self.radmtx = {}
+        self.radcavs = {}  # type: Dict[int, RADCAV]
+        self.radmtx = {}  # type: Dict[int, RADMTX]
 
         # -------------------------contact cards-------------------------------
-        self.bcrparas = {}  # type: Dict[int, Any]
-        self.bctadds = {}  # type: Dict[int, Any]
-        self.bctparas = {}  # type: Dict[int, Any]
-        self.bctsets = {}  # type: Dict[int, Any]
-        self.bsurf = {}  # type: Dict[int, Any]
-        self.bsurfs = {}  # type: Dict[int, Any]
-        self.bconp = {}  # type: Dict[int, Any]
-        self.blseg = {}  # type: Dict[int, Any]
+        self.bcrparas = {}  # type: Dict[int, BCRPARA]
+        self.bctadds = {}  # type: Dict[int, BCTADD]
+        self.bctparas = {}  # type: Dict[int, BCTPARA]
+        self.bctsets = {}  # type: Dict[int, BCTSET]
+        self.bsurf = {}  # type: Dict[int, BSURF]
+        self.bsurfs = {}  # type: Dict[int, BSURFS]
+        self.bconp = {}  # type: Dict[int, BCONP]
+        self.blseg = {}  # type: Dict[int, BLSEG]
 
 
         #--------------------------superelements------------------------------
-        self.setree = {}  # type: Dict[int, Any]
-        self.senqset = {}  # type: Dict[int, Any]
-        self.sebulk = {}  # type: Dict[int, Any]
-        self.sebndry = {}  # type: Dict[int, Any]
-        self.seloc = {}  # type: Dict[int, Any]
-        self.sempln = {}  # type: Dict[int, Any]
-        self.seconct = {}  # type: Dict[int, Any]
-        self.selabel = {}  # type: Dict[int, Any]
-        self.seexcld = {}  # type: Dict[int, Any]
-        self.seelt = {}  # type: Dict[int, Any]
-        self.seload = {}  # type: Dict[int, Any]
-        self.csuper = {}  # type: Dict[int, Any]
-        self.csupext = {}  # type: Dict[int, Any]
+        self.setree = {}  # type: Dict[int, SETREE]
+        self.senqset = {}  # type: Dict[int, Union[SENQSET, SENQSET1]]
+        self.sebulk = {}  # type: Dict[int, SEBULK]
+        self.sebndry = {}  # type: Dict[int, SEBNDRY]
+        self.seloc = {}  # type: Dict[int, SELOC]
+        self.sempln = {}  # type: Dict[int, SEMPLN]
+        self.seconct = {}  # type: Dict[int, SECONCT]
+        self.selabel = {}  # type: Dict[int, SELABEL]
+        self.seexcld = {}  # type: Dict[int, SEEXCLD]
+        self.seelt = {}  # type: Dict[int, SEELT]
+        self.seload = {}  # type: Dict[int, SELOAD]
+        self.csuper = {}  # type: Dict[int, CSUPER]
+        self.csupext = {}  # type: Dict[int, CSUPEXT]
 
         # ---------------------------------------------------------------------
         self._type_to_id_map = defaultdict(list)  # type: Dict[int, List[Any]]
@@ -823,11 +824,11 @@ class BDFAttributes(object):
             'frequencies' : ['FREQ', 'FREQ1', 'FREQ2', 'FREQ3', 'FREQ4', 'FREQ5'],
 
             # direct matrix input cards
-            'dmigs' : ['DMIG'],
-            'dmijs' : ['DMIJ'],
-            'dmijis' : ['DMIJI'],
-            'dmiks' : ['DMIK'],
-            'dmis' : ['DMI'],
+            'dmig' : ['DMIG'],
+            'dmij' : ['DMIJ'],
+            'dmiji' : ['DMIJI'],
+            'dmik' : ['DMIK'],
+            'dmi' : ['DMI'],
             'dti' : ['DTI'],
 
             # optimzation
@@ -1146,3 +1147,37 @@ class BDFAttributes(object):
         if key in self.params:
             param = self.params[key]
             param.update_values(*values)
+
+    #--------------------
+    # deprecations
+    @property
+    def dmis(self):
+        return self.dmi
+    @property
+    def dmigs(self):
+        return self.dmig
+    @property
+    def dmiks(self):
+        return self.dmik
+    @property
+    def dmijs(self):
+        return self.dmij
+    @property
+    def dmijis(self):
+        return self.dmiji
+
+    @dmis.setter
+    def dmis(self, dmi):
+        self.dmi = dmi
+    @dmigs.setter
+    def dmigs(self, dmig):
+        self.dmig = dmig
+    @dmiks.setter
+    def dmiks(self, dmik):
+        self.dmik = dmik
+    @dmijs.setter
+    def dmijs(self, dmij):
+        self.dmij = dmij
+    @dmijis.setter
+    def dmijis(self, dmiji):
+        self.dmiji = dmiji

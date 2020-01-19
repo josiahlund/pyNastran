@@ -6,19 +6,15 @@ This file defines:
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
-#import sys
-#import io
 import os
-from typing import List, Dict, Union, Optional, Tuple, Any, cast
 from codecs import open
+from typing import List, Dict, Union, Optional, Tuple, Any, cast
 from collections import defaultdict
 from six import string_types
 import numpy as np
-#from pyNastran.bdf.bdf_interface.utils import print_filename
 from pyNastran.bdf.field_writer_8 import print_card_8
 from pyNastran.bdf.field_writer_16 import print_card_16
 from pyNastran.bdf.bdf_interface.write_mesh import WriteMesh
-#from pyNastran.bdf.cards.nodes import write_xpoints
 from pyNastran.bdf.write_path import write_include
 
 

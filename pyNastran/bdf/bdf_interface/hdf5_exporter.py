@@ -701,6 +701,7 @@ def _export_list(h5_group, attr, name, values, encoding):
     exports a list of:
      - constant type to a dataset
      - variable type to a numbered list
+
     """
     values2 = [value.encode(encoding) if isinstance(value, text_type) else value
                for value in values]
