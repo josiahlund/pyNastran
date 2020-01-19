@@ -235,6 +235,7 @@ CARD_MAP = {
     #'PACABS' : Crash, None),
     #'PANEL' : Crash, None),
 
+    # rod elements
     'CONROD' : CONROD,
     'CROD' : CROD,
     'PROD' : PROD,

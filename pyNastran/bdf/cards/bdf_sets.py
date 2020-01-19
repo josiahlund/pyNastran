@@ -708,6 +708,49 @@ class ASET1(ABQSet1):
         """
         ABQSet1.__init__(self, ids, components, comment)
 
+class OMIT(ABCQSet):
+    """
+    Defines analysis set (a-set) degrees-of-freedom to be fixed (b-set)
+    during generalized dynamic reduction or component mode synthesis
+    calculations.
+
+    +------+-----+----+-----+------+-----+----+-----+----+
+    |  1   |  2  | 3  |  4  |  5   |  6  |  7 |  8  | 9  |
+    +======+=====+====+=====+======+=====+====+=====+====+
+    | OMIT | ID1 | C1 | ID2 |  C2  | ID3 | C3 | ID4 | C4 |
+    +------+-----+----+-----+------+-----+----+-----+----+
+    | OMIT | 16  |  2 |  23 | 3516 |  1  | 4  |     |    |
+    +------+-----+----+-----+------+-----+----+-----+----+
+    """
+    type = 'OMIT'
+    _properties = ['node_ids']
+
+    @classmethod
+    def _init_from_empty(cls):
+        ids = [1, 2]
+        components = ['123', '456']
+        return BSET(ids, components, comment='')
+
+    def __init__(self, ids, components, comment=''):
+        """
+        Creates an BSET card, which defines the degree of freedoms that
+        will be fixed during a generalized dynamic reduction or component
+        model synthesis calculation.
+
+        Parameters
+        ----------
+        ids : List[int]
+            the GRID/SPOINT ids
+        components : List[str]
+            the degree of freedoms to be fixed (e.g., '1', '123')
+        comment : str; default=''
+            a comment for the card
+
+        ..note :: the length of components and ids must be the same
+
+        """
+        ABCQSet.__init__(self, ids, components, comment)
+
 
 class OMIT1(ABQSet1):
     """
@@ -724,6 +767,7 @@ class OMIT1(ABQSet1):
     +-------+-----+-----+------+-----+-----+-----+-----+-----+
     """
     type = 'OMIT1'
+    _properties = ['node_ids']
 
     @classmethod
     def _init_from_empty(cls):

@@ -781,7 +781,7 @@ class CTRIA3(TriShell):
                '                %8s%8s%8s%8s\n' % tuple(data))
         return self.comment + msg.rstrip() + '\n'
 
-class CPLSTN3(TriShell):
+class CPLSTx3(TriShell):
     """
     +---------+-------+-------+----+----+----+-------+
     |    1    |   2   |   3   |  4 |  5 |  6 |   7   |
@@ -848,7 +848,7 @@ class CPLSTN3(TriShell):
     @classmethod
     def add_card(cls, card, comment=''):
         """
-        Adds a CPLSTN3 card from ``BDF.add_card(...)``
+        Adds a CPLSTx3 card from ``BDF.add_card(...)``
 
         Parameters
         ----------
@@ -873,7 +873,7 @@ class CPLSTN3(TriShell):
             assert len(card) <= 14, 'len(CPLSTN3 card) = %i\ncard=%s' % (len(card), card)
         else:
             theta = 0.0
-        return CPLSTN3(eid, pid, nids, theta, comment=comment)
+        return cls(eid, pid, nids, theta, comment=comment)
 
     def cross_reference(self, model):
         """
@@ -958,15 +958,19 @@ class CPLSTN3(TriShell):
         return self._node_ids(nodes=self.nodes_ref, allow_empty_nodes=False)
 
     def raw_fields(self):
-        list_fields = (['CPLSTN3', self.eid, self.Pid()] + self.node_ids +
+        list_fields = ([self.type, self.eid, self.Pid()] + self.node_ids +
                        [self.theta])
         return list_fields
 
     def repr_fields(self):
         theta = set_blank_if_default(self.theta, 0.0)
-        list_fields = (['CPLSTN3', self.eid, self.Pid()] + self.node_ids +
+        list_fields = ([self.type, self.eid, self.Pid()] + self.node_ids +
                        [theta])
         return list_fields
+
+
+class CPLSTN3(CPLSTx3):
+    type = 'CPLSTN3'
 
     def write_card(self, size=8, is_double=False):
         nodes = self.node_ids
@@ -974,6 +978,14 @@ class CPLSTN3(TriShell):
         msg = ('CPLSTN3 %8i%8i%8i%8i%8i%8s\n' % tuple(data))
         return self.comment + msg
 
+class CPLSTS3(CPLSTx3):
+    type = 'CPLSTS3'
+
+    def write_card(self, size=8, is_double=False):
+        nodes = self.node_ids
+        data = [self.eid, self.Pid()] + nodes + [self.theta]
+        msg = ('CPLSTS3 %8i%8i%8i%8i%8i%8s\n' % tuple(data))
+        return self.comment + msg
 
 class CTRIA6(TriShell):
     """
@@ -2774,7 +2786,7 @@ class CQUAD4(QuadShell):
             return self.comment + msg
 
 
-class CPLSTN4(QuadShell):
+class CPLSTx4(QuadShell):
     """
     +---------+-------+-------+----+----+----+----+-------+
     |    1    |   2   |   3   |  4 |  5 |  6 | 7  |   8   |
@@ -2783,7 +2795,6 @@ class CPLSTN4(QuadShell):
     +---------+-------+-------+----+----+----+----+-------+
 
     """
-    type = 'CPLSTN4'
     _field_map = {1: 'eid', 2:'pid', 7:'theta'}
 
     def _update_field_helper(self, n, value):
@@ -2835,7 +2846,7 @@ class CPLSTN4(QuadShell):
     @classmethod
     def add_card(cls, card, comment=''):
         """
-        Adds a CPLSTN4 card from ``BDF.add_card(...)``
+        Adds a CPLSTx4 card from ``BDF.add_card(...)``
 
         Parameters
         ----------
@@ -2853,8 +2864,8 @@ class CPLSTN4(QuadShell):
                 integer(card, 6, 'n4'),]
 
         theta = double_or_blank(card, 7, 'theta', 0.0)
-        assert len(card) <= 8, 'len(CPLSTN4 card) = %i\ncard=%s' % (len(card), card)
-        return CPLSTN4(eid, pid, nids, theta, comment=comment)
+        assert len(card) <= 8, 'len(%s card) = %i\ncard=%s' % (self.type, len(card), card)
+        return cls(eid, pid, nids, theta, comment=comment)
 
     def cross_reference(self, model):
         """
@@ -2938,15 +2949,29 @@ class CPLSTN4(QuadShell):
         return self._node_ids(nodes=self.nodes_ref, allow_empty_nodes=False)
 
     def raw_fields(self):
-        list_fields = (['CPLSTN4', self.eid, self.Pid()] + self.node_ids +
+        list_fields = ([self.type, self.eid, self.Pid()] + self.node_ids +
                        [self.theta])
         return list_fields
 
     def repr_fields(self):
         theta = set_blank_if_default(self.theta, 0.0)
-        list_fields = (['CPLSTN4', self.eid, self.Pid()] + self.node_ids +
+        list_fields = ([self.type, self.eid, self.Pid()] + self.node_ids +
                        [theta])
         return list_fields
+
+
+class CPLSTS4(CPLSTx4):
+    type = 'CPLSTS4'
+
+    def write_card(self, size=8, is_double=False):
+        nodes = self.node_ids
+        data = [self.eid, self.Pid()] + nodes + [print_float_8(self.theta)]
+        msg = ('CPLSTS4 %8i%8i%8i%8i%8i%8i%8s\n' % tuple(data))
+        return self.comment + msg
+
+
+class CPLSTN4(CPLSTx4):
+    type = 'CPLSTN4'
 
     def write_card(self, size=8, is_double=False):
         nodes = self.node_ids
@@ -2955,8 +2980,7 @@ class CPLSTN4(QuadShell):
         return self.comment + msg
 
 
-class CPLSTN6(TriShell):
-    type = 'CPLSTN6'
+class CPLSTx6(TriShell):
 
     def __init__(self, eid, pid, nids, theta=0., comment=''):
         TriShell.__init__(self)
@@ -2990,7 +3014,7 @@ class CPLSTN6(TriShell):
     @classmethod
     def add_card(cls, card, comment=''):
         """
-        Adds a CPLSTN6 card from ``BDF.add_card(...)``
+        Adds a CPLSTx6 card from ``BDF.add_card(...)``
 
         Parameters
         ----------
@@ -3078,6 +3102,11 @@ class CPLSTN6(TriShell):
         if size == 8: # to last node
             return self.comment + print_card_8(card)
         return self.comment + print_card_16(card)
+
+class CPLSTS6(CPLSTx6):
+    type = 'CPLSTS6'
+class CPLSTN6(CPLSTx6):
+    type = 'CPLSTN6'
 
 @classmethod
 def export_to_hdf5(cls, h5_file, model, eids):
@@ -3270,8 +3299,7 @@ def export_to_hdf5(cls, h5_file, model, eids):
         return msg
 
 
-class CPLSTN8(QuadShell):
-    type = 'CPLSTN8'
+class CPLSTx8(QuadShell):
     def __init__(self, eid, pid, nids, theta=0., comment=''):
         QuadShell.__init__(self)
         if comment:
@@ -3328,15 +3356,15 @@ class CPLSTN8(QuadShell):
                 integer_or_blank(card, 10, 'n8', 0),]
         if len(card) > 11:
             theta = double_or_blank(card, 15, 'theta', 0.0)
-            assert len(card) <= 18, 'len(CPLSTN8 card) = %i\ncard=%s' % (len(card), card)
+            assert len(card) <= 18, 'len(%s card) = %i\ncard=%s' % (self.type, len(card), card)
         else:
             theta = 0.0
-        return CPLSTN8(eid, pid, nids, theta=theta, comment=comment)
+        return cls(eid, pid, nids, theta=theta, comment=comment)
 
     #@classmethod
     #def add_op2_data(cls, data, comment=''):
         #"""
-        #Adds a CPLSTN8 card from the OP2
+        #Adds a CPLSTx8 card from the OP2
 
         #Parameters
         #----------
@@ -3488,13 +3516,13 @@ class CPLSTN8(QuadShell):
         return self._node_ids(nodes=self.nodes_ref, allow_empty_nodes=True)
 
     def raw_fields(self):
-        list_fields = ['CPLSTN8', self.eid, self.Pid()] + self.node_ids + [
+        list_fields = [self.type, self.eid, self.Pid()] + self.node_ids + [
             self.theta]
         return list_fields
 
     def repr_fields(self):
         theta = set_blank_if_default(self.theta, 0.0)
-        list_fields = (['CPLSTN8', self.eid, self.Pid()] + self.node_ids + [
+        list_fields = ([self.type, self.eid, self.Pid()] + self.node_ids + [
             theta])
         return list_fields
 
@@ -3503,6 +3531,13 @@ class CPLSTN8(QuadShell):
         if size == 8: # to last node
             return self.comment + print_card_8(card)
         return self.comment + print_card_16(card)
+
+class CPLSTS8(CPLSTx8):
+    type = 'CPLSTS8'
+
+class CPLSTN8(CPLSTx8):
+    type = 'CPLSTN8'
+
 
 
 class CQUADR(QuadShell):
@@ -4142,6 +4177,8 @@ class CQUAD(QuadShell):
         nids = data[2:11]
         if len(data) == 11:
             theta_mcid = 0. #  msc specific
+        else:
+            raise RuntimeError(data)
         return CQUAD(eid, pid, nids, theta_mcid=theta_mcid, comment=comment)
 
     def cross_reference(self, model):

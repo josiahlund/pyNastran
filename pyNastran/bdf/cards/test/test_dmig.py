@@ -435,7 +435,7 @@ DMI         W2GJ       1       1 1.54685.1353939.1312423.0986108.0621382
         #dmi = model.add_dmi(name, matrix_form, tin, tout, nrows, ncols, GCj, GCi,
                             #reals, Complex=None, comment='dmi')
 
-        save_load_deck(model)
+        save_load_deck(model, run_test_bdf=False)
 
     def test_dmig_13(self):
         """tests the add card method with a complex DMIG"""
@@ -520,7 +520,7 @@ DMI         W2GJ       1       1 1.54685.1353939.1312423.0986108.0621382
         dti = model.add_dti('UNITS', fields, comment='dti,units')
         dti.raw_fields()
         #print(dti.write_card())
-        save_load_deck(model)
+        save_load_deck(model, run_save_load_hdf5=False)
 
     def test_dti_units2(self):
         """tests DTI,UNITS"""
@@ -535,7 +535,7 @@ DMI         W2GJ       1       1 1.54685.1353939.1312423.0986108.0621382
         dti = model.add_dti('UNITS', fields, comment='dti,units')
         dti.raw_fields()
         #print(dti.write_card())
-        save_load_deck(model)
+        save_load_deck(model, run_save_load_hdf5=False)
 
 if __name__ == '__main__':  # pragma: no cover
     unittest.main()

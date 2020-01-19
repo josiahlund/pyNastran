@@ -54,8 +54,7 @@ class BDFAttributes(object):
                 'nmaterials', 'material_ids', 'ncoords', 'coord_ids',
                 'ncaeros', 'caero_ids', 'wtmass', 'is_bdf_vectorized', 'nid_map']
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
-        # type: (str, Optional[List[str]]) -> List[str]
+    def object_attributes(self, mode='public', keys_to_skip=None, filter_properties=False):
         """
         List the names of attributes of a class as strings. Returns public
         attributes as default.
@@ -70,6 +69,8 @@ class BDFAttributes(object):
             * 'all' - all attributes that are defined for the object
         keys_to_skip : List[str]; default=None -> []
             names to not consider to avoid deprecation warnings
+        filter_properties: bool: default=False
+            filters the @property objects
 
         Returns
         -------
@@ -82,17 +83,18 @@ class BDFAttributes(object):
 
         my_keys_to_skip = [
             #'case_control_deck',
-            'log', 'mpcObject', 'spcObject',
+            'log',
             'node_ids', 'coord_ids', 'element_ids', 'property_ids',
             'material_ids', 'caero_ids', 'is_long_ids',
             'nnodes', 'ncoords', 'nelements', 'nproperties',
-            'nmaterials', 'ncaeros',
+            'nmaterials', 'ncaeros', 'npoints',
 
             'point_ids', 'subcases',
             '_card_parser', '_card_parser_b', '_card_parser_prepare',
             'object_methods', 'object_attributes',
         ]
-        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+        return object_attributes(self, mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+                                 filter_properties=filter_properties)
 
     def object_methods(self, mode='public', keys_to_skip=None):
         # type: (str, Optional[List[str]]) -> List[str]
@@ -239,7 +241,7 @@ class BDFAttributes(object):
         self.rsolmap_to_str = {
             66: 'NONLIN',
             101: 'SESTSTATIC',  # linear static
-            103: 'SEMODES',  # modal
+            103: 'SEMODES',   # modal
             105: 'BUCKLING',  # buckling
             106: 'NLSTATIC',  # non-linear static
             107: 'SEDCEIG',  # direct complex frequency response
@@ -258,6 +260,7 @@ class BDFAttributes(object):
             146: 'SEAERO',  # dynamic aeroelastic
             153: 'NLSCSH',  # nonlinear static thermal
             159: 'NLTCSH',  # nonlinear transient thermal
+            #187 - Dynamic Design Analysis Method
             190: 'DBTRANS',
             200: 'DESOPT',  # optimization
         }
@@ -622,6 +625,7 @@ class BDFAttributes(object):
             'ringfl' : ['RINGFL'],
             'axic' : ['AXIC'],
             'axif' : ['AXIF'],
+            'acmodl' : ['ACMODL'],
             'grdset' : ['GRDSET'],
             'gridb' : ['GRIDB'],
             'seqgp' : ['SEQGP'],
@@ -646,6 +650,7 @@ class BDFAttributes(object):
                 'CPLSTS3', 'CPLSTS6', 'CPLSTS4', 'CPLSTS8',
                 'CTRAX3', 'CTRAX6', 'CTRIAX', 'CTRIAX6',
                 'CQUADX', 'CQUADX4', 'CQUADX8',
+                'CCONEAX',
 
                 'CTETRA', 'CPYRAM', 'CPENTA', 'CHEXA', 'CIHEX1', 'CIHEX2',
                 'CSHEAR', 'CVISC', 'CRAC2D', 'CRAC3D',
@@ -653,35 +658,47 @@ class BDFAttributes(object):
 
                 # thermal
                 'CHBDYE', 'CHBDYG', 'CHBDYP',
+
+                # acoustic
+                'CHACAB', 'CAABSF', 'CHACBR',
             ],
             'normals' : ['SNORM'],
             'nsms' : ['NSM', 'NSM1', 'NSML', 'NSML1'],
             'nsmadds' : ['NSMADD'],
             'rigid_elements' : ['RBAR', 'RBAR1', 'RBE1', 'RBE2', 'RBE3', 'RROD', 'RSPLINE', 'RSSCON'],
-            'plotels' : ['PLOTEL',],
+            'plotels' : ['PLOTEL'],
 
             'properties_mass' : ['PMASS'],
+            #'properties_acoustic' : ['PACABS'],
             'properties' : [
-                'PELAS', 'PGAP', 'PFAST', 'PLPLANE', 'PPLANE',
+                #  acoustic
+                'PACABS', 'PAABSF', 'PACBAR',
+
+                # 0d
+                'PELAS', 'PGAP', 'PFAST',
                 'PBUSH', 'PBUSH1D',
                 'PDAMP', 'PDAMP5',
+
+                # 1d
                 'PROD', 'PBAR', 'PBARL', 'PBEAM', 'PTUBE', 'PBEND', 'PBCOMP', 'PBRSECT', 'PBMSECT',
                 'PBEAML',  # not fully supported
-                # 'PBEAM3',
+                'PBEAM3',
 
+                # 2d
+                'PLPLANE', 'PPLANE',
                 'PSHELL', 'PCOMP', 'PCOMPG', 'PSHEAR',
                 'PSOLID', 'PLSOLID', 'PVISC', 'PRAC2D', 'PRAC3D',
                 'PIHEX', 'PCOMPS',
                 'PCONEAX',
             ],
-            'pdampt' : ['PDAMPT',],
-            'pelast' : ['PELAST',],
-            'pbusht' : ['PBUSHT',],
+            'pdampt' : ['PDAMPT'],
+            'pelast' : ['PELAST'],
+            'pbusht' : ['PBUSHT'],
 
             # materials
             'materials' : ['MAT1', 'MAT2', 'MAT3', 'MAT8', 'MAT9', 'MAT10', 'MAT11',
                            'MAT3D', 'MATG'],
-            'hyperelastic_materials' : ['MATHE', 'MATHP',],
+            'hyperelastic_materials' : ['MATHE', 'MATHP'],
             'creep_materials' : ['CREEP'],
             'MATT1' : ['MATT1'],
             'MATT2' : ['MATT2'],
@@ -699,7 +716,7 @@ class BDFAttributes(object):
             #'EQUIV', # testing only, should never be activated...
 
             # thermal materials
-            'thermal_materials' : ['MAT4', 'MAT5',],
+            'thermal_materials' : ['MAT4', 'MAT5'],
 
             # spc/mpc constraints - TODO: is this correct?
             'spcadds' : ['SPCADD'],
@@ -715,6 +732,7 @@ class BDFAttributes(object):
             'senqset' : ['SENQSET'],
             'sebulk' : ['SEBULK'],
             'sebndry' : ['SEBNDRY'],
+            'release' : ['RELEASE'],
             'seloc' : ['SELOC'],
             'sempln' : ['SEMPLN'],
             'seconct' : ['SECONCT'],
@@ -747,7 +765,7 @@ class BDFAttributes(object):
             # aero cards
             'aero' : ['AERO'],
             'aeros' : ['AEROS'],
-            'gusts' : ['GUST'],
+            'gusts' : ['GUST', 'GUST2'],
             'flutters' : ['FLUTTER'],
             'flfacts' : ['FLFACT'],
             'mkaeros' : ['MKAERO1', 'MKAERO2'],
@@ -761,9 +779,9 @@ class BDFAttributes(object):
             'aestats' : ['AESTAT'],
             'caeros' : ['CAERO1', 'CAERO2', 'CAERO3', 'CAERO4', 'CAERO5', 'CAERO7', 'BODY7'],
             'paeros' : ['PAERO1', 'PAERO2', 'PAERO3', 'PAERO4', 'PAERO5', 'SEGMESH'],
-            'monitor_points' : ['MONPNT1', 'MONPNT2', 'MONPNT3'],
+            'monitor_points' : ['MONPNT1', 'MONPNT2', 'MONPNT3', 'MONDSP1'],
             'splines' : ['SPLINE1', 'SPLINE2', 'SPLINE3', 'SPLINE4', 'SPLINE5', 'SPLINE6', 'SPLINE7'],
-            'panlsts' : ['PANLST1', 'PANLST2', 'PANLST3',],
+            'panlsts' : ['PANLST1', 'PANLST2', 'PANLST3'],
             'csschds' : ['CSSCHD',],
             #'SPLINE3', 'SPLINE6', 'SPLINE7',
             'trims' : ['TRIM', 'TRIM2'],
@@ -824,19 +842,16 @@ class BDFAttributes(object):
 
             # sets
             'asets' : ['ASET', 'ASET1'],
-            'omits' : [
-                #'OMIT',
-                'OMIT1'
-            ],
-            'bsets' : ['BSET', 'BSET1',],
+            'omits' : ['OMIT', 'OMIT1'],
+            'bsets' : ['BSET', 'BSET1'],
             'qsets' : ['QSET', 'QSET1'],
-            'csets' : ['CSET', 'CSET1',],
-            'usets' : ['USET', 'USET1',],
-            'sets' : ['SET1', 'SET3',],
+            'csets' : ['CSET', 'CSET1'],
+            'usets' : ['USET', 'USET1'],
+            'sets' : ['SET1', 'SET3'],
 
             # super-element sets
             'se_bsets' : ['SEBSET', 'SEBSET1'],
-            'se_csets' : ['SECSET', 'SECSET1',],
+            'se_csets' : ['SECSET', 'SECSET1'],
             'se_qsets' : ['SEQSET', 'SEQSET1'],
             'se_usets' : ['SEUSET', 'SEQSET1'],
             'se_sets' : ['SESET'],
@@ -845,6 +860,15 @@ class BDFAttributes(object):
             'radmtx' : ['RADMTX'],
             # SEBSEP
 
+            # parametric
+            'pset' : ['PSET'],
+            'pval' : ['PVAL'],
+            'gmcurv' : ['GMCURV'],
+            'gmsurf' : ['GMSURF'],
+            'feedge' : ['FEEDGE'],
+            'feface' : ['FEFACE'],
+
+            # tables
             'tables' : [
                 'TABLEH1', 'TABLEHT',
                 'TABLES1', 'TABLEST',
@@ -852,16 +876,16 @@ class BDFAttributes(object):
             'tables_d' : ['TABLED1', 'TABLED2', 'TABLED3', 'TABLED4', 'TABLED5'],
             'tables_m' : ['TABLEM1', 'TABLEM2', 'TABLEM3', 'TABLEM4'],
             'tables_sdamping' : ['TABDMP1'],
-            'random_tables' : ['TABRND1', 'TABRNDG',],
+            'random_tables' : ['TABRND1', 'TABRNDG'],
 
             # initial conditions - sid (set ID)
             ##'TIC',  (in bdf_tables.py)
 
             # methods
-            'methods' : ['EIGB', 'EIGR', 'EIGRL',],
+            'methods' : ['EIGB', 'EIGR', 'EIGRL'],
 
             # cMethods
-            'cMethods' : ['EIGC', 'EIGP',],
+            'cMethods' : ['EIGC', 'EIGP'],
 
             # contact
             'bctparas' : ['BCTPARA'],
@@ -872,6 +896,7 @@ class BDFAttributes(object):
             'bsurfs' : ['BSURFS'],
             'bconp' : ['BCONP'],
             'blseg' : ['BLSEG'],
+            'bfric' : ['BFRIC'],
             'views' : ['VIEW'],
             'view3ds' : ['VIEW3D'],
 
@@ -886,7 +911,7 @@ class BDFAttributes(object):
         """helper method for printing supported cards"""
         nchars = len('Card Group')
 
-        nchars_cards = 0
+        #nchars_cards = 0
         for card_group in self._slot_to_type_map:
             nchars = max(nchars, len(card_group))
 
@@ -908,7 +933,7 @@ class BDFAttributes(object):
             if len(valid_cards) == 0:
                 continue
 
-            i = 0
+            #i = 0
             sublines = []
             subline = ''
             while valid_cards:
@@ -926,7 +951,9 @@ class BDFAttributes(object):
                 sublines.append(subline.rstrip(', '))
 
             html_msg.append(dash_plus)
-            for subline in sublines:
+            for isub, subline in enumerate(sublines):
+                if isub > 0:  # adds intermediate dash lines
+                    html_msg.append(dash_plus)
                 html_msg.append(fmt % (card_group, subline))
                 card_group = ''
 

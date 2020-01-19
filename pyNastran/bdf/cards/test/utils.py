@@ -2,12 +2,14 @@
 import os
 from six import StringIO
 import numpy as np
-from pyNastran.bdf.bdf import BDF
+from cpylog import get_logger
+from pyNastran.bdf.bdf import BDF, read_bdf
 from pyNastran.bdf.mesh_utils.delete_bad_elements import element_quality
 from pyNastran.bdf.mesh_utils.remove_unused import remove_unused
 from pyNastran.bdf.mesh_utils.convert import convert
 from pyNastran.bdf.mesh_utils.bdf_renumber import bdf_renumber
 from pyNastran.bdf.mesh_utils.mirror_mesh import bdf_mirror
+from pyNastran.bdf.test.test_bdf import run_bdf as test_bdf
 
 try:
     import h5py
@@ -18,8 +20,14 @@ except ImportError:  # pragma: no cover
 def save_load_deck(model, xref='standard', punch=True, run_remove_unused=True,
                    run_convert=True, run_renumber=True, run_mirror=True,
                    run_save_load=True, run_quality=True, write_saves=True,
-                   run_save_load_hdf5=True, run_mass_properties=True, run_loads=True):
+                   run_save_load_hdf5=True, run_mass_properties=True, run_loads=True,
+                   run_test_bdf=True, run_op2_writer=True, run_op2_reader=True,
+                   op2_log_level='warning'):
     """writes, re-reads, saves an obj, loads an obj, and returns the deck"""
+    if os.path.exists('junk.bdf'):
+        os.remove('junk.bdf')
+    model.set_error_storage(nparse_errors=0, stop_on_parsing_error=True,
+                            nxref_errors=0, stop_on_xref_error=True)
     model.validate()
     model.pop_parse_errors()
     model.pop_xref_errors()
@@ -36,8 +44,6 @@ def save_load_deck(model, xref='standard', punch=True, run_remove_unused=True,
         model.write_bdfs(bdf_filenames)
         os.remove('junk.bdf')
 
-    if run_remove_unused:
-        remove_unused(model)
     if run_convert:
         units_to = ['m', 'kg', 's']
         units = ['ft', 'lbm', 's']
@@ -51,6 +57,14 @@ def save_load_deck(model, xref='standard', punch=True, run_remove_unused=True,
     model2.pop_parse_errors()
     model2.get_bdf_stats()
     model2.write_bdf('model2.bdf')
+    if run_test_bdf:
+        folder = ''
+        log_error = get_logger(log=None, level='error', encoding='utf-8')
+        test_bdf(folder, 'model2.bdf', stop_on_failure=True,
+                 punch=punch,
+                 quiet=True, log=log_error)
+        os.remove('model2.test_bdf.bdf')
+
     nelements = len(model2.elements) + len(model2.masses)
     nnodes = len(model2.nodes) + len(model2.spoints) + len(model2.epoints)
 
@@ -67,9 +81,10 @@ def save_load_deck(model, xref='standard', punch=True, run_remove_unused=True,
         model3 = model2
 
     if run_save_load_hdf5 and IS_H5PY:
-        model2.export_hdf5_filename('test.h5')
+        hdf5_filename = 'test.h5'
+        model2.export_hdf5_filename(hdf5_filename)
         model4 = BDF(log=model2.log)
-        model4.load_hdf5_filename('test.h5')
+        model4.load_hdf5_filename(hdf5_filename)
         model4.validate()
         bdf_stream = StringIO()
         model4.write_bdf(bdf_stream, encoding=None, size=8, is_double=False,
@@ -82,12 +97,13 @@ def save_load_deck(model, xref='standard', punch=True, run_remove_unused=True,
                     key, model2.card_count, model4.card_count)
                 #raise RuntimeError(msg)
                 model.log.error(msg)
+        os.remove(hdf5_filename)
 
     cross_reference(model3, xref)
     if run_renumber:
         renumber('model2.bdf', model.log)
         if run_mirror:
-            # we put embed this under renumber to prevent modifying an
+            # we put this under renumber to prevent modifying an
             # existing model to prevent breaking tests
             #
             # shouldn't have any effect model2.bdf
@@ -96,6 +112,9 @@ def save_load_deck(model, xref='standard', punch=True, run_remove_unused=True,
 
     if model.elements and run_quality:
         element_quality(model)
+    if run_remove_unused:
+        remove_unused(model)
+
     return model3
 
 def _run_mass_properties(model2, nnodes, nelements, run_mass_properties=True):

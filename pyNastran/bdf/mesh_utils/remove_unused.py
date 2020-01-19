@@ -87,9 +87,10 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
     # this are things that haven't been referenced yet
     not_implemented_types = {
         # not checked------------------------------------------
-        'PHBDY', 'CHBDYG', 'CHBDYP', 'CHBDYE', 'RADBC', 'CONV',
-        'QVOL', 'PCONV', 'PCONVM',
-        #'PBCOMP', 'PDAMP5', 'CFAST',
+        'PHBDY', 'CHBDYG', 'CHBDYP', 'CHBDYE', 'RADBC', # 'CONV',
+        'QVOL', 'PCONVM', # 'PCONV',
+        #'PBCOMP', 'PDAMP5',
+        'CFAST', 'CBUSH1D', 'CBUSH2D',
         'AECOMP', 'CAERO2', 'CAERO3', 'CAERO4', 'CAERO5',
         'PAERO2', 'PAERO3', 'PAERO4', 'PAERO5',
         'DCONADD',
@@ -463,6 +464,18 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
                 #if prop.cores:
                     #for key, value in prop.cores.items():
                         #pids_used.add(value)
+        elif card_type == 'PCONV':
+            for idi in ids:
+                pconv = model.convection_properties[idi]
+                if pconv.tid is not None:
+                    tableht_used.add(pconv.tid)
+        elif card_type == 'CONV':
+            for idi in ids:
+                bcs = model.bcs[idi]
+                for conv in bcs:
+                    if conv.type != 'CONV':
+                        continue
+                    pconv_used.add(conv.pconid)
         #elif card_type == 'FORCEAX':
             #pass
             #ring_id
@@ -542,7 +555,7 @@ def _store_elements(card_type, model, ids, nids_used, pids_used, mids_used, cids
             pids_used.add(elem.Pid())
             if isinstance(elem.theta_mcid, integer_types):
                 cids_used.add(elem.theta_mcid)
-    elif card_type in ['CTRIAX6']:
+    elif card_type in ['CTRIAX6', ]:
         for eid in ids:
             elem = model.elements[eid]
             nids_used.update(elem.node_ids)

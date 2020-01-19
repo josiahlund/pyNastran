@@ -451,7 +451,7 @@ def _convert_properties(model, xyz_scale, time_scale, mass_scale, weight_scale,
 
     Supports:  PELAS, PDAMP, PDAMP5, PVISC, PROD, PBAR, PBARL, PBEAM, PBEAML,
                PSHELL, PSHEAR, PCOMP, PCOMPG, PELAS, PTUBE, PBUSH,
-               PCONEAX, PGAP,
+               PCONEAX, PGAP, PBUSH1D
     Skips : PSOLID, PLSOLID, PLPLANE, PIHEX
 
     Skips are unscaled (intentionally)
@@ -548,8 +548,9 @@ def _convert_properties(model, xyz_scale, time_scale, mass_scale, weight_scale,
 
         elif prop_type == 'PBUSH':
             _convert_pbush(prop, velocity_scale, mass_scale, stiffness_scale)
-        elif prop.type in ['PBUSH1D', 'PBUSH2D']:
-            model.log.warning('skipping:\n%s' % str(prop))
+        elif prop.type == 'PBUSH1D':
+            _convert_pbush1d(model, prop, xyz_scale, area_scale,
+                             mass_scale, damping_scale, stiffness_scale)
 
         #elif prop.type == 'PCOMPS':
             #pass
@@ -681,6 +682,63 @@ def _convert_pbush(prop, velocity_scale, mass_scale, stiffness_scale):
         #lumped mass of the CBUSH
         #This is an MSC only parameter.
 
+def _convert_pbush1d(model, prop, xyz_scale, area_scale, mass_scale, damping_scale,
+                     stiffness_scale):
+    prop.c *= damping_scale # Viscous damping (force/velocity)
+    prop.k *= stiffness_scale
+    prop.m *= mass_scale
+    prop.sa /= area_scale  # Stress recovery coefficient [1/area]
+    prop.se /= xyz_scale   # Strain recovery coefficient [1/length]
+    spring_tables = set([])
+    damper_tables = set([])
+    for var in prop.vars:
+        if var == 'SHOCKA':
+            print(prop.get_stats())
+             # Viscous damping coefficient (force/velocity)
+            prop.shock_cvc = prop.shock_cvc * damping_scale if prop.shock_cvc is not None else None
+            prop.shock_cvt = prop.shock_cvt * damping_scale if prop.shock_cvt is not None else None
+            #shock_exp_vc : 1.0
+            #shock_exp_vt : 1.0
+            #shock_idecs : None
+            #shock_idecsd : None
+            #shock_idets : None
+            #shock_idetsd : None
+            #shock_idts : None
+            #shock_type : 'TABLE'
+        elif var == 'DAMPER':
+            if prop.damper_type == 'TABLE':
+                for key in ('damper_idc', 'damper_idcdv', 'damper_idt', 'damper_idtdv'):
+                    value = getattr(prop, key)
+                    if value is None:
+                        continue
+                    elif isinstance(value, int):
+                        damper_tables.add(value)
+                    else:
+                        raise TypeError('key=%r value=%r' % (key, value))
+            else:
+                print(prop.get_stats())
+                raise NotImplementedError(prop.damper_type)
+        elif var == 'SPRING':
+            if prop.spring_type == 'TABLE':
+                for key in ('spring_idc', 'spring_idcdu', 'spring_idt', 'spring_idtdu'):
+                    value = getattr(prop, key)
+                    if value is None:
+                        continue
+                    elif isinstance(value, int):
+                        spring_tables.add(value)
+                    else:
+                        raise TypeError('key=%r value=%r' % (key, value))
+            else:
+                raise NotImplementedError(prop.damper_type)
+        else:
+            print(prop.get_stats())
+            raise RuntimeError('var=%r\n%s' % (var, str(prop)))
+    #damper_idc : None
+    #damper_idcdv : None
+    #damper_idt : None
+    #damper_idtdv : None
+    #damper_type : None
+    #type   : 'PBUSH1D'
 
 def _convert_materials(model, xyz_scale, mass_scale, weight_scale, temperature_scale):
     """
@@ -894,6 +952,7 @@ def _convert_loads(model, xyz_scale, time_scale, weight_scale, temperature_scale
     for dloads in model.dloads.values():
         assert isinstance(dloads, str), dloads  # TEMP
 
+    skip_dloads = {'TLOAD2', 'RANDPS', 'RANDT1', 'QVECT'}
     tabled_scales = set()
     for dloads in model.dload_entries.values():
         for dload in dloads:
@@ -943,12 +1002,15 @@ def _convert_loads(model, xyz_scale, time_scale, weight_scale, temperature_scale
                 scale = _get_dload_scale(dload, xyz_scale, velocity_scale,
                                          accel_scale, force_scale)
                 tabled_scales.add((dload.tid, scale))
+            elif dload.type in skip_dloads:
+                model.log.warning('skipping %s' % dload.type)
             else:
                 raise NotImplementedError(dload)
     for tid, scale in tabled_scales:
         tabled = model.TableD(tid)
         tabled.y *= scale
 
+    skip_cards = {'PLOADX1', 'QVOL', 'QHBDY', 'QBDY1', 'QBDY2', 'QBDY3', 'GMLOAD'}
     for loads in model.loads.values():
         assert isinstance(loads, list), loads
         for load in loads: # list
@@ -1000,6 +1062,13 @@ def _convert_loads(model, xyz_scale, time_scale, weight_scale, temperature_scale
                     #table.WG *= velocity_scale
                 else:
                     raise NotImplementedError(table)
+            #-------------------------------------------------------------
+            # thermal
+            elif load_type == 'TEMP':
+                #print(load.get_stats())
+                #temperatures : {1901: 100.0}
+                for nid in load.temperatures:
+                    load.temperatures[nid] *= temperature_scale
             else:
                 raise NotImplementedError(load)
 

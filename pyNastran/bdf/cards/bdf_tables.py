@@ -2,18 +2,20 @@
 """
 All table cards are defined in this file.  This includes:
 
-* Table
+* table_d
  * TABLED1 - Dynamic Table = f(Time, Frequency)
  * TABLED2
  * TABLED3
+* table_m
  * TABLEM1 - Material table = f(Temperature)
  * TABLEM2
  * TABLEM3
  * TABLEM4
+*tables
  * TABLES1 - Material table = f(Stress)
  * TABLEST
- * RandomTable
-   * TABRND1
+*random_tables
+ * TABRND1
  * TABRNDG
 
 All tables have a self.table parameter that is a TableObj
@@ -985,7 +987,11 @@ class TABLEM2(Table):
             a comment for the card
         """
         table_id = integer(card, 1, 'tid')
-        x1 = double(card, 2, 'x1')
+
+        # defined in MSC as an integer and used as a float...int > 0
+        # defined in NX as a float; real
+        # no default given in either, but from context, let's assume 0.0
+        x1 = double_or_blank(card, 2, 'x1', 0.0)
         extrap = integer_or_blank(card, 3, 'EXTRAP', default=0)
         x, y = read_table(card, table_id, 'TABLEM2')
         return TABLEM2(table_id, x1, x, y, extrap=extrap, comment=comment)
@@ -1421,7 +1427,8 @@ class TABLEH1(Table):
 
     def __init__(self, tid, x, y, comment=''):
         """
-        Adds a TABLES1 card, which defines a stress dependent material
+        Adds a TABLEH1 card, which defines convection heat transfer coefficient.
+        It's referenced by a TABLEHT.
 
         Parameters
         ----------
@@ -1519,6 +1526,20 @@ class TABLEHT(Table):
         return TABLEHT(tid, x, y, comment='')
 
     def __init__(self, tid, x, y, comment=''):
+        """
+        Adds a TABLEHT card, which a function of two variables for
+        convection heat transfer coefficient.
+
+        Parameters
+        ----------
+        tid : int
+            Table ID
+        x, y : List[float]
+            table values
+        comment : str; default=''
+            a comment for the card
+
+        """
         Table.__init__(self)
         if comment:
             self.comment = comment
@@ -1751,7 +1772,9 @@ class TABRNDG(RandomTable):
 def _map_axis(axis):
     if axis == 0:
         axis_type = 'LINEAR'
-    else:
+    elif axis == 1:
+        axis_type = 'LOG'
+    else: # pragma: no cover
         raise ValueError('axis=%r' % axis)
     return axis_type
 

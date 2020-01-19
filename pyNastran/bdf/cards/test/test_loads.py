@@ -611,11 +611,9 @@ class TestLoads(unittest.TestCase):
         """tests a PLOAD4 with a CTETRA"""
         bdf_filename = os.path.join(MODEL_PATH, 'pload4', 'ctetra.bdf')
         op2_filename = os.path.join(MODEL_PATH, 'pload4', 'ctetra.op2')
-        op2 = OP2(debug=False, log=log)
-        op2.read_op2(op2_filename)
+        op2 = read_op2(op2_filename, log=log)
 
-        model = BDF(debug=False)
-        model.read_bdf(bdf_filename)
+        model = read_bdf(bdf_filename, log=log)
         p0 = model.nodes[21].xyz
 
         nx_plus = [ # 21, 24, 23

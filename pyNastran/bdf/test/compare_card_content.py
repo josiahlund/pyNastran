@@ -54,11 +54,18 @@ def check_length(fem1, fem2, name):
     if not len(obj2) == len(obj2):
         msg = 'len(fem1.%s)=%i len(fem2.%s)=%i' % (name, len(obj2), name, len(obj2))
         raise AssertionError(msg)
+def compare_params(fem1, fem2):
+    for key in fem1.params:
+        card1 = fem1.params[key]
+        card2 = fem2.params[key]
+        assert_fields(card1, card2)
+
 
 def compare_card_content(fem1, fem2):
     check_obj_names = [
         'params', 'nodes', 'spoints', 'epoints', 'points', 'gridb',
-        'elements', 'rigid_elements', 'nsms', 'nsmadds',
+        #'elements', 'rigid_elements',
+        'nsms', 'nsmadds',
         'properties', 'properties_mass', 'materials', 'creep_materials',
         'loads', 'coords',
         'spcs', 'spcadds', 'spcoffs', 'mpcs', 'mpcadds', 'dareas', 'dphases',
@@ -69,11 +76,7 @@ def compare_card_content(fem1, fem2):
     for name in check_obj_names:
         check_length(fem1, fem2, name)
 
-    for key in fem1.params:
-        card1 = fem1.params[key]
-        card2 = fem2.params[key]
-        assert_fields(card1, card2)
-
+    compare_params(fem1, fem2)
     for key in fem1.nodes:
         card1 = fem1.nodes[key]
         card2 = fem2.nodes[key]

@@ -125,6 +125,9 @@ def _cast(h5_result_attr):
         #raise NotImplementedError(h5_result_attr.dtype)
     return np.array(h5_result_attr)
 
+# the data fro these keys must be strings
+STRING_KEYS = ['result_name', 'superelement_adaptivity_index']
+
 TABLE_OBJ_MAP = {
     'displacements' : (RealDisplacementArray, ComplexDisplacementArray),
     'no.displacements' : (RealDisplacementArray, ComplexDisplacementArray),
@@ -1029,12 +1032,14 @@ def _apply_hdf5_attributes_to_object(obj, h5_result, result_name, data_code, str
         'class_name', 'headers', 'is_real', 'is_complex',
         'is_sort1', 'is_sort2', 'table_name_str',
         'is_curvature', 'is_fiber_distance', 'is_max_shear', 'is_von_mises',
-        'is_strain', 'is_stress', 'nnodes_per_element']
+        'is_strain', 'is_stress', 'nnodes_per_element', 'has_von_mises',
+    ]
+    filtered_attrs = obj.object_attributes(keys_to_skip=keys_to_skip, filter_properties=True)
 
     #if result_name == 'eigenvectors':
         #debug = True
     for key in h5_result.keys():
-        if key in keys_to_skip:
+        if key not in filtered_attrs:
             continue
         elif result_name == 'grid_point_forces' and key in ['element_name']:
             pass
@@ -1051,6 +1056,8 @@ def _apply_hdf5_attributes_to_object(obj, h5_result, result_name, data_code, str
                 if key not in ['data']:
                     print(datai)
 
+            if key in STRING_KEYS and isinstance(datai, bytes):
+                datai = datai.decode('latin1')
 
             try:
                 setattr(obj, key, datai)
@@ -1132,7 +1139,7 @@ def export_matrices(hdf5_file, op2_model):
     if len(op2_model.matrices):
         matrix_group = hdf5_file.create_group('matrices')
         for key, matrix in sorted(op2_model.matrices.items()):
-            matrixi_group = matrix_group.create_group(b(key))
+            matrixi_group = matrix_group.create_group(key.encode('latin-1'))
             if hasattr(matrix, 'export_to_hdf5'):
                 matrix.export_to_hdf5(matrixi_group, op2_model.log)
             else:
@@ -1159,8 +1166,13 @@ def _export_subcases(hdf5_file, op2_model):
         for key, obj in result.items():
             #class_name = obj.__class__.__name__
             #print('working on %s' % class_name)
-            obj.object_attributes()
+            obj.object_attributes(filter_properties=True)
             subcase_name = 'Subcase=%s' % str(key)
+            if '/' in subcase_name:
+                name = obj.class_name
+                op2_model.log.warning("'/' in titles are not supported by HDF5 for %s; "
+                                      "changing to ';'" % name)
+                subcase_name = subcase_name.replace('/', ';')
             if subcase_name in subcase_groups:
                 subcase_group = subcase_groups[subcase_name]
             else:
@@ -1234,6 +1246,8 @@ def load_op2_from_hdf5_file(model, h5_file, log, debug=False):
                     #log.debug('  loaded %r' % result_name)
                 else:
                     log.warning('  unhandled %r...' % result_name)
+                    h5_result = h5_subcase.get(result_name)
+                    print(h5_result)
                     raise NotImplementedError('  unhandled %r...' % result_name)
             #print(h5_subcase.keys())
         elif key == 'info':
@@ -1260,7 +1274,7 @@ def _read_h5_matrix(h5_file, model, key, log):
             #[u'col', u'data', u'form', u'is_matpool', u'name', u'row', u'shape_str']
             name = _cast(h5_matrix.get('name'))
             form = _cast(h5_matrix.get('form'))
-            is_matpool = _cast(h5_matrix.get('is_matpool'))
+            unused_is_matpool = _cast(h5_matrix.get('is_matpool'))
             matrix_obj = Matrix(name, form, is_matpool=False)
 
             #matrix = scipy.sparse.coo_matrix(

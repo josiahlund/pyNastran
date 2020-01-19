@@ -325,7 +325,7 @@ class TestAero(unittest.TestCase):
         model.add_grid(3, [0., 0., 0.])
 
         model.validate()
-        save_load_deck(model)
+        save_load_deck(model, run_test_bdf=False)
 
     def test_aero_1(self):
         """checks the AERO card"""
@@ -448,6 +448,9 @@ class TestAero(unittest.TestCase):
         """checks the CAERO1/PAERO1/AEROS/AEFACT card"""
         log = SimpleLogger(level='warning')
         model = BDF(log=log)
+        model.set_error_storage(nparse_errors=0, stop_on_parsing_error=True,
+                                nxref_errors=0, stop_on_xref_error=True)
+
         eid = 1
         pid = 10
         cp = 4
@@ -530,6 +533,18 @@ class TestAero(unittest.TestCase):
                                           p1, p2, p3, p4,
                                           cp=cp, spanwise='z', comment='')
         caero1_no_coord.get_points()
+
+        # caero1c is set as eid=1
+        model.validate()
+        # ------------------------------------------------
+        eid =  1000
+        igroup = 1
+        lspan_lchord = 1
+        fractions = np.linspace(0., 1., num=11)
+        model.add_aefact(lspan_lchord, fractions, comment='')
+        model.add_caero1(eid, pid, igroup, p1, x12, p4, x43, cp=0,
+                         nspan=0, lspan=lspan_lchord,
+                         nchord=0, lchord=lspan_lchord, comment='')
 
         paero = PAERO1(pid, caero_body_ids=None, comment='')
         paero.validate()
@@ -750,7 +765,7 @@ class TestAero(unittest.TestCase):
         model.cross_reference(model)
         caero1.panel_points_elements()
         caero2.get_points_elements_3d()
-        save_load_deck(model)
+        save_load_deck(model, run_test_bdf=False)
 
 
     def test_spline2(self):
@@ -1075,7 +1090,7 @@ class TestAero(unittest.TestCase):
         caero3b.panel_points_elements()
 
         model.get_bdf_stats()
-        save_load_deck(model, run_convert=False, run_mirror=False, run_save_load_hdf5=True) # , run_renumber=False
+        save_load_deck(model, run_convert=False, run_mirror=False) # , run_renumber=False
 
 
     def test_paero3(self):
@@ -1292,7 +1307,7 @@ class TestAero(unittest.TestCase):
 
         read_bdf(bdf_filename, xref=False, punch=True, debug=False)
         model.safe_cross_reference()
-        save_load_deck(model, run_convert=False, run_renumber=False, run_save_load_hdf5=True)
+        save_load_deck(model, run_renumber=False, run_test_bdf=False)
 
 
         #caero5.raw_fields()
@@ -1432,7 +1447,6 @@ class TestAero(unittest.TestCase):
         model.pop_parse_errors()
         model.pop_xref_errors()
         model.validate()
-        save_load_deck(model)
 
     def test_spline5(self):
         """checks the SPLINE5 card"""
@@ -1486,7 +1500,6 @@ class TestAero(unittest.TestCase):
         model.cross_reference()
         model.uncross_reference()
         model.safe_cross_reference()
-        save_load_deck(model)
 
     def test_aesurf_1(self):
         """checks the AESURF/AELIST cards"""
@@ -2241,7 +2254,8 @@ class TestAero(unittest.TestCase):
         model.safe_cross_reference()
         save_load_deck(model, xref='safe',
                        run_renumber=False, run_convert=False, run_remove_unused=False,
-                       run_save_load=False, run_save_load_hdf5=False, run_mass_properties=False)
+                       run_save_load=False, run_save_load_hdf5=False, run_mass_properties=False,
+                       run_test_bdf=False, run_op2_writer=False)
         with self.assertRaises(NotImplementedError):
             model.zona.convert_to_nastran()
 
@@ -2253,7 +2267,8 @@ class TestAero(unittest.TestCase):
         model.safe_cross_reference()
         save_load_deck(model, xref='safe',
                        run_renumber=False, run_convert=False, run_remove_unused=False,
-                       run_save_load=False, run_save_load_hdf5=False, run_mass_properties=False)
+                       run_save_load=False, run_save_load_hdf5=False, run_mass_properties=False,
+                       run_test_bdf=False)
         model.zona.convert_to_nastran()
 
     def test_zona_3(self):
