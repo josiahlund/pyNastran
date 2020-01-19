@@ -2930,7 +2930,7 @@ class CPLSTN4(QuadShell):
             (n1, n2, n3, n4) = self.nodes_ref
             self.nodes_ref = [n1, n4, n3, n2]
 
-    def Mass(self) -> float:
+    def Mass(self):
         return 0.
 
     @property
@@ -3054,7 +3054,7 @@ class CPLSTN6(TriShell):
         self.nodes_ref = None
         self.pid_ref = None
 
-    def Mass(self) -> float:
+    def Mass(self):
         return 0.
 
     @property
@@ -3480,7 +3480,7 @@ class CPLSTN8(QuadShell):
         area = 0.5 * norm(cross(a, b))
         return area
 
-    def Mass(self) -> float:
+    def Mass(self):
         return 0.
 
     @property

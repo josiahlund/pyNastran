@@ -890,7 +890,7 @@ def hdf5_load_dmigs(model, group, unused_encoding):
             _load_dmig(model, name, sub_group, class_type)
     model.card_count[class_type] = len(keys)
 
-def _load_dmi(model: BDF, name, sub_group):
+def _load_dmi(model, name, sub_group):
     """loads the DMI"""
     ncols = _cast(sub_group['ncols'])
     nrows = _cast(sub_group['nrows'])

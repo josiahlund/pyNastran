@@ -39,7 +39,7 @@ matrix:
     - name: "Python 2.7 (PyQt4)"
       python: '2.7'
       env:
-      - NUMPY='numpy scipy matplotlib h5py vtk pyqt4 pandas<0.25 imageio'
+      - NUMPY='numpy scipy matplotlib h5py vtk pyqt pandas<0.25 imageio'
       - LIBH5='libhdf5-dev'
 
     - name: "Python 3.6 (PyQt5)"

@@ -1226,17 +1226,17 @@ class TestShells(unittest.TestCase):
         pid = 100
         mid = 1000
         model.add_ctria3(eid, pid, [1, 2, 3], zoffset=0., theta_mcid=0, tflag=0,
-                        T1=None, T2=None, T3=None,
-                        comment='')
+                         T1=None, T2=None, T3=None,
+                         comment='')
 
         eid = 11
         model.add_cquad4(eid, pid, [1, 2,3, 4], theta_mcid=0, zoffset=0., tflag=0,
                          T1=None, T2=None, T3=None, T4=None, comment='')
 
-        model.add_pshell(pid, mid1=mid, t=0.1, mid2=mid, twelveIt3=1.0,
-                         mid3=None, tst=0.833333,
-                         nsm=0.0, z1=None, z2=None,
-                         mid4=None, comment='')
+        pshell = model.add_pshell(pid, mid1=mid, t=0.1, mid2=mid, twelveIt3=1.0,
+                                  mid3=None, tst=0.833333,
+                                  nsm=0.0, z1=None, z2=None,
+                                  mid4=None, comment='')
         E = 3.0e7
         G = None
         nu = 0.3

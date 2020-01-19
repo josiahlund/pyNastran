@@ -251,8 +251,7 @@ def A_I1_I2_I12(prop, beam_type, dim):
     assert A == prop.Area(), prop
     return A, I1, I2, I12
 
-def _bar_areaL(class_name: str, beam_type: str, dim: List[float],
-               prop: Any) -> float:
+def _bar_areaL(class_name, beam_type, dim, prop):
     """
     Area(x) method for the PBARL and PBEAML classes (pronounced **Area-L**)
 
@@ -531,8 +530,8 @@ def t2_section(class_name, beam_type, dim, prop):
     # bweb = hall - tflange
     bflange = ball - tweb
     #print(f'hall={hall} ball={ball} tweb={tweb} bflange={bflange}')
-    assert hall - tflange > 0, f'bweb={hall-tflange} hall(dim2)={hall} tflange(dim3)={tflange}'
-    assert ball - tweb > 0, f'bflange={bflange} ball(dim1)={ball} tweb(dim4)={tweb}'
+    assert hall - tflange > 0, 'bweb=%s hall(dim2)=%s tflange(dim3)=%s' % ({hall-tflange}, hall, tflange)
+    assert ball - tweb > 0, 'bflange=%s ball(dim1)=%s tweb(dim4)=%s' % (bflange, ball, tweb)
     A = tweb * hall + tflange * bflange
     I1 = I2 = I12 = None
     return A, I1, I2, I12
@@ -597,12 +596,12 @@ def hat_section(class_name, beam_type, dim, prop):
     dim1, dim2, dim3, dim4 = dim
     t = dim2
     wa = dim3
-    assert wa > 2.*t, f'HAT; required: dim3 > 2*dim2; dim2={t} dim3={wa}; delta={wa-2*t}\n{prop}'
+    assert wa > 2.*t, 'HAT; required: dim3 > 2*dim2; dim2=%s dim3=%s; delta=%s\n%s' % (t, wa, wa - 2 * t, str(prop))
     #DIM3, CAN NOT BE LESS THAN THE SUM OF FLANGE
         #THICKNESSES, 2*DIM2
     hb = dim1 - 2. * t
     wc = dim4 + t
-    assert hb > 0., f'HAT; required hb=dim1-2*dim2={hb} dim1={dim1} dim2={dim2}'
+    assert hb > 0., 'HAT; required hb=dim1-2*dim2=%s dim1=%s dim2=%s' % (hb, dim1, dim2)
     A = wa * t + (2. * wc * t) + (2. * hb * t)
     I1 = I2 = I12 = None
     return A, I1, I2, I12
@@ -878,7 +877,7 @@ def chan1_section(class_name, beam_type, dim, prop):
     h_inner = dim3
 
     h1 = h_all - h_inner  # 2*tflange
-    assert h_all > h_inner, f'h_all(dim4)={h_all} h_inner(dim3)={h_inner}'
+    assert h_all > h_inner, 'h_all(dim4)=%s h_inner(dim3)=%s' % (h_all, h_inner)
     tflange = h1 / 2.
     w_all = bflange + tweb  # bf + tw
     A = h1 * w_all + h_inner * tweb

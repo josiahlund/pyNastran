@@ -1010,7 +1010,7 @@ class PCOMP(CompositeShellProperty):
         #Q = np.zeros((3, 3), dtype='float64')
 
         mids_ref = copy.deepcopy(self.mids_ref)
-        assert mids_ref is not None, f'The following material hasnt been cross-referenced:\n{self}'
+        assert mids_ref is not None, 'The following material hasnt been cross-referenced:\n%s' % str(self)
         if self.is_symmetrical:
             mids_ref += mids_ref[::-1]
 

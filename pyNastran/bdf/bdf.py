@@ -2256,7 +2256,7 @@ class BDF_(BDFMethods, GetCard, AddCards, WriteMeshs, UnXrefMesh):
         """rejects a card object"""
         self.reject_cards.append(card_obj)
 
-    def reject_card_lines(self, card_name, card_lines, comment=''):
+    def reject_card_lines(self, card_name, card_lines, show_log=True, comment=''):
         """rejects a card"""
         if card_name.isdigit():
             # TODO: this should technically work (I think), but it's a problem
