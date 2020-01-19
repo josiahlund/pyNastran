@@ -684,7 +684,6 @@ class OP2(OP2_Scalar):
         """
         from pyNastran.op2.op2_interface.hdf5_interface import load_op2_from_hdf5_file
         #self.op2_filename = hdf5_filename
-
         #self.log.info('hdf5_op2_filename = %r' % hdf5_filename)
         debug = False
         load_op2_from_hdf5_file(self, h5_file, self.log, debug=debug)

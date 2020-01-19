@@ -227,6 +227,27 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         except ImportError:
             install_requires.append('qtpy >= 1.4.0')  # 1.5.0 used
 
+    if is_rtd:
+        pass
+    elif is_gui:
+        try:
+            import PIL
+            iver = int_version('PIL', qtpy.__version__)
+            all_reqs['PIL'] = str_version(iver)
+            if PY2 and iver > [7, 0]:
+                print("PIL.__version__ = %r > 1.4.0, < '7.0'" % PIL.__version__)
+                all_reqs['PIL'] = 'PIL >=1.4.0, < 7.0'
+                install_requires.append('PIL >=1.4.0, < 7.0')
+            elif iver < [1, 4, 0]:
+                print("PIL.__version__ = %r > '1.4.0'" % PIL.__version__)
+                all_reqs['PIL'] = 'PIL >=1.4.0'
+                install_requires.append('PIL >= 1.4.0')
+        except ImportError:
+            if PY2:
+                install_requires.append('PIL >= 1.4.0, < 7.0')  # 1.5.0 used
+            else:
+                install_requires.append('PIL >= 1.4.0')  # 1.5.0 used
+
     if PY2:
         try:
             import typing

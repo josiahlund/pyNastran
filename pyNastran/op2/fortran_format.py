@@ -166,6 +166,8 @@ class FortranFormat(object):
             # This happens when self._data_factor hasn't been reset
             # or is set wrong.
             # can it happen any other time?
+            #
+            # yup, when you have sort2...
             msga = 'self.obj.name=%r has itime' % self.obj.__class__.__name__
             self.log.debug(msga)
             msgb = 'ntotal=%s shape=%s shape[1]=%s _data_factor=%s\n' % (
@@ -214,6 +216,7 @@ class FortranFormat(object):
             assert isinstance(self.obj.ntotal, integer_types), type(self.obj.ntotal)
         else:
             self.log.warning('obj=%s doesnt have ntimes' % self.obj.__class__.__name__)
+        return
 
     def _cleanup_data_members(self):
         """deletes variables from previous tables"""
