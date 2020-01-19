@@ -165,7 +165,7 @@ def _filename(filename):
         return '\\\\?\\' + filename
     return filename
 
-def __object_attr(obj, mode, keys_to_skip, attr_type, filter_properties: bool=False):
+def __object_attr(obj, mode, keys_to_skip, attr_type, filter_properties=False):
     """list object attributes of a given type"""
     #print('keys_to_skip=%s' % keys_to_skip)
     keys_to_skip = [] if keys_to_skip is None else keys_to_skip
@@ -244,8 +244,8 @@ def object_stats(obj, mode='public',
         msg += '  %-6s : %r\n' % (name, value)
     return msg
 
-def object_attributes(obj, mode='public', keys_to_skip=None):
-    # type: (object, str, Optional[List[str]]) -> List[str]
+def object_attributes(obj, mode='public', keys_to_skip=None, filter_properties=False):
+    # type: (object, str, Optional[List[str]], bool) -> List[str]
     """
     List the names of attributes of a class as strings. Returns public
     attributes as default.

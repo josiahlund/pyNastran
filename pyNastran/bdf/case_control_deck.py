@@ -632,7 +632,7 @@ class CaseControlDeck(object):
             if ' ' in param_type:
                 # SUBCASE 1 STATIC
                 param_type = param_type.split()[0]
-                self.log.debug(f"key={key!r} param_type={param_type!r} line_upper={line_upper!r}")
+                #self.log.debug(f"key={key!r} param_type={param_type!r} line_upper={line_upper!r}")
 
             key = 'SUBCASE'
             value = integer(param_type, line_upper)
