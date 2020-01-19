@@ -115,8 +115,9 @@ def run_lots_of_files(files, debug=False, encoding='latin1', dev=True):
         except:
             failed_files.append(filename)
         if not is_passed:
-            sys.stderr.write('**file=%s vector_failed=%s\n' % (op2file, is_vector_failed))
-            failed_cases.append(op2file)
+            sys.stderr.write('**file=%s vector_failed=%s\n' % (
+                op2file, is_vector_failed))
+            #failed_cases.append(op2file)
             nfailed += 1
         else:
             npassed += 1

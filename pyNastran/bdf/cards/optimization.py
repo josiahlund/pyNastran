@@ -433,7 +433,10 @@ class DVXREL1(BaseCard):
             if not isinstance(desvar_id, int):
                 msg += '  desvar_id[%i]=%s is not an integer; type=%s\n' % (
                     i, desvar_id, type(desvar_id))
-            if not isinstance(coeff, float):
+
+            if coeff in ['PVAL']:
+                pass
+            elif not isinstance(coeff, float):
                 msg += '  coeff[%i]=%s is not a float; type=%s\n' % (i, coeff, type(coeff))
         if msg:
             raise RuntimeError('Invalid %s\n' % self.type + msg + str(self))
@@ -644,6 +647,7 @@ class DCONSTR(OptConstraint):
             self.uid_ref = model.TableD(self.uid, msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.dresp_id = self.DRespID()
         self.lid = self.Lid()
         self.uid = self.Uid()
@@ -824,6 +828,12 @@ class DESVAR(OptConstraint):
         if self.ddval:
             msg = ', which is required by DESVAR desvar_id=%r' % self.desvar_id
             self.ddval_ref = model.DDVal(self.ddval, msg=msg)
+
+    def safe_cross_reference(self, model):
+        try:
+            self.cross_reference(model)
+        except KeyError:
+            self.log.warning('cant cross reference DESVAR {self.desvar_id} with DDVAL {self.ddval}')
 
     def uncross_reference(self):
         """Removes cross-reference links"""
@@ -1497,6 +1507,11 @@ def _validate_dresp1_force(property_type, response_type, atta, attb, atti):
     assert len(atti) > 0, msg
 
 
+DRESP_PROPERTIES = [
+    'PSHELL', 'PBAR', 'PROD', 'PCOMP', 'PCOMPG',
+    'PSOLID', 'PELAS', 'PBARL', 'PBEAM',
+    'PBEAML', 'PSHEAR', 'PTUBE', 'PBMSECT']
+
 class DRESP1(OptConstraint):
     """
     +--------+-------+---------+---------+--------+--------+-------+------+-------+
@@ -1783,9 +1798,7 @@ class DRESP1(OptConstraint):
         ]
         if self.property_type in ['ELEM']:
             self.atti_ref = model.Elements(self.atti, msg=msg)
-        elif self.property_type in ['PSHELL', 'PBAR', 'PROD', 'PCOMP', 'PCOMPG',
-                                    'PSOLID', 'PELAS', 'PBARL', 'PBEAM',
-                                    'PBEAML', 'PSHEAR', 'PTUBE',]:
+        elif self.property_type in DRESP_PROPERTIES:
             self.atti_ref = model.Properties(self.atti, msg=msg)
         elif self.response_type in ['FRSTRE']:
             self.atti_ref = model.Properties(self.atti, msg=msg)
@@ -1861,9 +1874,7 @@ class DRESP1(OptConstraint):
         ref_id = self.dresp_id
         if self.property_type == 'ELEM':
             self.atti_ref = model.safe_elements(self.atti, ref_id, xref_errors, msg=msg)
-        elif self.property_type in ['PSHELL', 'PBAR', 'PROD', 'PCOMP', 'PCOMPG',
-                                    'PSOLID', 'PELAS', 'PBARL', 'PBEAM',
-                                    'PBEAML', 'PSHEAR', 'PTUBE',]:
+        elif self.property_type in DRESP_PROPERTIES:
             self.atti_ref = model.Properties(self.atti, msg=msg)
         elif self.response_type in ['FRSTRE']:
             self.atti_ref = model.Properties(self.atti, msg=msg)
@@ -1915,6 +1926,7 @@ class DRESP1(OptConstraint):
             raise NotImplementedError(msg)
 
     def uncross_reference(self):
+        """Removes cross-reference links"""
         self.atti = self.atti_values()
         self.atta = self.Atta()
         self.atta_ref = None
@@ -1950,10 +1962,7 @@ class DRESP1(OptConstraint):
         #print('self.atti_ref =', self.atti_ref)
         if self.property_type == 'ELEM':
             data = self._elements()
-        elif self.property_type in ['PSHELL', 'PBAR', 'PROD', 'PCOMP', 'PCOMPG',
-                                    'PSOLID', 'PELAS', 'PBARL', 'PBEAM',
-                                    'PBEAML', 'PSHEAR', 'PTUBE',
-                                    'FRSTRE']:
+        elif self.property_type in DRESP_PROPERTIES:
             data = self._properties()
         elif self.response_type == 'FRSTRE':
             data = self._properties()
@@ -2450,8 +2459,16 @@ class DRESP2(OptConstraint):
 
     def repr_fields(self):
         method = set_blank_if_default(self.method, 'MIN')
-        c1 = set_blank_if_default(self.c1, 100.)
-        c2 = set_blank_if_default(self.c2, 0.005)
+        c1 = None
+        c2 = None
+        c3 = None
+        if self.method == 'BETA':
+            if 'BETA' in self.func or 'MATCH' in  self.func:
+                # MSC 2005   Defaults: C1=100., C2=.005)
+                # MSC 2016.1 Defaults: C1=1., C2=.005, C3=10.)
+                c1 = set_blank_if_default(self.c1, 100.)
+                c2 = set_blank_if_default(self.c2, 0.005)
+                c3 = set_blank_if_default(self.c3, 10.)
 
         list_fields = ['DRESP2', self.dresp_id, self.label, self.DEquation(),
                        self.region, method, c1, c2, self.c3]
@@ -3647,14 +3664,16 @@ class DVMREL1(DVXREL1):
         return DVMREL1(oid, mat_type, mid, mp_name, dvids, coeffs,
                        mp_min=mp_min, mp_max=mp_max, c0=c0, comment=comment)
 
-    def object_attributes(self, mode='public', keys_to_skip=None):
+    def object_attributes(self, mode='public', keys_to_skip=None,
+                          filter_properties=False):
         """.. seealso:: `pyNastran.utils.object_attributes(...)`"""
         if keys_to_skip is None:
             keys_to_skip = []
 
         my_keys_to_skip = ['Type']
         return super(DVMREL1, self).object_attributes(
-            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip)
+            mode=mode, keys_to_skip=keys_to_skip+my_keys_to_skip,
+            filter_properties=filter_properties)
 
     def update_model(self, model, desvar_values):
         """doesn't require cross-referencing"""
@@ -4184,13 +4203,17 @@ class DVPREL1(DVXREL1):
         prop = self._get_property(model, self.pid)
         try:
             self._update_by_dvprel(prop, value)
-        except AttributeError:
+        except (AttributeError, NotImplementedError):
+            print(self)
+            print(prop)
             raise
             #raise NotImplementedError('prop_type=%r is not supported in '
                                       #'update_model' % self.prop_type)
 
     def _update_by_dvprel(self, prop, value):
-        if self.prop_type != prop.type:
+        if self.prop_type == 'PCOMP' and prop.type == 'PCOMPG':
+            pass
+        elif self.prop_type != prop.type:
             raise RuntimeError('prop_type=%s is not the same as the property type (%s)\n%s%s' % (
                 self.prop_type, prop.type, str(self), str(prop)))
 

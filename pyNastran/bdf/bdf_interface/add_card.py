@@ -3067,12 +3067,16 @@ class AddCards(AddMethods):
     def add_genel_stiffness(self, eid, ul, ud, k, s=None):
         """creates a GENEL card using the stiffness approach"""
         assert k is not None
-        return GENEL(eid, ul, ud, k, None, s)
+        genel = GENEL(eid, ul, ud, k, None, s)
+        self._add_element_object(genel)
+        return genel
 
     def add_genel_flexibility(self, eid, ul, ud, z, s=None):
         """creates a GENEL card using the flexiblity approach"""
         assert z is not None
-        return GENEL(eid, ul, ud, None, z, s)
+        genel = GENEL(eid, ul, ud, None, z, s)
+        self._add_element_object(genel)
+        return genel
 
     def add_axic(self, nharmonics, comment=''):
         """Creates a AXIC card"""
@@ -7117,29 +7121,29 @@ class AddCards(AddMethods):
 
     def add_cmfree(self, eid, s, s2, y, n):
         fields = ['CMFREE', eid, s, s2, y, n]
-        self.reject_card_lines('CMFREE', print_card_8(fields).split('\n'))
+        self.reject_card_lines('CMFREE', print_card_8(fields).split('\n'), show_log=False)
 
     def add_cfluid2(self, eid, ringfls, rho, b, harmonic):
         fields = ['CFLUID2', eid] + ringfls + [rho, b, harmonic]
-        self.reject_card_lines('CFLUID2', print_card_8(fields).split('\n'))
+        self.reject_card_lines('CFLUID2', print_card_8(fields).split('\n'), show_log=False)
 
     def add_cfluid3(self, eid, ringfls, rho, b, harmonic):
         fields = ['CFLUID3', eid] + ringfls + [rho, b, harmonic]
-        self.reject_card_lines('CFLUID3', print_card_8(fields).split('\n'))
+        self.reject_card_lines('CFLUID3', print_card_8(fields).split('\n'), show_log=False)
 
     def add_cfluid4(self, eid, ringfls, rho, b, harmonic):
         fields = ['CFLUID4', eid] + ringfls + [rho, b, harmonic]
-        self.reject_card_lines('CFLUID4', print_card_8(fields).split('\n'))
+        self.reject_card_lines('CFLUID4', print_card_8(fields).split('\n'), show_log=False)
 
     def add_rgyro(self, sid, asynci, refrot, unit, speed_low, speed_high, speed, comment=''):
         """Creates an RGYRO card"""
         fields = ['RGYRO', sid, asynci, refrot, unit, speed_low, speed_high, speed]
-        self.reject_card_lines('RGYRO', print_card_8(fields).split('\n'))
+        self.reject_card_lines('RGYRO', print_card_8(fields).split('\n'), show_log=False)
 
     def add_rspint(self, rid, grida, gridb, gr, unit, table_id, comment=''):
         """Creates an RSPINT card"""
         fields = ['RSPINT', rid, grida, gridb, gr, unit, table_id]
-        self.reject_card_lines('RSPINT', print_card_8(fields).split('\n'))
+        self.reject_card_lines('RSPINT', print_card_8(fields).split('\n'), show_log=False)
 
     def add_temp(self, sid, temperatures, comment=''):
         """
@@ -7289,11 +7293,11 @@ class AddCards(AddMethods):
         return load
 
     def add_chbdyg(self, eid, surface_type, nodes,
-                   iview_front=0, ivew_back=0,
+                   iview_front=0, iview_back=0,
                    rad_mid_front=0, rad_mid_back=0, comment=''):
         """Creates a CHBDYG card"""
         elem = CHBDYG(eid, surface_type, nodes,
-                      iview_front=iview_front, ivew_back=ivew_back,
+                      iview_front=iview_front, iview_back=iview_back,
                       rad_mid_front=rad_mid_front, rad_mid_back=rad_mid_back,
                       comment=comment)
         self._add_thermal_element_object(elem)
@@ -7301,7 +7305,7 @@ class AddCards(AddMethods):
 
     def add_chbdyp(self, eid, pid, surface_type, g1, g2,
                    g0=0, gmid=None, ce=0,
-                   iview_front=0, ivew_back=0,
+                   iview_front=0, iview_back=0,
                    rad_mid_front=0, rad_mid_back=0,
                    e1=None, e2=None, e3=None,
                    comment=''):
@@ -7319,7 +7323,7 @@ class AddCards(AddMethods):
             Must be {POINT, LINE, ELCYL, FTUBE, TUBE}
         iview_front : int; default=0
             A VIEW entry identification number for the front face.
-        ivew_back : int; default=0
+        iview_back : int; default=0
             A VIEW entry identification number for the back face.
         g1 / g2 : int
             Grid point identification numbers of grids bounding the surface
@@ -7343,7 +7347,7 @@ class AddCards(AddMethods):
         """
         elem = CHBDYP(eid, pid, surface_type, g1, g2,
                       g0=g0, gmid=gmid, ce=ce,
-                      iview_front=iview_front, ivew_back=ivew_back,
+                      iview_front=iview_front, iview_back=iview_back,
                       rad_mid_front=rad_mid_front, rad_mid_back=rad_mid_back,
                       e1=e1, e2=e2, e3=e3,
                       comment=comment)
@@ -7351,7 +7355,7 @@ class AddCards(AddMethods):
         return elem
 
     def add_chbdye(self, eid, eid2, side,
-                   iview_front=0, ivew_back=0,
+                   iview_front=0, iview_back=0,
                    rad_mid_front=0, rad_mid_back=0,
                    comment=''):
         """
@@ -7367,7 +7371,7 @@ class AddCards(AddMethods):
             a consistent element side identification number (1-6)
         iview_front: int; default=0
             a VIEW entry identification number for the front face
-        ivew_back: int; default=0
+        iview_back: int; default=0
             a VIEW entry identification number for the back face
         rad_mid_front: int; default=0
             RADM identification number for front face of surface element
@@ -7378,7 +7382,7 @@ class AddCards(AddMethods):
 
         """
         elem = CHBDYE(eid, eid2, side,
-                      iview_front=iview_front, ivew_back=ivew_back,
+                      iview_front=iview_front, iview_back=iview_back,
                       rad_mid_front=rad_mid_front, rad_mid_back=rad_mid_back,
                       comment=comment)
         self._add_thermal_element_object(elem)
@@ -7488,7 +7492,7 @@ class AddCards(AddMethods):
         self._add_thermal_bc_object(boundary_condition, boundary_condition.nodamb)
         return boundary_condition
 
-    def add_pconv(self, pconid, mid, form=0, expf=0.0, ftype=0, tid=None,
+    def add_pconv(self, pconid, mid=None, form=0, expf=0.0, ftype=0, tid=None,
                   chlen=None, gidin=None, ce=0,
                   e1=None, e2=None, e3=None,
                   comment=''):
@@ -7499,7 +7503,7 @@ class AddCards(AddMethods):
         ----------
         pconid : int
             Convection property ID
-        mid : int
+        mid : int; default=None
             Material ID
         form : int; default=0
             Type of formula used for free convection
@@ -7526,7 +7530,7 @@ class AddCards(AddMethods):
             a comment for the card
 
         """
-        prop = PCONV(pconid, mid,
+        prop = PCONV(pconid, mid=mid,
                      form=form, expf=expf, ftype=ftype,
                      tid=tid, chlen=chlen, gidin=gidin,
                      ce=ce, e1=e1, e2=e2, e3=e3, comment=comment)

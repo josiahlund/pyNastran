@@ -99,10 +99,10 @@ class CHBDYE(ThermalElement):
         eid = 1
         eid2 = 2
         side = 1
-        return CHBDYE(eid, eid2, side, iview_front=0, ivew_back=0,
+        return CHBDYE(eid, eid2, side, iview_front=0, iview_back=0,
                       rad_mid_front=0, rad_mid_back=0, comment='')
 
-    def __init__(self, eid, eid2, side, iview_front=0, ivew_back=0,
+    def __init__(self, eid, eid2, side, iview_front=0, iview_back=0,
                  rad_mid_front=0, rad_mid_back=0, comment=''):
         """
         Creates a CHBDYE card
@@ -117,7 +117,7 @@ class CHBDYE(ThermalElement):
             a consistent element side identification number (1-6)
         iview_front: int; default=0
             a VIEW entry identification number for the front face
-        ivew_back: int; default=0
+        iview_back: int; default=0
             a VIEW entry identification number for the back face
         rad_mid_front: int; default=0
             RADM identification number for front face of surface element
@@ -146,7 +146,7 @@ class CHBDYE(ThermalElement):
         self.iview_front = iview_front
 
         #: A VIEW entry identification number for the back face
-        self.ivew_back = ivew_back
+        self.iview_back = iview_back
 
         #: RADM identification number for front face of surface element
         #: (Integer > 0)
@@ -174,11 +174,11 @@ class CHBDYE(ThermalElement):
         side = integer(card, 3, 'side')
 
         iview_front = integer_or_blank(card, 4, 'iview_front', 0)
-        ivew_back = integer_or_blank(card, 5, 'ivew_back', 0)
+        iview_back = integer_or_blank(card, 5, 'iview_back', 0)
         rad_mid_front = integer_or_blank(card, 6, 'rad_mid_front', 0)
         rad_mid_back = integer_or_blank(card, 7, 'rad_mid_back', 0)
         assert len(card) <= 8, 'len(CHBDYE card) = %i\ncard=%s' % (len(card), card)
-        return CHBDYE(eid, eid2, side, iview_front, ivew_back,
+        return CHBDYE(eid, eid2, side, iview_front, iview_back,
                       rad_mid_front, rad_mid_back, comment=comment)
 
     @classmethod
@@ -251,7 +251,7 @@ class CHBDYE(ThermalElement):
 
     def raw_fields(self):
         list_fields = ['CHBDYE', self.eid, self.eid2, self.side,
-                       self.iview_front, self.ivew_back, self.rad_mid_front,
+                       self.iview_front, self.iview_back, self.rad_mid_front,
                        self.rad_mid_back]
         return list_fields
 
@@ -261,7 +261,7 @@ class CHBDYE(ThermalElement):
         """
         #eids = collapse_thru_by(self.eids)
         list_fields = ['CHBDYE', self.eid, self.eid2, self.side,
-                       self.iview_front, self.ivew_back, self.rad_mid_front,
+                       self.iview_front, self.iview_back, self.rad_mid_front,
                        self.rad_mid_back]
         return list_fields
 
@@ -304,10 +304,10 @@ class CHBDYG(ThermalElement):
         eid = 1
         surface_type = 'AREA3'
         nodes = [1, 2]
-        return CHBDYG(eid, surface_type, nodes, iview_front=0, ivew_back=0,
+        return CHBDYG(eid, surface_type, nodes, iview_front=0, iview_back=0,
                       rad_mid_front=0, rad_mid_back=0, comment='')
 
-    def __init__(self, eid, surface_type, nodes, iview_front=0, ivew_back=0,
+    def __init__(self, eid, surface_type, nodes, iview_front=0, iview_back=0,
                  rad_mid_front=0, rad_mid_back=0, comment=''):
         ThermalElement.__init__(self)
         if comment:
@@ -322,7 +322,7 @@ class CHBDYG(ThermalElement):
         self.iview_front = iview_front
 
         #: A VIEW entry identification number for the back face
-        self.ivew_back = ivew_back
+        self.iview_back = iview_back
 
         #: RADM identification number for front face of surface element
         #: (Integer > 0)
@@ -387,8 +387,8 @@ class CHBDYG(ThermalElement):
         # no field 2
 
         surface_type = string(card, 3, 'Type')
-        i_view_front = integer_or_blank(card, 4, 'iview_front', 0)
-        i_view_back = integer_or_blank(card, 8, 'ivew_back', 0)
+        iview_front = integer_or_blank(card, 4, 'iview_front', 0)
+        iview_back = integer_or_blank(card, 8, 'iview_back', 0)
         rad_mid_front = integer_or_blank(card, 6, 'rad_mid_front', 0)
         rad_mid_back = integer_or_blank(card, 7, 'rad_mid_back', 0)
         # no field 8
@@ -400,7 +400,7 @@ class CHBDYG(ThermalElement):
             nodes.append(grid)  # used to have a None option
         assert len(nodes) > 0, 'card=%s' % card
         return CHBDYG(eid, surface_type, nodes,
-                      iview_front=i_view_front, ivew_back=i_view_back,
+                      iview_front=iview_front, iview_back=iview_back,
                       rad_mid_front=rad_mid_front, rad_mid_back=rad_mid_back,
                       comment=comment)
 
@@ -424,24 +424,22 @@ class CHBDYG(ThermalElement):
         rad_mid_front = data[4]
         rad_mid_back = data[5]
         nodes = [datai for datai in data[6:14] if datai > 0]
-        if surface_type == 3:
-            surface_type = 'REV'
-        elif surface_type == 4:
-            surface_type = 'AREA3'
-        elif surface_type == 5:
-            surface_type = 'AREA4'
-        #elif surface_type == 7: # ???
-            #surface_type = 'AREA6'
-        elif surface_type == 8:
-            surface_type = 'AREA6'
-        elif surface_type == 9:
-            surface_type = 'AREA8'
-        else:
+        surface_type_int_to_str = {
+            3 : 'REV',
+            4 : 'AREA3',
+            5 : 'AREA4',
+            #7: 'AREA6',# ???
+            8 : 'AREA6',
+            9 : 'AREA8',
+        }
+        try:
+            surface_type = surface_type_int_to_str[surface_type]
+        except KeyError:
             raise NotImplementedError('eid=%s surface_type=%r' % (eid, surface_type))
 
         assert surface_type in ['REV', 'AREA3', 'AREA4', 'AREA6', 'AREA8'], 'surface_type=%r data=%s' % (surface_type, data)
         return CHBDYG(eid, surface_type, nodes,
-                      iview_front=i_view_front, ivew_back=i_view_back,
+                      iview_front=i_view_front, iview_back=i_view_back,
                       rad_mid_front=rad_mid_front, rad_mid_back=rad_mid_back,
                       comment=comment)
 
@@ -488,13 +486,13 @@ class CHBDYG(ThermalElement):
     def raw_fields(self):
         list_fields = (
             ['CHBDYG', self.eid, None, self.surface_type, self.iview_front,
-             self.ivew_back, self.rad_mid_front, self.rad_mid_back, None,] +
+             self.iview_back, self.rad_mid_front, self.rad_mid_back, None,] +
             self.node_ids)
         return list_fields
 
     def repr_fields(self):
         i_view_front = set_blank_if_default(self.iview_front, 0)
-        i_view_back = set_blank_if_default(self.ivew_back, 0)
+        i_view_back = set_blank_if_default(self.iview_back, 0)
         rad_mid_front = set_blank_if_default(self.rad_mid_front, 0)
         rad_mid_back = set_blank_if_default(self.rad_mid_back, 0)
 
@@ -540,11 +538,11 @@ class CHBDYP(ThermalElement):
     def _init_from_empty(cls):
         eid = 1
         pid = 2
-        surface_type = 'AREA3'
+        surface_type = 'POINT'
         g1 = 1
-        g2 = 2
+        g2 = None
         return CHBDYP(eid, pid, surface_type, g1, g2, g0=0, gmid=None, ce=0,
-                      iview_front=0, ivew_back=0,
+                      iview_front=0, iview_back=0,
                       rad_mid_front=0, rad_mid_back=0,
                       e1=None, e2=None, e3=None, comment='')
 
@@ -552,11 +550,11 @@ class CHBDYP(ThermalElement):
         """hdf5 helper function"""
         if isinstance(self.nodes, np.ndarray):
             self.nodes = self.nodes.tolist()
-        self.nodes = [None if np.isnan(nid) else nid
+        self.nodes = [None if (nid is None or np.isnan(nid)) else nid
                       for nid in self.nodes]
 
     def __init__(self, eid, pid, surface_type, g1, g2, g0=0, gmid=None, ce=0,
-                 iview_front=0, ivew_back=0,
+                 iview_front=0, iview_back=0,
                  rad_mid_front=0, rad_mid_back=0,
                  e1=None, e2=None, e3=None, comment=''):
         """
@@ -573,7 +571,7 @@ class CHBDYP(ThermalElement):
             Must be {POINT, LINE, ELCYL, FTUBE, TUBE}
         iview_front : int; default=0
             A VIEW entry identification number for the front face.
-        ivew_back : int; default=0
+        iview_back : int; default=0
             A VIEW entry identification number for the back face.
         g1 / g2 : int
             Grid point identification numbers of grids bounding the surface
@@ -609,7 +607,7 @@ class CHBDYP(ThermalElement):
         self.iview_front = iview_front
 
         #: A VIEW entry identification number for the back face.
-        self.ivew_back = ivew_back
+        self.iview_back = iview_back
 
         #: Grid point identification numbers of grids bounding the surface.
         #: (Integer > 0)
@@ -648,6 +646,7 @@ class CHBDYP(ThermalElement):
         self.nodes_ref = None
         self.pid_ref = None
         self.ce_ref = None
+        assert surface_type in ['POINT', 'LINE', 'ELCYL', 'FTUBE', 'TUBE'], surface_type
 
     @property
     def Type(self):
@@ -675,7 +674,7 @@ class CHBDYP(ThermalElement):
         surface_type = string(card, 3, 'Type')
 
         iview_front = integer_or_blank(card, 4, 'iview_front', 0)
-        ivew_back = integer_or_blank(card, 5, 'ivew_back', 0)
+        iview_back = integer_or_blank(card, 5, 'iview_back', 0)
         g1 = integer(card, 6, 'g1')
 
         if surface_type != 'POINT':
@@ -693,7 +692,7 @@ class CHBDYP(ThermalElement):
         e3 = double_or_blank(card, 15, 'e3')
         assert len(card) <= 16, 'len(CHBDYP card) = %i\ncard=%s' % (len(card), card)
         return CHBDYP(eid, pid, surface_type, g1, g2, g0=g0, gmid=gmid, ce=ce,
-                      iview_front=iview_front, ivew_back=ivew_back,
+                      iview_front=iview_front, iview_back=iview_back,
                       rad_mid_front=rad_mid_front, rad_mid_back=rad_mid_back,
                       e1=e1, e2=e2, e3=e3, comment=comment)
 
@@ -710,26 +709,25 @@ class CHBDYP(ThermalElement):
             a comment for the card
 
         """
-        [eid, pid, surface_type, iviewf, iviewb, g1, g2, g0, radmidf, radmidb,
+        [eid, pid, surface_type, iview_front, iview_back, g1, g2, g0, radmidf, radmidb,
          dislin, ce, e1, e2, e3] = data
         #eid = data[0]
         #surface_type = data[1]
         #iview_front = data[2]
-        #ivew_back = data[3]
+        #iview_back = data[3]
         #rad_mid_front = data[4]
         #rad_mid_back = data[5]
         #nodes = [datai for datai in data[6:14] if datai > 0]
-        if surface_type == 1:
-            surface_type = 'POINT'
-        elif surface_type == 2:
-            surface_type = 'LINE'
-        elif surface_type == 6:
-            surface_type = 'ELCYL'
-        elif surface_type == 7:
-            surface_type = 'FTUBE'
-        elif surface_type == 10:
-            surface_type = 'TUBE'
-        else:
+        surface_type_int_to_str = {
+            1 : 'POINT',
+            2 : 'LINE',
+            6 : 'ELCYL',
+            7 : 'FTUBE',
+            10 : 'TUBE',
+        }
+        try:
+            surface_type = surface_type_int_to_str[surface_type]
+        except KeyError:  # pragma: no cover
             raise NotImplementedError('CHBDYP surface_type=%r data=%s' % (surface_type, data))
 
         #assert dislin == 0, 'CHBDYP dislin=%r data=%s' % (dislin, data)
@@ -738,7 +736,7 @@ class CHBDYP(ThermalElement):
         else:
             gmid = dislin
         return CHBDYP(eid, pid, surface_type, g1, g2, g0=g0, gmid=gmid, ce=ce,
-                      iview_front=iviewf, ivew_back=iviewb,
+                      iview_front=iview_front, iview_back=iview_back,
                       rad_mid_front=radmidf, rad_mid_back=radmidb,
                       e1=e1, e2=e2, e3=e3, comment=comment)
 
@@ -817,14 +815,14 @@ class CHBDYP(ThermalElement):
     def raw_fields(self):
         (g1, g2, g0, gmid) = self.node_ids
         list_fields = ['CHBDYP', self.eid, self.Pid(), self.surface_type,
-                       self.iview_front, self.ivew_back, g1, g2, g0,
+                       self.iview_front, self.iview_back, g1, g2, g0,
                        self.rad_mid_front, self.rad_mid_back, gmid, self.Ce(),
                        self.e1, self.e2, self.e3]
         return list_fields
 
     def repr_fields(self):
         iview_front = set_blank_if_default(self.iview_front, 0)
-        ivew_back = set_blank_if_default(self.ivew_back, 0)
+        iview_back = set_blank_if_default(self.iview_back, 0)
         rad_mid_front = set_blank_if_default(self.rad_mid_front, 0)
         rad_mid_back = set_blank_if_default(self.rad_mid_back, 0)
 
@@ -833,7 +831,7 @@ class CHBDYP(ThermalElement):
         ce = set_blank_if_default(self.Ce(), 0)
 
         list_fields = ['CHBDYP', self.eid, self.Pid(), self.surface_type, iview_front,
-                       ivew_back, g1, g2, g0, rad_mid_front, rad_mid_back,
+                       iview_back, g1, g2, g0, rad_mid_front, rad_mid_back,
                        gmid, ce, self.e1, self.e2, self.e3]
         return list_fields
 
@@ -899,11 +897,11 @@ class PCONV(ThermalProperty):
     @classmethod
     def _init_from_empty(cls):
         pconid = 1
-        mid = 1
-        return PCONV(pconid, mid, form=0, expf=0.0, ftype=0, tid=None,
+        #mid = 1
+        return PCONV(pconid, mid=None, form=0, expf=0.0, ftype=0, tid=None,
                      chlen=None, gidin=None, ce=0, e1=None, e2=None, e3=None, comment='')
 
-    def __init__(self, pconid, mid, form=0, expf=0.0, ftype=0, tid=None,
+    def __init__(self, pconid, mid=None, form=0, expf=0.0, ftype=0, tid=None,
                  chlen=None, gidin=None, ce=0,
                  e1=None, e2=None, e3=None, comment=''):
         """
@@ -981,9 +979,10 @@ class PCONV(ThermalProperty):
         self.e2 = e2
         self.e3 = e3
         assert self.pconid > 0
-        assert self.mid > 0
+        assert mid is None or self.mid > 0
         assert self.form in [0, 1, 10, 11, 20, 21]
         self.ce_ref = None
+        self.gidin_ref = None
 
     @classmethod
     def add_card(cls, card, comment=''):
@@ -999,19 +998,19 @@ class PCONV(ThermalProperty):
 
         """
         pconid = integer(card, 1, 'pconid')
-        mid = integer(card, 2, 'mid')
+        mid = integer_or_blank(card, 2, 'mid')
         form = integer_or_blank(card, 3, 'form', 0)
         expf = double_or_blank(card, 4, 'expf', 0.0)
         ftype = integer_or_blank(card, 5, 'ftype', 0)
         tid = integer_or_blank(card, 6, 'tid')
         chlen = double_or_blank(card, 9, 'chlen')
-        gidin = double_or_blank(card, 10, 'gidin')
+        gidin = integer_or_blank(card, 10, 'gidin')
         ce = integer_or_blank(card, 11, 'ce', 0)
         e1 = double_or_blank(card, 12, 'e1')
         e2 = double_or_blank(card, 13, 'e2')
         e3 = double_or_blank(card, 14, 'e3')
         assert len(card) <= 15, 'len(PCONV card) = %i\ncard=%s' % (len(card), card)
-        return PCONV(pconid, mid,
+        return PCONV(pconid, mid=mid,
                      form=form, expf=expf, ftype=ftype,
                      tid=tid, chlen=chlen, gidin=gidin,
                      ce=ce, e1=e1, e2=e2, e3=e3, comment=comment)
@@ -1039,18 +1038,27 @@ class PCONV(ThermalProperty):
             return self.ce_ref.cid
         return self.ce
 
+    def Gidin(self):
+        """gets the grid input node, gidin"""
+        if self.gidin_ref is not None:
+            return self.gidin_ref.nid
+        return self.gidin
     def cross_reference(self, model):
         msg = 'which is required by PCONV pconid=%s' % self.pconid
         self.ce_ref = model.Coord(self.ce, msg)
+        if self.gidin is not None:
+            self.gidin_ref = model.Node(self.gidin, msg)
 
     def uncross_reference(self):
         """Removes cross-reference links"""
         self.ce = self.Ce()
         self.ce_ref = None
+        self.gidin = self.Gidin()
+        self.gidin_ref = None
 
     def raw_fields(self):
         list_fields = ['PCONV', self.pconid, self.mid, self.form, self.expf,
-                       self.ftype, self.tid, None, None, self.chlen, self.gidin,
+                       self.ftype, self.tid, None, None, self.chlen, self.Gidin(),
                        self.Ce(), self.e1, self.e2, self.e3]
         return list_fields
 
@@ -1060,7 +1068,7 @@ class PCONV(ThermalProperty):
         ftype = set_blank_if_default(self.ftype, 0)
         ce = set_blank_if_default(self.Ce(), 0)
         list_fields = ['PCONV', self.pconid, self.mid, form, expf, ftype, self.tid,
-                       None, None, self.chlen, self.gidin, ce, self.e1, self.e2,
+                       None, None, self.chlen, self.Gidin(), ce, self.e1, self.e2,
                        self.e3]
         return list_fields
 

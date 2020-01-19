@@ -34,6 +34,19 @@ ORANGE = (229/255., 92/255., 0.)
 HIGHLIGHT_OPACITY = 0.9
 HIGHLIGHT_POINT_SIZE = 10.
 HIGHLIGHT_LINE_THICKNESS = 5.
+ANNOTATION_SIZE = 18
+FONT_SIZE = 8
+TEXT_SIZE = 14
+COORD_SCALE = 0.05  # in percent of max dimension
+COORD_TEXT_SCALE = 0.5 # percent of nominal
+
+NASTRAN_BOOL_KEYS = [
+    'nastran_create_coords',
+    'nastran_is_properties',
+    'nastran_is_element_quality',
+    'nastran_is_bar_axes',
+    'nastran_is_3d_bars', 'nastran_is_3d_bars_update',
+]
 
 class Settings(object):
     """storage class for various settings"""
@@ -54,7 +67,7 @@ class Settings(object):
         self.background_color2 = GREY
         self.annotation_color = BLACK
 
-        self.text_size = 14
+        self.text_size = TEXT_SIZE
         self.text_color = BLACK
         self.highlight_color = ORANGE
         self.highlight_opacity = HIGHLIGHT_OPACITY
@@ -68,13 +81,14 @@ class Settings(object):
         self.show_error = True
 
         # int
-        self.annotation_size = 18
-        self.font_size = 8
+        self.annotation_size = ANNOTATION_SIZE
+        self.font_size = FONT_SIZE
         self.magnify = 5
 
         # floats
-        self.coord_scale = 0.05  # in percent of max dimension
-        self.coord_text_scale = 0.5 # percent of nominal
+        self.coord_scale = COORD_SCALE
+        self.coord_text_scale = COORD_TEXT_SCALE
+        self.coord_linewidth = 2.0
 
         # string
         self.colormap = 'jet' # 'viridis'
@@ -97,10 +111,10 @@ class Settings(object):
         self.background_color = GREY
         self.background_color2 = GREY
 
-        self.annotation_size = 18
+        self.annotation_size = ANNOTATION_SIZE
         self.annotation_color = BLACK
 
-        self.text_size = 14
+        self.text_size = TEXT_SIZE
         self.text_color = BLACK
 
         self.highlight_color = ORANGE
@@ -115,12 +129,13 @@ class Settings(object):
         self.show_error = True
 
         # int
-        self.font_size = 8
+        self.font_size = FONT_SIZE
         self.magnify = 5
 
         # float
-        self.coord_scale = 0.05
-        self.coord_text_scale = 0.5
+        self.coord_scale = COORD_SCALE
+        self.coord_text_scale = COORD_TEXT_SCALE
+        self.coord_linewidth = 2.0
 
         # string
         self.colormap = 'jet' # 'viridis'
@@ -174,16 +189,16 @@ class Settings(object):
         self._set_setting(settings, setting_keys, ['background_color2'], GREY, auto_type=float)
 
         # scales the coordinate systems
-        self._set_setting(settings, setting_keys, ['coord_scale'], self.coord_scale, auto_type=float)
-        self._set_setting(settings, setting_keys, ['coord_text_scale'], self.coord_text_scale, auto_type=float)
+        self._set_setting(settings, setting_keys, ['coord_scale'], COORD_SCALE, auto_type=float)
+        self._set_setting(settings, setting_keys, ['coord_text_scale'], COORD_TEXT_SCALE, auto_type=float)
 
         # this is for the 3d annotation
         self._set_setting(settings, setting_keys, ['annotation_color', 'labelColor'],
                           BLACK, auto_type=float)
-        self._set_setting(settings, setting_keys, ['annotation_size'], 18, auto_type=int) # int
+        self._set_setting(settings, setting_keys, ['annotation_size'], ANNOTATION_SIZE, auto_type=int) # int
         if isinstance(self.annotation_size, float):
             # throw the float in the trash as it's from an old version of vtk
-            self.annotation_size = 18
+            self.annotation_size = ANNOTATION_SIZE
         elif isinstance(self.annotation_size, int):
             pass
         else:
@@ -194,7 +209,7 @@ class Settings(object):
         # this is the text in the lower left corner
         self._set_setting(settings, setting_keys, ['text_color', 'textColor'],
                           BLACK, auto_type=float)
-        self._set_setting(settings, setting_keys, ['text_size'], 14, auto_type=int)
+        self._set_setting(settings, setting_keys, ['text_size'], TEXT_SIZE, auto_type=int)
 
         # highlight
         self._set_setting(settings, setting_keys, ['highlight_color'],
@@ -228,18 +243,10 @@ class Settings(object):
         except (TypeError, AttributeError):
             pass
 
-        self._set_setting(settings, setting_keys, ['nastran_is_element_quality'],
-                          self.nastran_is_element_quality, True, auto_type=bool)
-        self._set_setting(settings, setting_keys, ['nastran_is_properties'],
-                          self.nastran_is_properties, True, auto_type=bool)
-        self._set_setting(settings, setting_keys, ['nastran_is_3d_bars'],
-                          self.nastran_is_3d_bars, True, auto_type=bool)
-        self._set_setting(settings, setting_keys, ['nastran_is_3d_bars_update'],
-                          self.nastran_is_3d_bars_update, True, auto_type=bool)
-        self._set_setting(settings, setting_keys, ['nastran_create_coords'],
-                          self.nastran_create_coords, True, auto_type=bool)
-        self._set_setting(settings, setting_keys, ['nastran_is_bar_axes'],
-                          self.nastran_is_bar_axes, True, auto_type=bool)
+        for key in NASTRAN_BOOL_KEYS:
+            default = getattr(self, key)
+            self._set_setting(settings, setting_keys, [key],
+                              default, save=True, auto_type=bool)
 
         #w = screen_shape.width()
         #h = screen_shape.height()
@@ -305,6 +312,7 @@ class Settings(object):
         settings.setValue('magnify', self.magnify)
 
         # float
+        settings.setValue('text_size', self.text_size)
         settings.setValue('coord_scale', self.coord_scale)
         settings.setValue('coord_text_scale', self.coord_text_scale)
 
@@ -312,12 +320,9 @@ class Settings(object):
         settings.setValue('colormap', self.colormap)
 
         # format-specific
-        settings.setValue('nastran_is_element_quality', self.nastran_is_element_quality)
-        settings.setValue('nastran_is_properties', self.nastran_is_properties)
-        settings.setValue('nastran_is_3d_bars', self.nastran_is_3d_bars)
-        settings.setValue('nastran_is_3d_bars_update', self.nastran_is_3d_bars_update)
-        settings.setValue('nastran_create_coords', self.nastran_create_coords)
-        settings.setValue('nastran_is_bar_axes', self.nastran_is_bar_axes)
+        for key in NASTRAN_BOOL_KEYS:
+            value = getattr(self, key)
+            settings.setValue(key, value)
 
 
         #screen_shape = QtGui.QDesktopWidget().screenGeometry()
@@ -411,15 +416,37 @@ class Settings(object):
         self.coord_text_scale = coord_text_scale
         self.update_coord_text_scale(coord_text_scale, render=render)
 
-    def update_coord_scale(self, coord_scale=None, render=True):
+    def update_coord_scale(self, coord_scale=None, coord_text_scale=None,
+                           linewidth=None, render=True):
         """internal method for updating the coordinate system size"""
         if coord_scale is None:
             coord_scale = self.coord_scale
+        #if coord_text_scale:
+            #self.update_coord_text_scale(coord_text_scale=coord_text_scale, render=False)
+
         dim_max = self.dim_max
         scale = coord_scale * dim_max
 
         for unused_coord_id, axes in self.parent.axes.items():
-            axes.SetTotalLength(scale, scale, scale)
+            axes.SetTotalLength(scale, scale, scale) # was coord_scale
+            #axes.SetScale(magnify, magnify, magnify)
+            #if linewidth:
+                #xaxis = axes.GetXAxisShaftProperty()
+                #yaxis = axes.GetXAxisShaftProperty()
+                #zaxis = axes.GetXAxisShaftProperty()
+                #lw = xaxis.GetLineWidth()  #  1.0
+                #xaxis.SetLineWidth(linewidth)
+                #yaxis.SetLineWidth(linewidth)
+                #zaxis.SetLineWidth(linewidth)
+            #print(f'coord_scale coord_id={unused_coord_id} scale={scale} lw={linewidth}')
+
+        if render:
+            self.parent.vtk_interactor.GetRenderWindow().Render()
+
+    def scale_coord(self, magnify, render=True):
+        """internal method for scaling the coordinate system size"""
+        for unused_coord_id, axes in self.parent.axes.items():
+            axes.SetScale(magnify)
         if render:
             self.parent.vtk_interactor.GetRenderWindow().Render()
 
@@ -428,20 +455,8 @@ class Settings(object):
         if coord_text_scale is None:
             coord_text_scale = self.coord_text_scale
 
-        for unused_coord_id, axes in self.parent.axes.items():
-            texts = [
-                axes.GetXAxisCaptionActor2D(),
-                axes.GetYAxisCaptionActor2D(),
-                axes.GetZAxisCaptionActor2D(),
-            ]
-            # this doesn't set the width
-            # this being very large (old=0.1) makes the width constraint inactive
-            width = 1.0
-            height = 0.25
-            for text in texts:
-                text.SetWidth(coord_text_scale * width)
-                text.SetHeight(coord_text_scale * height)
-
+        update_axes_text_size(self.parent.axes, coord_text_scale,
+                              width=1.0, height=0.25)
         if render:
             self.parent.vtk_interactor.GetRenderWindow().Render()
 
@@ -611,7 +626,7 @@ class Settings(object):
 
     def __repr__(self):
         msg = '<Settings>\n'
-        for key in object_attributes(self, mode='public', keys_to_skip=None):
+        for key in object_attributes(self, mode='public', keys_to_skip=['parent']):
             value = getattr(self, key)
             if isinstance(value, tuple):
                 value = str(value)
