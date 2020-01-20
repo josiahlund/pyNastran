@@ -209,7 +209,7 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
             install_requires.append('cpylog >= 1.0.2')
     except ImportError:
         # 1.0.2 used
-        if PY2:
+        if PY2 or PY36:
             install_requires.append('cpylog >= 1.0.2,<1.3')
         else:
             install_requires.append('cpylog >= 1.0.2')
