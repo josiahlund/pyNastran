@@ -108,7 +108,7 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         'APPVEYOR' in os.environ or
         'READTHEDOCS' in os.environ
     )
-    is_travis = 'TRAVIS' in os.environ
+    is_travis = 'TRAVIS' in os.environ or 'TRAVIS_PYTHON_VERSION' in os.environ
     is_rtd = 'READTHEDOCS' in os.environ
 
     #if is_dev or (is_gui and add_vtk_qt):
@@ -250,7 +250,8 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
             all_reqs['pandas'] = 'pandas > 0.20, <0.25'
             install_requires.append('pandas > 0.20, <0.25')
     except ImportError:
-        install_requires.append('pandas > 0.20, <0.25')
+        pass
+        #install_requires.append('pandas > 0.20, <0.25')
 
     if is_rtd:
         pass
@@ -258,7 +259,6 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         try:
             import PIL
             iver = int_version('pillow', PIL.__version__)
-            print('pillow...', iver)
             all_reqs['pillow'] = str_version(iver)
             if PY2 and not ([1, 4, 0] and iver < [7, 0]):
                 print("pillow.__version__ = %r '>= 1.4.0, < 7.0'" % PIL.__version__)
@@ -315,11 +315,11 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
             install_requires.append('imageio >= 2.2.0')
 
 
-    is_windows = 'nt' in os.name
-    if is_travis and not is_windows:
-        install_requires.append('python-coveralls')
-        #install_requires.append('codecov')
+    #is_windows = 'nt' in os.name
+    if is_travis:
         #install_requires.append('coverage')
+        #install_requires.append('python-coveralls')
+        install_requires.append('codecov')
 
     #print(all_reqs)
     print('install_requires = %s' %  str(install_requires))
