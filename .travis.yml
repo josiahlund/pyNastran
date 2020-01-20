@@ -31,6 +31,14 @@ matrix:
     #--------------------------------------------------------------------------------------------------
 
     # old versions of packages
+    # the most basic of pyNastran - no matplotlib, h5py or pandas
+    - name: "Python 3.8 (basic)"
+      python: '3.8'
+      env:
+      - NUMPY='numpy scipy'
+      - NOGUI='_no_gui'
+      - LIB='libblas-dev liblapack-dev'
+
     #--------------------------------------------------------------------------------------------------
 
   include:
@@ -76,20 +84,27 @@ matrix:
       env:
       #- NUMPY='numpy==1.15 scipy==0.19 matplotlib==2.2'  # doesn't work
       # - bumped scipy from 1.0 to 1.1 for compatibility with numpy
-      - NUMPY='numpy==1.14 scipy==1.1 matplotlib==2.2 h5py vtk pyqt5<5.14'
+      - NUMPY='numpy==1.14.5 scipy==1.1 matplotlib==2.2 h5py vtk pyqt5<5.14'
 
     #--------------------------------------------------------------------------------------------------
     # the most basic of pyNastran - no matplotlib, h5py or pandas
+    - name: "Python 3.8 (basic)"
+      python: '3.8'
+      env:
+      - NUMPY='numpy scipy'
+      - NOGUI='_no_gui'
+      - LIB='libblas-dev liblapack-dev'
+
+    - name: "Python 3.7 (basic)"
+      python: '3.7'
+      env:
+      - NUMPY='numpy scipy'
+      - NOGUI='_no_gui'
+
     - name: "Python 2.7 (basic)"
       python: '2.7'
       env:
       - NUMPY='numpy scipy six'
-      - NOGUI='_no_gui'
-
-    - name: "Python 3.7 (no gui)"
-      python: '3.7'
-      env:
-      - NUMPY='numpy scipy'
       - NOGUI='_no_gui'
 
 #-------------------------------------------------
