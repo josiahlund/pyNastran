@@ -39,7 +39,7 @@ matrix:
     - name: "Python 2.7 (PySide)"
       python: '2.7'
       env:
-      - NUMPY='numpy scipy matplotlib h5py vtk pyside pandas<0.25 imageio==2.3 PIL<7.0'
+      - NUMPY='numpy scipy matplotlib h5py vtk pyside pandas<0.25 imageio==2.3 pillow<7.0'
       - LIB='libblas-dev liblapack-dev'
       - LIBH5='libhdf5-dev'
 
@@ -63,7 +63,7 @@ matrix:
       # - bumped scipy from 0.18.1 to 0.19 for compatibility with numpy
       # - bumped matplotlib from 1.5 to 2.0 for compatiblity with numpy 1.13;
       #   matplotlib 1.5 wants numpy 1.11
-      - NUMPY='numpy==1.13 scipy==0.19 matplotlib==2.0 h5py vtk pyside PIL<7.0'
+      - NUMPY='numpy==1.13 scipy==0.19 matplotlib==2.0 h5py vtk pyside pillow<7.0'
 
     - name: "Python 3.6 old packages (PyQt5)"
       python: '3.6'
