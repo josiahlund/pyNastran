@@ -231,7 +231,6 @@ class SELOAD(BaseCard):
         self.lid_s0 = lid_s0
         self.seid = seid
         self.lid_se = lid_se
-        print(self)
 
     @classmethod
     def add_card(cls, card, comment=''):
@@ -243,6 +242,12 @@ class SELOAD(BaseCard):
         return SELOAD(lid_s0, seid, lid_se, comment=comment)
 
     def cross_reference(self, model):
+        pass
+
+    def uncross_reference(self):
+        pass
+
+    def safe_cross_reference(self, model, xref_errors):
         pass
 
     def raw_fields(self):

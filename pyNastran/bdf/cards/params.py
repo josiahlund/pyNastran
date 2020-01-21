@@ -1,3 +1,7 @@
+"""
+defines the following card:
+ - PARAM
+"""
 # pylint: disable=C0103,R0902,R0904,R0914
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
@@ -10,24 +14,24 @@ from pyNastran.bdf.bdf_interface.assign_type import (
 from pyNastran.bdf.field_writer_8 import print_card_8
 from pyNastran.bdf.field_writer_16 import print_card_16
 
-INT_WORDS_1 = [
-    'POST', 'OPPHIPA', 'OPPHIPB', 'GRDPNT', 'RPOSTS1', 'BAILOUT',
-    'COUPMASS', 'CURV', 'INREL', 'MAXRATI', 'OG',
-    'S1AM', 'S1M', 'DDRMM', 'MAXIT', 'PLTMSG', 'LGDISP', 'NLDISP',
-    'OUNIT2M', 'RESCOMP', 'PDRMSG', 'LMODES', 'USETPRT', 'NOCOMPS',]
 #float_words_1 = [
     #b'K6ROT', b'WTMASS', b'SNORM', b'PATVER', b'MAXRATIO', b'EPSHT',
     #b'SIGMA', b'TABS']
-STR_WORDS_1 = [
-    'POSTEXT', 'PRTMAXIM', 'AUTOSPC', 'OGEOM', 'PRGPST',
-    'RESVEC', 'RESVINER', 'ALTRED', 'OGPS', 'OIBULK', 'OMACHPR',
-    'UNITSYS', 'F56', 'OUGCORD', 'OGEM', 'EXTSEOUT',]
-INT_STR_WORDS_1 = INT_WORDS_1 + STR_WORDS_1
 
 SMALL_FIELD_PARAMS = [
     'ACOUT', 'ACOWEAK', 'ACSYM', 'ADJMETH', 'AESMAXIT', 'AESMETH', 'ADSTAT',
     'MAXLINES'] #+ INT_WORDS_1 + STR_WORDS_1
 
+STR_WORDS_1 = {
+    'POSTEXT', 'PRTMAXIM', 'AUTOSPC', 'OGEOM', 'PRGPST',
+    'RESVEC', 'RESVINER', 'ALTRED', 'OGPS', 'OIBULK', 'OMACHPR',
+    'UNITSYS', 'F56', 'OUGCORD', 'OGEM', 'EXTSEOUT',}
+INT_WORDS_1 = {
+    'POST', 'OPPHIPA', 'OPPHIPB', 'GRDPNT', 'RPOSTS1', 'BAILOUT',
+    'COUPMASS', 'CURV', 'INREL', 'MAXRATI', 'OG',
+    'S1AM', 'S1M', 'DDRMM', 'MAXIT', 'PLTMSG', 'LGDISP', 'NLDISP',
+    'OUNIT2M', 'RESCOMP', 'PDRMSG', 'LMODES', 'USETPRT', 'NOCOMPS',}
+INT_STR_WORDS_1 = INT_WORDS_1 | STR_WORDS_1
 
 class PARAM(BaseCard):
     type = 'PARAM'
@@ -62,6 +66,7 @@ class PARAM(BaseCard):
             varies depending on the type of PARAM
         comment : str; default=''
             a comment for the card
+
         """
         if comment:
             self.comment = comment
@@ -81,8 +86,8 @@ class PARAM(BaseCard):
             a BDFCard object
         comment : str; default=''
             a comment for the card
-        """
 
+        """
         key = string(card, 1, 'key')
 
         n = 1

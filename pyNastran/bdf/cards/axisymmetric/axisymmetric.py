@@ -1,6 +1,12 @@
 """
 All axisymmetric shell elements are defined in this file.  This includes:
  * AXIC
+ * AXIF
+ * CCONEAX
+ * PCONEAX
+ * POINTAX
+ * RINGFL
+ * RINGAX
  * PRESAX
 
 """

@@ -3360,18 +3360,6 @@ class MATHE(HyperelasticMaterial):
                      comment=comment)
 
     def raw_fields(self):
-        #list_fields = ['MATHP', self.mid, self.a10, self.a01, self.d1, self.rho,
-                       #self.av, self.tref, self.ge,
-                       #None, self.na, self.nd, None, None, None, None, None,
-                       #self.a20, self.a11, self.a02, self.d2, None, None, None,
-                       #None,
-                       #self.a30, self.a21, self.a12, self.a03, self.d3, None,
-                       #None, None,
-                       #self.a40, self.a31, self.a22, self.a13, self.a04, self.d4,
-                       #None, None,
-                       #self.a50, self.a41, self.a32, self.a23, self.a14, self.a05,
-                       #self.d5, None,
-                       #self.tab1, self.tab2, self.tab4, None, None, None, self.tabd]
         list_fields = self.repr_fields()
         return list_fields
 

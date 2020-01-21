@@ -3,6 +3,7 @@ from __future__ import print_function
 from six import integer_types
 from collections import OrderedDict
 
+import numpy as np
 from numpy import arange, mean, amax, amin, array
 from vtk import vtkHexahedron, vtkQuad, vtkTriangle, vtkTetra
 
@@ -58,7 +59,7 @@ class TecplotIO(object):
         loads = []
         assert loads is not None
         if 'Mach' in loads:
-            avg_mach = mean(loads['Mach'])
+            avg_mach = np.mean(loads['Mach'])
             note = ':  avg(Mach)=%g' % avg_mach
         else:
             note = ''
@@ -87,8 +88,8 @@ class TecplotIO(object):
         unused_nnodes = self.gui.nnodes
         grid = self.gui.grid
 
-        mmax = amax(nodes, axis=0)
-        mmin = amin(nodes, axis=0)
+        mmax = np.amax(nodes, axis=0)
+        mmin = np.amin(nodes, axis=0)
         dim_max = (mmax - mmin).max()
         self.gui.create_global_axes(dim_max)
 
@@ -109,7 +110,7 @@ class TecplotIO(object):
         nsolids = ntets + nhexas
         if nshells:
             is_surface = True
-            self._create_tecplot_shells(nquads, quads, ntris, tris)
+            _create_tecplot_shells(self.gui.grid, nquads, quads, ntris, tris)
             self.gui.nelements = nshells
 
         elif nsolids:
@@ -122,7 +123,7 @@ class TecplotIO(object):
             is_surface = False
             if is_surface:
                 if nhexas:
-                    free_faces = array(model.get_free_faces(), dtype='int32')# + 1
+                    free_faces = np.array(model.get_free_faces(), dtype='int32')# + 1
                     nfaces = len(free_faces)
                     self.gui.nelements = nfaces
                     unused_elements = free_faces
@@ -174,29 +175,6 @@ class TecplotIO(object):
         grid.Modified()
         return is_surface
 
-    def _create_tecplot_shells(self, is_quads, quads, is_tris, tris):
-        grid = self.gui.grid
-        if is_quads:
-            for face in quads:
-                elem = vtkQuad()
-                epoints = elem.GetPointIds()
-                epoints.SetId(0, face[0])
-                epoints.SetId(1, face[1])
-                epoints.SetId(2, face[2])
-                epoints.SetId(3, face[3])
-                #elem.GetCellType() = 5  # vtkTriangle
-                grid.InsertNextCell(elem.GetCellType(), elem.GetPointIds())
-
-        if is_tris:
-            for face in tris:
-                elem = vtkTriangle()
-                epoints = elem.GetPointIds()
-                epoints.SetId(0, face[0])
-                epoints.SetId(1, face[1])
-                epoints.SetId(2, face[2])
-                #elem.GetCellType() = 5  # vtkTriangle
-                grid.InsertNextCell(5, elem.GetPointIds())
-
     def clear_tecplot(self):
         pass
 
@@ -231,8 +209,8 @@ class TecplotIO(object):
         assert nnodes > 0, nnodes
         assert nelements > 0, nelements
 
-        nids = arange(1, nnodes + 1, dtype='int32')
-        eids = arange(1, nelements + 1, dtype='int32')
+        nids = np.arange(1, nnodes + 1, dtype='int32')
+        eids = np.arange(1, nelements + 1, dtype='int32')
 
         nid_res = GuiResult(ID, header='NodeID', title='NodeID',
                             location='node', scalar=nids)
@@ -265,3 +243,26 @@ class TecplotIO(object):
         if len(results_form):
             form.append(('Results', None, results_form))
         return form, cases, nids, eids
+
+def _create_tecplot_shells(grid, is_quads, quads, is_tris, tris):
+    if is_quads:
+        #elem.GetCellType() = 9  # vtkQuad
+        for face in quads:
+            elem = vtkQuad()
+            epoints = elem.GetPointIds()
+            epoints.SetId(0, face[0])
+            epoints.SetId(1, face[1])
+            epoints.SetId(2, face[2])
+            epoints.SetId(3, face[3])
+            grid.InsertNextCell(9, epoints)
+
+    if is_tris:
+        #elem.GetCellType() = 5  # vtkTriangle
+        for face in tris:
+            elem = vtkTriangle()
+            epoints = elem.GetPointIds()
+            epoints.SetId(0, face[0])
+            epoints.SetId(1, face[1])
+            epoints.SetId(2, face[2])
+            grid.InsertNextCell(5, epoints)
+

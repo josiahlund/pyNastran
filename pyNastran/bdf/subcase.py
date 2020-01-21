@@ -531,8 +531,7 @@ class Subcase(object):
             print(data_code)
             raise RuntimeError(data_code)
 
-    def __contains__(self, param_name):
-        # type: (str) -> bool
+    def __contains__(self, param_name: str) -> bool:
         """
         Checks to see if a parameter name is in the subcase.
 
@@ -554,8 +553,7 @@ class Subcase(object):
             return True
         return False
 
-    def has_parameter(self, *param_names):
-        # type: List[bool]
+    def has_parameter(self, *param_names) -> List[bool]:
         """
         Checks to see if one or more parameter names are in the subcase.
 
@@ -582,7 +580,7 @@ class Subcase(object):
                   for param_name in param_names]
         return exists
 
-    def __getitem__(self, param_name):
+    def __getitem__(self, param_name: str) -> Any:
         """
         Gets the [value, options] for a subcase.
 
@@ -610,7 +608,7 @@ class Subcase(object):
         """
         return self.get_parameter(param_name)
 
-    def suppress_output(self, suppress_to='PLOT'):
+    def suppress_output(self, suppress_to: str='PLOT') -> None:
         """
         Replaces F06 printing with OP2 printing
 
@@ -636,7 +634,7 @@ class Subcase(object):
             else:
                 raise NotImplementedError(key)
 
-    def get_parameter(self, param_name, msg='', obj=False):
+    def get_parameter(self, param_name, msg: str='', obj=False):
         """
         Gets the [value, options] for a subcase.
 

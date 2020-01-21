@@ -804,6 +804,7 @@ def _remove(model,
             unused_desvars_used,
             remove_nids=True, remove_cids=True,
             remove_pids=True, remove_mids=True,
+            remove_spcs=True, remove_mpcs=True,
             unused_remove_desvars=True):
     """actually removes the cards"""
     nids = set(model.nodes.keys())

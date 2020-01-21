@@ -51,6 +51,7 @@ def tecplot_to_cart3d(tecplot_filename, cart3d_filename=None, debug=True):
     cart3d_model.points = model.xyz
     cart3d_model.regions = regions
     cart3d_model.elements = tris + 1
+    assert npoints > 0, npoints
 
     headers_no_xyz = model.variables[3:] # drop the xyz, get what's left
     if 'cp' in headers_no_xyz:
@@ -72,11 +73,11 @@ def tecplot_to_cart3d(tecplot_filename, cart3d_filename=None, debug=True):
         cart3d_model.write_cart3d(cart3d_filename)
     return cart3d_model
 
-def main():
+def main():  # pragma: no cover
     """runs the test problem"""
     tecplot_filename2 = r'PressureMapping\point_fmt.dat'
     cart3d_filename2 = 'wing.tri'
     tecplot_to_cart3d_filename(tecplot_filename2, cart3d_filename2, debug=True)
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

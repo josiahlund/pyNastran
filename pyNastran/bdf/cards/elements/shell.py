@@ -3082,51 +3082,6 @@ class CPLSTx6(TriShell):
     def Mass(self):
         return 0.
 
-    @property
-    def node_ids(self):
-        return self._node_ids(nodes=self.nodes_ref, allow_empty_nodes=True)
-
-    def raw_fields(self):
-        list_fields = ['CPLSTN6', self.eid, self.Pid()] + self.node_ids + [
-            self.theta]
-        return list_fields
-
-    def repr_fields(self):
-        theta = set_blank_if_default(self.theta, 0.0)
-        list_fields = (['CPLSTN6', self.eid, self.Pid()] + self.node_ids + [
-            theta])
-        return list_fields
-
-    def write_card(self, size=8, is_double=False):
-        card = self.repr_fields()
-        if size == 8: # to last node
-            return self.comment + print_card_8(card)
-        return self.comment + print_card_16(card)
-
-class CPLSTS6(CPLSTx6):
-    type = 'CPLSTS6'
-class CPLSTN6(CPLSTx6):
-    type = 'CPLSTN6'
-
-@classmethod
-def export_to_hdf5(cls, h5_file, model, eids):
-    """exports the elements in a vectorized way"""
-    #comments = []
-    pids = []
-    nodes = []
-    thetas = []
-    for eid in eids:
-        element = model.elements[eid]
-        #comments.append(element.comment)
-        pids.append(element.pid)
-        nodes.append(element.nodes)
-        thetas.append(element.theta)
-    #h5_file.create_dataset('_comment', data=comments)
-    h5_file.create_dataset('eid', data=eids)
-    h5_file.create_dataset('pid', data=pids)
-    h5_file.create_dataset('nodes', data=nodes)
-    h5_file.create_dataset('theta', data=thetas)
-
     @classmethod
     def add_op2_data(cls, data, comment=''):
         """
@@ -3145,42 +3100,7 @@ def export_to_hdf5(cls, h5_file, model, eids):
         nids = data[2:8]
         theta = data[8]
         assert len(nids) == 6, 'error on CPLSTN6'
-        return CPLSTN6(eid, pid, nids, theta, comment=comment)
-
-    def cross_reference(self, model):
-        """
-        Cross links the card so referenced cards can be extracted directly
-
-        Parameters
-        ----------
-        model : BDF()
-            the BDF object
-
-        """
-        msg = ', which is required by CPLSTN6 eid=%s' % self.eid
-        self.nodes_ref = model.EmptyNodes(self.node_ids, msg=msg)
-        self.pid_ref = model.Property(self.Pid(), msg=msg)
-
-    def safe_cross_reference(self, model, xref_errors):
-        """
-        Cross links the card so referenced cards can be extracted directly
-
-        Parameters
-        ----------
-        model : BDF()
-            the BDF object
-
-        """
-        msg = ', which is required by CPLSTN6 eid=%s' % self.eid
-        self.nodes_ref = model.EmptyNodes(self.node_ids, msg=msg)
-        self.pid_ref = model.safe_property(self.pid, self.eid, xref_errors, msg=msg)
-
-    def uncross_reference(self):
-        """Removes cross-reference links"""
-        self.nodes = self.node_ids
-        self.pid = self.Pid()
-        self.nodes_ref = None
-        self.pid_ref = None
+        return cls(eid, pid, nids, theta, comment=comment)
 
     def _verify(self, xref):
         eid = self.eid
@@ -3278,13 +3198,13 @@ def export_to_hdf5(cls, h5_file, model, eids):
         return self._node_ids(nodes=self.nodes_ref, allow_empty_nodes=True)
 
     def raw_fields(self):
-        list_fields = (['CPLSTN6', self.eid, self.Pid()] + self.node_ids +
+        list_fields = ([self.type, self.eid, self.Pid()] + self.node_ids +
                        [self.theta])
         return list_fields
 
     def repr_fields(self):
         theta = set_blank_if_default(self.theta, 0.0)
-        list_fields = (['CPLSTN6', self.eid, self.Pid()] + self.node_ids +
+        list_fields = ([self.type, self.eid, self.Pid()] + self.node_ids +
                        [theta])
         return list_fields
 
@@ -3292,8 +3212,7 @@ def export_to_hdf5(cls, h5_file, model, eids):
         card = self.repr_fields()
         if size == 8:
             msg = self.comment + print_card_8(card)
-        else:
-            msg = self.comment + print_card_16(card)
+        msg = self.comment + print_card_16(card)
         #msg2 = self.write_card(size)
         #assert msg == msg2, '\n%s---\n%s\n%r\n%r' % (msg, msg2, msg, msg2)
         return msg

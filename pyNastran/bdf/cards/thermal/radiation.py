@@ -161,16 +161,19 @@ class RADBC(ThermalBC):
         self.cntrlnd = cntrlnd
 
         #: CHBDYi element identification number
+        if isinstance(eids, int):
+            eids = [eids]
         self.eids = expand_thru_by(eids)
 
         assert self.nodamb > 0
         assert self.famb > 0.0
         assert self.cntrlnd >= 0
+        self.eids_ref = None
+
         min_eid = min(self.eids)
         if min_eid < 1:
             msg = 'min(eids)=%i' % min_eid
             raise ValueError(msg)
-        self.eids_ref = None
 
     @classmethod
     def add_card(cls, card, comment=''):

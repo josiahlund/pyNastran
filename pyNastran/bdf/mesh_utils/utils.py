@@ -1088,7 +1088,6 @@ def cmd_line(argv=None, quiet=False):
         sys.exit(msg)
         #raise NotImplementedError('arg1=%r' % sys.argv[1])
 
-
 if __name__ == '__main__':  # pragma: no cover
     sys.argv = sys.argv[1:]
     cmd_line()

@@ -9,12 +9,25 @@ import numpy as np
 from pyNastran.bdf.bdf import BDF, read_bdf
 
 
+SKIP_ETYPES = {
+    'CELAS1', 'CELAS2', 'CELAS3', 'CELAS4', 'CELAS5',
+    'CDAMP1', 'CDAMP2', 'CDAMP3', 'CDAMP4', 'CDAMP5',
+    'CBUSH', 'CBUSH1D', 'CBUSH2D', 'CGAP', 'CVISC', 'CFAST',
+    'CROD', 'CONROD', 'CTUBE',
+    'CBAR', 'CBEAM', 'CBEND', 'CBEAM3',
+    'CTETRA', 'CPYRAM', 'CPENTA', 'CHEXA',
+    'CRAC2D', 'CRAC3D',
+    'CSHEAR',
+    'CHBDYE', 'CHBDYP', 'CHBDYG', 'GENEL',
+    'CHACAB', 'CAABSF',
+}
+
 def export_mcids(bdf_filename, csv_filename=None,
                  eids=None, export_xaxis=True, export_yaxis=True,
                  iply=0, log=None, debug=False):
     """
-    Exports the element material coordinates systems, so you can
-    load it into pyNastranGUI.
+    Exports the element material coordinates systems for non-isotropic
+    materials.
 
     Parameters
     ----------
@@ -58,10 +71,6 @@ def export_mcids(bdf_filename, csv_filename=None,
         the "bars" that represent the x/y axes of the coordinate systems
 
     """
-    if isinstance(eids, integer_types):
-        eids = [eids]
-
-
     if isinstance(bdf_filename, BDF):
         model = bdf_filename
     else:
@@ -69,15 +78,7 @@ def export_mcids(bdf_filename, csv_filename=None,
         #print(model.get_bdf_stats())
         model.safe_cross_reference()
 
-    skip_types = [
-        'CELAS1', 'CELAS2', 'CELAS3', 'CELAS4', 'CELAS5',
-        'CDAMP1', 'CDAMP2', 'CDAMP3', 'CDAMP4',
-        'CBUSH', 'CBUSH1D', 'CBUSH2D', 'CGAP',
-        'CROD', 'CONROD',
-        'CBAR', 'CBEAM',
-        'CTETRA', 'CPYRAM', 'CPENTA', 'CHEXA',
-        'CRAC2D', 'CRAC3D',
-    ]
+    elements = _get_elements(model, eids)
 
     eid = 1
     nid = 1
@@ -86,11 +87,6 @@ def export_mcids(bdf_filename, csv_filename=None,
     consider_property_rotation = True  # not tested
     export_both_axes = export_xaxis and export_yaxis
     assert export_xaxis or export_yaxis
-
-    if eids is None:
-        elements = model.elements
-    else:
-        elements = {eid : model.elements[eid] for eid in eids}
 
     pids_failed = set()
     for unused_eidi, elem in sorted(elements.items()):
@@ -106,8 +102,8 @@ def export_mcids(bdf_filename, csv_filename=None,
                                     pids_failed, bars,
                                     export_both_axes, export_xaxis,
                                     consider_property_rotation)
-        elif elem.type in skip_types:
-            pass
+        elif elem.type in SKIP_ETYPES:
+            continue
         else:
             msg = 'element type=%r is not supported\n%s' % (elem.type, elem)
             raise NotImplementedError(msg)
@@ -126,6 +122,16 @@ def export_mcids(bdf_filename, csv_filename=None,
         raise RuntimeError(msg)
     _export_coord_axes(nodes, bars, csv_filename)
     return nodes, bars
+
+def _get_elements(model, eids):
+    if isinstance(eids, integer_types):
+        eids = [eids]
+
+    if eids is None:
+        elements = model.elements
+    else:
+        elements = {eid : model.elements[eid] for eid in eids}
+    return elements
 
 def _export_quad(elem, nodes,
                  iply, nid, eid,
@@ -256,8 +262,8 @@ def _rotate_mcid(elem, pid_ref, iply, imat, jmat, normal,
     theta_rotation = np.array([
         [cos, -sin, 0.],
         [sin, cos, 0.],
-        [0., 0., 1.]
-        ], dtype='float64')
+        [0., 0., 1.],
+    ], dtype='float64')
 
     element_axes = np.vstack([imat, jmat, normal])
     rotated_axes = np.dot(theta_rotation, element_axes)  ## TODO: validate

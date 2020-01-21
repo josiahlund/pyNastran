@@ -1149,6 +1149,8 @@ class PCOMPG(CompositeShellProperty):
         1: 'pid', 2: 'z0', 3:'nsm', 4:'sb', 5:'ft', 6:'tref',
         7: 'ge', 8:'lam',
     }
+    pname_fid_map = {
+    }
     _properties = ['_field_map', 'plies', 'nplies', 'material_ids']
     def update_by_pname_fid(self, pname_fid, value):
         if isinstance(pname_fid, int):

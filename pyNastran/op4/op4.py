@@ -1588,7 +1588,7 @@ class OP4(object):
         op4.write(msg)
 
     def _write_dense_matrix_ascii(self, op4, name, A, form=2, precision='default'):
-        """writes a dense ASCII matrx"""
+        """Writes a dense ASCII matrix"""
         if self.debug:
             self.log.info('_write_dense_matrix_ascii')
         matrix_type, nwords_per_value = _get_type_nwv(A[0, 0], precision)

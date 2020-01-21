@@ -44,9 +44,13 @@ from six import string_types
 import numpy as np
 
 from pyNastran.bdf.bdf_interface.get_methods import GetMethods
-from pyNastran.bdf.cards.optimization import get_dvprel_key
 from pyNastran.utils.numpy_utils import integer_types
 from pyNastran.bdf.cards.loads.static_loads import update_pload4_vector
+from pyNastran.bdf.mesh_utils.dvxrel import get_dvprel_ndarrays
+from pyNastran.bdf.mesh_utils.mpc_dependency import (
+    get_mpc_node_ids, get_mpc_node_ids_c1,
+    get_rigid_elements_with_node_ids, get_dependent_nid_to_components,
+    get_lines_rigid, get_mpcs)
 
 
 class GetCard(GetMethods):
@@ -434,120 +438,43 @@ class GetCard(GetMethods):
 
     def get_MPCx_node_ids(self, mpc_id, consider_mpcadd=True, stop_on_failure=True):
         # type: (int, bool, bool) -> List[List[int]]
-        r"""
-        Get the MPC/MPCADD IDs.
-
-        Parameters
-        ----------
-        mpc_id : int
-            the MPC id
-        consider_mpcadd : bool
-            MPCADDs should not be considered when referenced from an MPCADD
-            from a case control, True should be used.
-        stop_on_failure : bool; default=True
-            errors if parsing something new
-
-        Returns
-        -------
-        lines : List[[independent, dependent]]
-            independent : int
-               the independent node id
-            dependent : int
-               the dependent node id
-
-        I      I
-          \   /
-        I---D---I
-
-        """
-        lines = []
-        mpcs = self.get_reduced_mpcs(
-            mpc_id, consider_mpcadd=consider_mpcadd,
+        """see ``pyNastran.bdf.mesh_utils.mpc_dependency.get_mpc_node_ids(...)``"""
+        lines = get_mpc_node_ids(
+            self, mpc_id,
+            consider_mpcadd=consider_mpcadd,
             stop_on_failure=stop_on_failure)
-
-        # dependent, independent
-        for card in mpcs:
-            if card.type == 'MPC':
-                nids = card.node_ids
-                nid0 = nids[0]
-                #component0 = card.components[0]
-                #enforced0 = card.coefficients[0]
-                #card.constraints[1:]
-                for nid, coefficient in zip(nids[1:], card.coefficients[1:]):
-                    if coefficient != 0.0:
-                        lines.append([nid0, nid])
-            else:
-                msg = 'get_MPCx_node_ids doesnt support %r' % card.type
-                if stop_on_failure:
-                    raise RuntimeError(msg)
-                self.log.warning(msg)
         return lines
 
-    def get_MPCx_node_ids_c1(self, mpc_id, consider_mpcadd=True, stop_on_failure=True):
-        # type: (int, bool, bool) -> Tuple(Dict[str, List[int]], Dict[str, List[int]])
-        r"""
-        Get the MPC/MPCADD IDs.
-
-        Parameters
-        ----------
-        mpc_id : int
-            the MPC id
-        consider_mpcadd : bool
-            MPCADDs should not be considered when referenced from an MPCADD
-            from a case control, True should be used.
-        stop_on_failure : bool; default=True
-            errors if parsing something new
-
-        Returns
-        -------
-        independent_node_ids_c1 : Dict[component] = node_ids
-            component : str
-                the DOF to constrain
-            node_ids : List[int]
-                the constrained node ids
-
-        dependent_node_ids_c1 : Dict[component] = node_ids
-            component : str
-                the DOF to constrain
-            node_ids : List[int]
-                the constrained node ids
-
-        I      I
-          \   /
-        I---D---I
-
-        """
-        if not isinstance(mpc_id, integer_types):
-            msg = 'mpc_id must be an integer; type=%s, mpc_id=\n%r' % (type(mpc_id), mpc_id)
-            raise TypeError(msg)
-
-        mpcs = self.get_reduced_mpcs(
-            mpc_id, consider_mpcadd=consider_mpcadd,
+    def get_MPCx_node_ids(self, mpc_id, consider_mpcadd=True, stop_on_failure=True):
+        # type: (int, bool, bool) -> Tuple[Dict[str, List[int]], Dict[str, List[int]]]
+        """see ``pyNastran.bdf.mesh_utils.mpc_dependency.get_mpc_node_ids_c1(...)``"""
+        independent_node_ids_c1, dependent_node_ids_c1 = get_mpc_node_ids_c1(
+            self, mpc_id,
+            consider_mpcadd=consider_mpcadd,
             stop_on_failure=stop_on_failure)
-
-        # dependent, independent
-        independent_node_ids_c1 = defaultdict(list)
-        dependent_node_ids_c1 = defaultdict(list)
-        for card in mpcs:
-            if card.type == 'MPC':
-                nids = card.node_ids
-                nid0 = nids[0]
-                #component0 = card.components[0]
-                #coefficient0 = card.coefficients[0]
-                #card.constraints[1:]
-                dofs = card.components
-                for dof in dofs:
-                    independent_node_ids_c1[dof].append(nid0)
-                for nid, coefficient in zip(nids[1:], card.coefficients[1:]):
-                    if coefficient != 0.0:
-                        for dof in dofs:
-                            dependent_node_ids_c1[dof].append(nid)
-            else:
-                msg = 'get_MPCx_node_ids_c1 doesnt support %r' % card.type
-                if stop_on_failure:
-                    raise RuntimeError(msg)
-                self.log.warning(msg)
         return independent_node_ids_c1, dependent_node_ids_c1
+
+    def get_mpcs(self, mpc_id, consider_mpcadd=True, stop_on_failure=True):
+        """see ``pyNastran.bdf.mesh_utils.mpc_dependency.get_mpcs(...)``"""
+        nids, comps = get_mpcs(self, mpc_id, consider_mpcadd=consider_mpcadd,
+                 stop_on_failure=stop_on_failure)
+        return nids, comps
+
+    def get_rigid_elements_with_node_ids(self, node_ids):
+        """see ``pyNastran.bdf.mesh_utils.mpc_dependency.get_rigid_elements_with_node_ids(...)``"""
+        rbes = get_rigid_elements_with_node_ids(self, node_ids)
+        return rbes
+
+    def get_dependent_nid_to_components(self, mpc_id=None, stop_on_failure=True):
+        """see ``pyNastran.bdf.mesh_utils.mpc_dependency.get_dependent_nid_to_components(...)``"""
+        dependent_nid_to_components = get_dependent_nid_to_components(
+            self, mpc_id=mpc_id, stop_on_failure=stop_on_failure)
+        return dependent_nid_to_components
+
+    def _get_rigid(self):
+        """see ``pyNastran.bdf.mesh_utils.mpc_dependency.get_lines_rigid(...)``"""
+        lines_rigid = get_lines_rigid(self)
+        return lines_rigid
 
     def get_load_arrays(self, subcase_id, eid_map, node_ids, normals, nid_map=None):
         """
@@ -657,96 +584,7 @@ class GetCard(GetMethods):
         return is_loads, is_temperatures, temperature_data, load_data
 
     def _get_dvprel_ndarrays(self, nelements, pids, fdtype='float32', idtype='int32'):
-        """
-        Creates arrays for dvprel results
-
-        Parameters
-        ----------
-        nelements : int
-            the number of elements
-        pids : (nelements,) int ndarray
-            properties array to map the results to
-        fdtype : str; default='float32'
-            the type of the init/min/max arrays
-        idtype : str; default='int32'
-            the type of the design_region
-
-        Returns
-        -------
-        dvprel_dict[key] : (design_region, dvprel_init, dvprel_min, dvprel_max)
-            key : str
-                the optimization string
-            design_region : (nelements,) int ndarray
-                the DVPRELx id
-            dvprel_init : (nelements,) float ndarray
-                the initial values of the variable
-            dvprel_min : (nelements,)float ndarray
-                the min values of the variable
-            dvprel_max : (nelements,)float ndarray
-                the max values of the variable
-
-        """
-        dvprel_dict = {}
-        def get_dvprel_data(key):
-            if key in dvprel_dict:
-                return dvprel_dict[key]
-
-            dvprel_t_init = np.full(nelements, np.nan, dtype=fdtype)
-            dvprel_t_min = np.full(nelements, np.nan, dtype=fdtype)
-            dvprel_t_max = np.full(nelements, np.nan, dtype=fdtype)
-            design_region = np.zeros(nelements, dtype=idtype)
-            dvprel_dict[key] = (design_region, dvprel_t_init, dvprel_t_min, dvprel_t_max)
-            return design_region, dvprel_t_init, dvprel_t_min, dvprel_t_max
-
-        for dvprel_key, dvprel in self.dvprels.items():
-            prop_type = dvprel.prop_type
-            unused_desvars = dvprel.dvids
-            if dvprel.pid_ref is not None:
-                pid = dvprel.pid_ref.pid
-            else:
-                pid = dvprel.pid
-            unused_var_to_change = dvprel.pname_fid
-
-            prop = self.properties[pid]
-            if not prop.type == prop_type:
-                raise RuntimeError('Property type mismatch\n%s%s' % (str(dvprel), str(prop)))
-
-            key, msg = get_dvprel_key(dvprel, prop)
-            if dvprel.type == 'DVPREL1':
-                if msg:
-                    self.log.warning(msg)
-                    continue
-
-                i = np.where(pids == pid)[0]
-                if len(i) == 0:
-                    continue
-                assert len(i) > 0, i
-                design_region, dvprel_init, dvprel_min, dvprel_max = get_dvprel_data(key)
-
-                optimization_region = dvprel.oid
-                assert optimization_region > 0, str(self)
-                design_region[i] = optimization_region
-                xinit, lower_bound, upper_bound = dvprel.get_xinit_lower_upper_bound(self)
-
-                dvprel_init[i] = xinit
-                dvprel_min[i] = lower_bound
-                dvprel_max[i] = upper_bound
-            #elif dvprel.type == 'DVPREL2':
-                #print(dvprel.get_stats())
-            else:
-                msg = 'dvprel.type=%r; dvprel=\n%s' % (dvprel.type, str(dvprel))
-                raise NotImplementedError(msg)
-
-            # TODO: haven't quite decided what to do
-            if dvprel.p_max != 1e20:
-                dvprel.p_max
-
-            # TODO: haven't quite decided what to do
-            if dvprel.p_min is not None:
-                dvprel.p_min
-
-        #dvprel_dict['PSHELL']['T']  = dvprel_t_init, dvprel_t_min, dvprel_t_max
-        return dvprel_dict
+        return get_dvprel_ndarrays(self, nelements, pids, fdtype=fdtype, idtype=idtype)
 
     def _get_forces_moments_array(self, p0, load_case_id,
                                   eid_map, nnodes, normals, dependents_nodes,
@@ -1267,77 +1105,6 @@ class GetCard(GetMethods):
                 self.log.debug(load.rstrip())
         return is_temperatures, temperatures
 
-    def _get_rigid(self):
-        # type: () -> Any
-        """
-        GUI helper function
-
-        dependent = (lines[:, 0])
-        independent = np.unique(lines[:, 1])
-
-        """
-        lines_rigid = []
-        for eid, elem in self.rigid_elements.items():
-            if elem.type == 'RBE3':
-                if elem.Gmi != []:
-                    # UM are dependent
-                    msg = 'UM is not supported; RBE3 eid=%s Gmi=%s' % (elem.eid, elem.Gmi)
-                    raise RuntimeError(msg)
-                #list_fields = ['RBE3', elem.eid, None, elem.ref_grid_id, elem.refc]
-                n1 = elem.ref_grid_id
-                assert isinstance(n1, integer_types), 'RBE3 eid=%s ref_grid_id=%s' % (elem.eid, n1)
-                for (_weight, ci, Gij) in zip(elem.weights, elem.comps, elem.Gijs):
-                    Giji = elem._node_ids(nodes=Gij, allow_empty_nodes=True)
-                    # list_fields += [wt, ci] + Giji
-                    for n2 in Giji:
-                        assert isinstance(n2, integer_types), 'RBE3 eid=%s Giji=%s' % (elem.eid, Giji)
-                        lines_rigid.append([n1, n2])
-            elif elem.type == 'RBE2':
-                #list_fields = ['RBE2', elem.eid, elem.Gn(), elem.cm
-                               #] + elem.Gmi_node_ids + [elem.alpha]
-                n2 = elem.Gn() # independent
-                nids1 = elem.Gmi_node_ids # dependent
-                for n1 in nids1:
-                    lines_rigid.append([n1, n2])
-            elif elem.type in ['RBAR', 'RBAR1', 'RROD']: ## TODO: these aren't quite right
-                dependent = elem.Ga()
-                independent = elem.Gb()
-                lines_rigid.append([dependent, independent])
-            elif elem.type == 'RBE1':
-                # +------+-----+-----+-----+-------+-----+-----+-----+
-                # |   1  |  2  |  3  |  4  |   5   |  6  |  7  |  8  |
-                # +======+=====+=====+=====+=======+=====+=====+=====+
-                # | RBE1 | EID | GN1 | CN1 |  GN2  | CN2 | GN3 | CN3 |
-                # |      |     | GN4 | CN4 | GN5   | CN5 | GN6 | CN6 |
-                # |      | UM  | GM1 | CM1 |  GM2  | CM2 | GM3 | CM3 |
-                # |      | GM4 | CM4 | etc | ALPHA |     |     |     |
-                # +------+-----+-----+-----+-------+-----+-----+-----+
-                # | RBE1 | 59  | 59  | 123 |  60   | 456 |     |     |
-                # |      | UM  | 61  | 246 |       |     |     |     |
-                # +------+-----+-----+-----+-------+-----+-----+-----+
-                dependent = elem.dependent_nodes
-                independent = elem.independent_nodes
-                #assert len(dependent) == 1, dependent
-                #assert len(independent) == 1, independent
-                if len(independent) != 1 or len(dependent) != 1:
-                    msg = 'skipping card because len(independent) != 1 or len(dependent) != 1\n'
-                    msg += '  independent = %s\n'  % independent
-                    msg += '  dependent = %s\n'  % dependent
-                    msg += str(elem)
-                    self.log.error(msg)
-                    continue
-                lines_rigid.append([dependent[0], independent[0]])
-            elif elem.type == 'RSPLINE':
-                independent_nid = elem.independent_nid
-                for dependent_nid in np.unique(elem.dependent_nids):
-                    lines_rigid.append([dependent_nid, independent_nid])
-            elif elem.type == 'RSSCON':
-                self.log.warning('skipping card in _get_rigid\n%s' % str(elem))
-            else:
-                print(str(elem))
-                raise NotImplementedError(elem.type)
-        return lines_rigid
-
     def get_reduced_loads(self, load_case_id, scale=1.,
                           consider_load_combinations=True,
                           skip_scale_factor0=False,
@@ -1508,6 +1275,7 @@ class GetCard(GetMethods):
         if unallowed_dload_ids is None:
             unallowed_dload_ids = []
 
+        assert isinstance(dload_case, list), dload_case
         for dload in dload_case:
             if dload.type == 'DLOAD':
                 dload_ids = dload.get_load_ids()
@@ -1537,146 +1305,6 @@ class GetCard(GetMethods):
                 scale_factors_out.append(scale)
                 dloads_out.append(dload)
         return dloads_out, scale_factors_out
-
-    def get_rigid_elements_with_node_ids(self, node_ids):
-        """
-        Gets the series of rigid elements that use specific nodes
-
-        Parameters
-        ----------
-        node_ids : List[int]
-            the node ids to check
-
-        Returns
-        -------
-        rbes : List[int]
-            the set of self.rigid_elements
-
-        """
-        try:
-            nids = set(node_ids)
-        except TypeError:
-            print(node_ids)
-            raise
-        rbes = []
-        for eid, rigid_element in self.rigid_elements.items():
-            if rigid_element.type in ['RBE3', 'RBE2', 'RBE1', 'RBAR', 'RSPLINE', 'RROD']:
-                independent_nodes = set(rigid_element.independent_nodes)
-                dependent_nodes = set(rigid_element.dependent_nodes)
-                rbe_nids = independent_nodes | dependent_nodes
-                if nids.intersection(rbe_nids):
-                    rbes.append(eid)
-            elif rigid_element.type == 'RSSCON':
-                msg = 'skipping card in get_rigid_elements_with_node_ids\n%s' % str(rigid_element)
-                self.log.warning(msg)
-            else:
-                raise RuntimeError(rigid_element.type)
-        return rbes
-
-    def get_dependent_nid_to_components(self, mpc_id=None, stop_on_failure=True):
-        """
-        Gets a dictionary of the dependent node/components.
-
-        Parameters
-        ----------
-        mpc_id : int; default=None -> no MPCs are checked
-            TODO: add
-        stop_on_failure : bool; default=True
-            errors if parsing something new
-
-        Returns
-        -------
-        dependent_nid_to_components : dict[node_id] : components
-            node_id : int
-                the node_id
-            components : str
-                the DOFs that are linked
-
-        Nastran can either define a load/motion at a given node.
-        SPCs define constraints that may not have loads/motions.
-
-        MPCs and rigid elements define independent and dependent nodes on
-        specific DOFs.
-          - independent nodes : loads/motions may be defined
-          - dependent nodes : loads/motions may not be defined
-
-        """
-        dependent_nid_to_components = {}
-
-        if mpc_id is not None:
-            mpcs = self.get_mpcs(mpc_id)
-            for mpc in mpcs:
-                if mpc.type == 'MPC':
-                    for nid, component in zip(mpc.node_ids, mpc.components):
-                        dependent_nid_to_components[nid] = component
-                else:
-                    raise NotImplementedError(mpc)
-
-        for unused_eid, rigid_element in self.rigid_elements.items():
-            if rigid_element.type == 'RBE2':
-                dependent_nodes = set(rigid_element.dependent_nodes)
-                components = rigid_element.cm
-                for nid in dependent_nodes:
-                    dependent_nid_to_components[nid] = components
-            elif rigid_element.type == 'RBE3':
-                dependent_nid_to_components[rigid_element.ref_grid_id] = rigid_element.refc
-                for gmi, cmi in zip(rigid_element.Gmi_node_ids, rigid_element.Cmi):
-                    dependent_nid_to_components[gmi] = cmi
-            #if rigid_element.type in ['RBE3', 'RBE2', 'RBE1', 'RBAR']:
-                ##independent_nodes = set(rigid_element.independent_nodes)
-                #dependent_nodes = set(rigid_element.dependent_nodes)
-                #rbe_nids = independent_nodes | dependent_nodes
-                #if nids.intersection(rbe_nids):
-                    #rbes.append(eid)
-            #elif rigid_element == 'RSPLINE':
-            elif rigid_element.type == 'RBAR':
-                nodes = [rigid_element.ga, rigid_element.gb]
-                components = [rigid_element.cma, rigid_element.cmb]
-                for nid, componentsi in zip(nodes, components):
-                    dependent_nid_to_components[nid] = componentsi
-            elif rigid_element.type == 'RBE1':
-                # +------+-----+-----+-----+-------+-----+-----+-----+
-                # |   1  |  2  |  3  |  4  |   5   |  6  |  7  |  8  |
-                # +======+=====+=====+=====+=======+=====+=====+=====+
-                # | RBE1 | EID | GN1 | CN1 |  GN2  | CN2 | GN3 | CN3 |
-                # |      |     | GN4 | CN4 |  GN5  | CN5 | GN6 | CN6 |
-                # |      | UM  | GM1 | CM1 |  GM2  | CM2 | GM3 | CM3 |
-                # |      | GM4 | CM4 | etc | ALPHA |     |     |     |
-                # +------+-----+-----+-----+-------+-----+-----+-----+
-                # | RBE1 | 59  | 59  | 123 |  60   | 456 |     |     |
-                # |      | UM  | 61  | 246 |       |     |     |     |
-                # +------+-----+-----+-----+-------+-----+-----+-----+
-                # dependent=m (independent=n)
-                for nid, componentsi in zip(rigid_element.Gmi_node_ids, rigid_element.Cmi):
-                    dependent_nid_to_components[nid] = componentsi
-                #dependent = elem.dependent_nodes
-                #independent = elem.independent_nodes
-                #assert len(dependent) == 1, dependent
-                #assert len(independent) == 1, independent
-                #lines_rigid.append([dependent[0], independent[0]])
-            elif rigid_element.type == 'RROD':
-                components = [rigid_element.cma, rigid_element.cmb]
-                if rigid_element.cma is not None:
-                    nid = rigid_element.nodes[0]
-                    for component in rigid_element.cma:
-                        dependent_nid_to_components[nid] = component
-
-                if rigid_element.cmb is not None:
-                    nid = rigid_element.nodes[1]
-                    for component in rigid_element.cmb:
-                        dependent_nid_to_components[nid] = component
-            elif rigid_element.type == 'RSPLINE':
-                #independent_nid = rigid_element.independent_nid
-                for nid, component in zip(rigid_element.dependent_nids, rigid_element.dependent_components):
-                    if component is None:
-                        continue
-                    dependent_nid_to_components[nid] = component
-            elif rigid_element.type == 'RSSCON':
-                msg = 'skipping card in get_dependent_nid_to_components\n%s' % str(rigid_element)
-                self.log.warning(msg)
-            else:
-                raise RuntimeError(rigid_element.type)
-        return dependent_nid_to_components
 
     def _get_maps(self, eids=None, map_names=None,
                   consider_0d=True, consider_0d_rigid=True,
@@ -2076,16 +1704,17 @@ class GetCard(GetMethods):
           model.read_bdf(bdf_filename)
           pids = [1, 2, 3]
           eids_list = model.get_element_ids_list_with_pids(pids)
+          >>> eids_list
+          [10, 11, 20, 21, 30, 31]
 
         """
         etypes_no_pids = [
             'CELAS4', 'CDAMP4', 'CHBDYG', 'GENEL',
         ]
-
         if pids is None:
             pids = self.properties.keys()
         elif isinstance(pids, integer_types):
-            pids = [int]
+            pids = {pids}
         else:
             assert isinstance(pids, (list, tuple)), 'pids=%s type=%s' % (pids, type(pids))
 
@@ -2117,7 +1746,7 @@ class GetCard(GetMethods):
             eid_ieid : (Nelements, 2) int ndarray
                 eid is the element id
                 ieid is the index in the node_ids array
-        node_ids : (nelements, nnodes)
+        node_ids : (nelements, nnodes) int ndarray
             nelements : int
                 the number of elements in the property type
             nnodes : int
@@ -2250,9 +1879,21 @@ class GetCard(GetMethods):
           model.read_bdf(bdf_filename)
           pids = [4, 5, 6]
           eids_dict = model.get_element_ids_dict_with_pids(pids)
+          >>> eids_dict
+          {
+              4 : [40, 41],
+              5 : [50, 51],
+              6 : [60, 61],
+          }
 
           # consider all properties
           eids_dict = model.get_element_ids_dict_with_pids()
+          {
+              1 : [1, 2, 3],
+              4 : [40, 41],
+              5 : [50, 51],
+              6 : [60, 61],
+          }
 
         Notes
         -----
@@ -2718,46 +2359,6 @@ class GetCard(GetMethods):
                 if node.ps:
                     nids.append(nid)
                     comps.append(node.ps)
-        return nids, comps
-
-    def get_mpcs(self, mpc_id, consider_mpcadd=True, stop_on_failure=True):
-        """
-        Gets the MPCs in a semi-usable form.
-
-        Parameters
-        ----------
-        mpc_id : int
-            the desired MPC ID
-        stop_on_failure : bool; default=True
-            errors if parsing something new
-
-        Returns
-        -------
-        nids : List[int]
-            the constrained nodes
-        comps : List[str]
-            the components that are constrained on each node
-
-        Considers:
-          - MPC
-          - MPCADD
-
-        """
-        mpcs = self.get_reduced_mpcs(
-            mpc_id, consider_mpcadd=consider_mpcadd,
-            stop_on_failure=stop_on_failure)
-        nids = []
-        comps = []
-        for mpc in mpcs:
-            if mpc.type == 'MPC':
-                for nid, comp, unused_coefficient in zip(mpc.nodes, mpc.components, mpc.coefficients):
-                    nids.append(nid)
-                    comps.append(comp)
-            else:
-                if stop_on_failure:
-                    self.log.error('not considering:\n%s' % str(mpc))
-                    raise NotImplementedError(mpc)
-                self.log.warning('not considering:\n%s' % str(mpc))
         return nids, comps
 
     def get_mklist(self):

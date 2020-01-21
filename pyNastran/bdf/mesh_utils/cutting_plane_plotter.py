@@ -93,7 +93,11 @@ def plot_cutting_plane_faces(title, p1, p2, zaxis,
                              geometry_arrays, result_arrays,
                              csv_filename=None, invert_yaxis=False, show=True):
     """for faces"""
-    local_x = result_arrays[:, 0]
+    try:
+        local_x = result_arrays[:, 0]
+    except TypeError:
+        print('results_arrays', result_arrays)
+        raise
 
     #x = global_points_array[:, 0]
     #y = global_points_array[:, 1]

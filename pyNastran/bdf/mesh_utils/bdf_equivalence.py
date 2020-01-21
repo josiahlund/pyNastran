@@ -98,12 +98,11 @@ def bdf_equivalence_nodes(bdf_filename, bdf_filename_out, tol,
     nodes_xyz, model, nids, inew = _eq_nodes_setup(
         bdf_filename, tol, renumber_nodes=renumber_nodes,
         xref=xref, node_set=node_set, log=log, debug=debug)
-    ieq, slots = _eq_nodes_build_tree(nodes_xyz, nids, tol,
-                                      inew=inew, node_set=node_set,
-                                      neq_max=neq_max)[1:]
 
-    nid_pairs = _eq_nodes_find_pairs(nids, slots, ieq, node_set=node_set)
-    _eq_nodes_final(nid_pairs, model, tol, node_set=node_set)
+    nid_pairs = _nodes_xyz_nids_to_nid_pairs(
+        nodes_xyz, nids, tol, log, inew,
+        node_set=node_set, neq_max=neq_max, method=method, debug=debug)
+    _eq_nodes_final(nid_pairs, model, tol, node_set=node_set, debug=debug)
 
     if bdf_filename_out is not None:
         model.write_bdf(bdf_filename_out, size=size, is_double=is_double)
@@ -324,8 +323,20 @@ def _eq_nodes_final(nid_pairs, model, tol, node_set=None):
         #skip_nodes.append(nid2)
     return
 
+def _nodes_xyz_nids_to_nid_pairs(nodes_xyz, nids, tol, log, inew,
+                                 node_set=None, neq_max=4,
+                                 debug=False):
+    """helper for equivalencing"""
+    kdt, ieq, slots = _eq_nodes_build_tree(nodes_xyz, nids, tol,
+                                      inew=inew, node_set=node_set,
+                                      neq_max=neq_max)
+
+    nid_pairs = _eq_nodes_find_pairs(nids, slots, ieq, node_set=node_set)
+    return nid_pairs
+
 def _eq_nodes_build_tree(nodes_xyz, nids, tol,
-                         inew=None, node_set=None, neq_max=4, msg=''):
+                         inew=None, node_set=None, neq_max=4, msg='',
+                         debug=False):
     """
     helper function for `bdf_equivalence_nodes`
 
@@ -356,6 +367,7 @@ def _eq_nodes_build_tree(nodes_xyz, nids, tol,
         ???
 
     """
+    nnodes = len(nids)
     if inew is None:
         inew = slice(None)
 
@@ -367,7 +379,6 @@ def _eq_nodes_build_tree(nodes_xyz, nids, tol,
 
     if node_set is not None:
         assert len(deq) == len(nids)
-    nnodes = len(nids)
 
     # get the ids of the duplicate nodes
     slots = np.where(ieq[:, :] < nnodes)

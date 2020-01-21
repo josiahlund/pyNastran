@@ -273,11 +273,44 @@ class Tecplot(object):
                        results_list,
                        data_packing=None, fe=None):
         """
+        Parameters
+        ----------
+        zone_type : str
+
+        fe : str
+          - a zone_type.upper() string???
+          - FEPOINT
+
         reads:
           - ZONE E
           - ZONE T
 
         ZONE is a flag, T is title, E is number of elements
+
+        -------------  ---------  ----------  ----------------------------------------------
+        Parameter      Ordered    Finite      Description
+                       Data       Element
+        -------------  ---------  ----------  ----------------------------------------------
+        T="title"      Yes        Yes         Zone title.
+        I=imax         Yes        No          Number of points in 1st dimension.
+        J=jmax         Yes        No          Number of points in 2nd dimension.
+        K=kmax         Yes        No          Number of points in 3rd dimension.
+        C=colour       Yes        Yes         Colour from WHITE, BLACK, RED, GREEN,
+                                                          BLUE, CYAN, YELLOW, PURPLE,
+                                                          CUST1, CUST2,....CUST8.
+        F=format       Yes        Yes         POINT or BLOCK for ordered data.
+                                              FEPOINT or FEBLOCK for finite element.
+        D=(list)       Yes        Yes         A list of variable names to to include
+                                              from the last zone.
+        DT=(list)      Yes        Yes         A list of datatypes for each variable.
+                                              SINGLE, DOUBLE, LONGINT, SHORTINT, BYTE, BIT.
+        N=num          No         Yes         Number of nodes.
+        E=num          No         Yes         Number of elements.
+        ET=type        No         Yes         Element type from TRIANGLE, BRICK,
+                                                                QUADRILATERAL, TETRAHEDRON.
+        NV=variable    No         Yes         Variable for node value.
+        -------------  ---------  ----------  ----------------------------------------------
+        http://paulbourke.net/dataformats/tp/
         """
         if iblock == 0:
             variables = headers_dict['VARIABLES']
@@ -860,6 +893,7 @@ class Tecplot(object):
         adjust_nids : bool; default=True
             element_ids are 0-based in binary and must be switched to
             1-based in ASCII
+
         """
         self.log.info('writing tecplot %s' % tecplot_filename)
         with open(tecplot_filename, 'w') as tecplot_file:

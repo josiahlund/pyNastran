@@ -54,6 +54,8 @@ def check_length(fem1, fem2, name):
     if not len(obj2) == len(obj2):
         msg = 'len(fem1.%s)=%i len(fem2.%s)=%i' % (name, len(obj2), name, len(obj2))
         raise AssertionError(msg)
+
+
 def compare_params(fem1, fem2):
     for key in fem1.params:
         card1 = fem1.params[key]

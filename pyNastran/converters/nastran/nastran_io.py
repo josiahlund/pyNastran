@@ -119,9 +119,9 @@ SIDE_MAP['CHEXA'] = {
 NO_THETA = [
     'CELAS1', 'CELAS2', 'CELAS3', 'CELAS4',
     'CDAMP1', 'CDAMP2', 'CDAMP3', 'CDAMP4', 'CDAMP5',
-    'CBAR', 'CBEAM', 'CBEAM3',
+    'CBAR', 'CBEAM', 'CBEAM3', 'CBEND',
     'CBUSH', 'CBUSH1D', 'CBUSH2D', 'CVISC',
-    'CONROD', 'CROD', 'PLOTEL',
+    'CONROD', 'CROD', 'CTUBE', 'PLOTEL',
     'CHBDYP', 'GENEL',
 ]
 
@@ -563,6 +563,7 @@ class NastranIO(NastranGuiResults, NastranGeometryHelper):
         all_nids = nid_cp_cd_out[:, 0]
         unids = np.unique(all_nids)
 
+        log = self.log
         if not len(all_nids) == len(unids):
             if model.sebulk and check_mirror:
                 from pyNastran.bdf.mesh_utils.bdf_renumber import superelement_renumber
@@ -572,7 +573,7 @@ class NastranIO(NastranGuiResults, NastranGeometryHelper):
                     size=8, is_double=False, starting_id_dict=None,
                     cards_to_skip=None, log=None, debug=False)
 
-                _model2 = BDF(debug=None, log=self.log, mode='msc')
+                _model2 = BDF(debug=None, log=log, mode='msc')
                 _model2.read_bdf(bdf_filename=bdf_filename_out,
                                  validate=False, xref=False, punch=False, read_includes=True,
                                  save_file_structure=False, encoding=model._encoding)
@@ -618,10 +619,10 @@ class NastranIO(NastranGuiResults, NastranGeometryHelper):
                         #_model, mapper = bdf_renumber(
                             #superelement, bdf_filename_out, size=8, is_double=False,
                             #starting_id_dict=starting_id_dict, round_ids=False,
-                            #cards_to_skip=None, log=self.log, debug=False)
+                            #cards_to_skip=None, log=log, debug=False)
                         #starting_id_dict = get_starting_ids_dict_from_mapper(
                             #_model, mapper)
-                        #superelement2 = BDF(debug=True, log=self.log, mode='msc')
+                        #superelement2 = BDF(debug=True, log=log, mode='msc')
                         #superelement2.read_bdf(bdf_filename_out)
                         #model.superelement_models[seid] = superelement2
                         ##os.remove(bdf_filename_out)
@@ -2292,7 +2293,6 @@ class NastranIO(NastranGuiResults, NastranGeometryHelper):
         taper_ratio = np.zeros(nelements, 'float32')
         min_edge_length = np.zeros(nelements, 'float32')
         normals = np.full((nelements, 3), np.nan, 'float32')
-
 
         nids_list = []
         ieid = 0

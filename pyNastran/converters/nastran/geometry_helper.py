@@ -116,6 +116,7 @@ class NastranGeometryHelper(NastranGuiAttributes):
 
             'bar' : [], # PBAR
             'beam' : [], # PBEAM
+            'pbcomp' : [], # PBCOMP
 
             # PBEAML specfic
             "L" : [],
@@ -437,7 +438,6 @@ def get_material_arrays(model, mids):
             print('  mids = %s' % mids)
             print('  mids = %s' % materials.keys())
             continue
-            #raise
         if mat.type == 'MAT1':
             e11i = e22i = e33i = mat.e
             rhoi = mat.rho
@@ -501,10 +501,10 @@ def add_3d_bar_element(bar_type, ptype, pid_ref,
                        n1, n2, xform,
                        ugrid, node0, points_list, add_to_ugrid=True):
     """adds a 3d bar element to the unstructured grid"""
-    if ptype in ['PBARL']:
+    if ptype == 'PBARL':
         dim1 = dim2 = pid_ref.dim
         #bar_type = pid_ref.Type
-    elif ptype in ['PBEAML']:
+    elif ptype == 'PBEAML':
         dim1 = pid_ref.dim[0, :]
         dim2 = pid_ref.dim[-1, :]
     else:
@@ -528,7 +528,8 @@ def add_3d_bar_element(bar_type, ptype, pid_ref,
         points_list.append(pointsi)
         node0 += 8
         return node0
-    elif bar_type == 'ROD':
+
+    if bar_type == 'ROD':
         faces, pointsi, dnode = rod_faces(n1, n2, xform, dim1, dim2)
         face_idlist = faces_to_element_facelist(faces, node0)
         node0 += dnode

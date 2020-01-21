@@ -9,6 +9,9 @@ All coordinate cards are defined in this file.  This includes:
  * CORD2C
  * CORD2S
 
+{ug} = [Tgb]{ub}
+{ub} = [Tbg]{ug}
+
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
                         print_function, unicode_literals)
@@ -41,7 +44,7 @@ def global_to_basic_rectangular(coord, unused_xyz_global, dtype='float64'):
     #return tranform
 
 def _primary_axes(coord):
-    """gets the i,j,k axes from the """
+    """gets the i,j,k axes from the ???"""
     ## TODO: not sure...needs testing
     coord_transform = coord.transform_node_to_global()
     ex = coord_transform[0, :]

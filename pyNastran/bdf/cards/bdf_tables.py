@@ -12,13 +12,13 @@ All table cards are defined in this file.  This includes:
  * TABLEM3
  * TABLEM4
 *tables
- * TABLES1 - Material table = f(Stress)
- * TABLEST
+ * TABLEST - Material table = f(Stress)
+ * TABLES1
+ * TABLEHT - Material table = f(Temperature)
+ * TABLEH1
 *random_tables
  * TABRND1
  * TABRNDG
-
-All tables have a self.table parameter that is a TableObj
 
 """
 from __future__ import (nested_scopes, generators, division, absolute_import,
@@ -31,7 +31,6 @@ from pyNastran.bdf.field_writer_16 import print_card_16
 from pyNastran.bdf.field_writer_double import print_card_double
 
 from pyNastran.bdf.cards.base_card import BaseCard
-#from pyNastran.utils.dev import list_print
 from pyNastran.bdf.bdf_interface.assign_type import (
     integer, integer_or_blank, double, string, string_or_blank,
     double_or_string, double_or_blank, integer_or_string)

@@ -100,6 +100,15 @@ def _cut_model(nids, xyz_cp, edges, view_up, p1, p2, tol,
     plane_atol : float; default=1e-5
         the tolerance for a line that's located on the y=0 local plane
 
+   Returns
+    -------
+    local_points_array : (N, 3) float ndarray
+        the xyz points in the cutting plane coordinate system
+    global_points_array : (N, 3) float ndarray
+        the xyz points in the global xyz coordinate system
+    result_array : (N, 7) float ndarray
+        inid, x, y, z, xg, yg, zg, result
+
     """
     #view_up = camera.GetViewUp()
 
@@ -149,6 +158,15 @@ def _cut_edge_model_by_coord(nids, xyz_cid0, edges, coord, tol,
         the result to cut the model with
     plane_atol : float; default=1e-5
         the tolerance for a line that's located on the y=0 local plane
+
+   Returns
+    -------
+    local_points_array : (N, 3) float ndarray
+        the xyz points in the cutting plane coordinate system
+    global_points_array : (N, 3) float ndarray
+        the xyz points in the global xyz coordinate system
+    result_array : (N, 7) float ndarray
+        inid, x, y, z, xg, yg, zg, result
 
     """
     xyz_cid = coord.transform_node_to_local_array(xyz_cid0)
@@ -208,6 +226,7 @@ def slice_edges(xyz_cid0, xyz_cid, edges, nodal_result, plane_atol=1e-5,
         the xyz points in the global xyz coordinate system
     result_array : (N, 7) float ndarray
         inid, x, y, z, xg, yg, zg, result
+
     TODO: split result_array, so we don't have mixed int/float/complex
           results being all casted to the highest data type
 

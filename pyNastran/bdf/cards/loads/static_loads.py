@@ -948,6 +948,9 @@ class Load0(BaseCard):
     def scaled_vector(self):
         return self.xyz * self.mag
 
+    def to_global(self):
+        return self.cid_ref.transform_vector_to_global(self.scaled_vector)
+
     def raw_fields(self):
         list_fields = [self.type, self.sid, self.node_id, self.Cid(),
                        self.mag] + list(self.xyz)

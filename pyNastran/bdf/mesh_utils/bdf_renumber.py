@@ -488,7 +488,7 @@ def bdf_renumber(bdf_filename, bdf_filename_out, size=8, is_double=False,
 
         #(model.asets, 'sid', None),
         (model.dareas, 'sid', None),
-        (model.transfer_functions, 'sid', tranfer_function_map)
+        (model.transfer_functions, 'sid', tranfer_function_map),
         #(model.bsets, 'sid', None),
         #(model.csets, 'sid', None),
         #(model.qsets, 'sid', None),

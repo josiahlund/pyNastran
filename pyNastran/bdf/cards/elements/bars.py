@@ -1447,6 +1447,8 @@ class CBEND(LineElement):
         self.ga_ref = None
         self.gb_ref = None
         self.pid_ref = None
+        if self.g0 is not None:
+            assert isinstance(self.g0, integer_types), self.get_stats()
 
     @classmethod
     def add_card(cls, card, comment=''):

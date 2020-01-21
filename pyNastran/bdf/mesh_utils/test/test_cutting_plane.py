@@ -272,7 +272,7 @@ class TestCuttingPlane(unittest.TestCase):
         #print(unique_geometry_array)
         #print(unique_results_array)
 
-    def test_cut_shell_model_1(self):
+    def test_cut_shell_model_edge_1(self):
         """
         tests:
          - cut_edge_model_by_coord
@@ -309,7 +309,7 @@ class TestCuttingPlane(unittest.TestCase):
         os.remove('plane_edge.bdf')
         os.remove('plane_face.bdf')
 
-    def test_cut_shell_model_2(self):
+    def test_cut_shell_model_edge_2(self):
         """
         tests:
          - cut_edge_model_by_coord

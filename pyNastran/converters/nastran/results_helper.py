@@ -24,7 +24,6 @@ class NastranGuiResults(NastranGuiAttributes):
     def __init__(self):
         super(NastranGuiResults, self).__init__()
 
-
     def _fill_grid_point_forces(self, cases, model, key, icase,
                                 form_dict, header_dict, keys_map):
         if key not in model.grid_point_forces:
@@ -622,6 +621,7 @@ class NastranGuiResults(NastranGuiAttributes):
          - fx, fy, fz, mx, my, mz
          - thermal_load
         """
+        element_ids = self.element_ids
         fx = np.zeros(nelements, dtype='float32') # axial
         fy = np.zeros(nelements, dtype='float32') # shear_y
         fz = np.zeros(nelements, dtype='float32') # shear_z
@@ -653,8 +653,8 @@ class NastranGuiResults(NastranGuiAttributes):
                     header = _get_nastran_header(case, dt, itime)
                     header_dict[(key, itime)] = header
                     #eids_to_find = intersect1d(self.element_ids, eids)
-                    i = np.searchsorted(self.element_ids, eids)
-                    assert np.array_equal(self.element_ids[i], eids)
+                    i = np.searchsorted(element_ids, eids)
+                    assert np.array_equal(element_ids[i], eids)
                     fxi = data[itime, :, 0]
                     rxi = data[itime, :, 1]
                     if fxi.size != i.size:
@@ -673,7 +673,7 @@ class NastranGuiResults(NastranGuiAttributes):
             case = model.cbar_force[key]
             if case.is_real:
                 eids = case.element
-                i = np.searchsorted(self.element_ids, eids)
+                i = np.searchsorted(element_ids, eids)
                 is_element_on[i] = 1.
 
                 dt = case._times[itime]
@@ -789,7 +789,7 @@ class NastranGuiResults(NastranGuiAttributes):
                                         key, icase, itime,
                                         form_dict, header_dict, keys_map):
         """
-        Creates the time accurate strain energy objects for the pyNastranGUI
+        Creates the time accurate force objects
         """
         nelements = self.nelements
         out = self._create_op2_time_centroidal_force_arrays(
@@ -1122,6 +1122,15 @@ def _get_t123_tnorm(case, nids, nnodes, t123_offset=0):
         0 : translations / forces
         3 : rotations / moments
 
+    Returns
+    -------
+    t123 : (ntimes, nnodes, 3) float ndarray
+       the translations or rotations
+    tnorm : (ntimes, 3) float ndarray
+        ???
+    ntimes : int
+       number of times
+
     """
     assert case.is_sort1, case.is_sort1
 
@@ -1149,7 +1158,8 @@ def _get_t123_tnorm(case, nids, nnodes, t123_offset=0):
     ntimes = case.ntimes
 
     if nnodes != ndata:
-        t123i = np.zeros((ntimes, nnodes, 3), dtype='float32')
+        dtype = t123.dtype.name
+        t123i = np.zeros((ntimes, nnodes, 3), dtype=dtype)
         t123i[:, j, :] = t123
         t123 = t123i
 
@@ -1167,7 +1177,12 @@ def _get_t123_tnorm(case, nids, nnodes, t123_offset=0):
         try:
             tnorm = norm(t123, axis=1)
         except FloatingPointError:
-            t123 = t123.astype(dtype='float64')
+            dtype_map = {
+                'float32': 'float64',
+                'complex64': 'complex128',
+            }
+            dtype = dtype_map[t123.dtype.name]
+            t123 = t123.astype(dtype=dtype)
             tnorm = norm(t123, axis=1)
 
             #print('skipping %s' % name)
@@ -1196,6 +1211,7 @@ def _get_times(model, key):
         if not model.has_result(table_type):
             #model.log.debug('no table_type=%s' % table_type)
             continue
+
         table = model.get_result(table_type)
         if len(table) == 0:
             continue

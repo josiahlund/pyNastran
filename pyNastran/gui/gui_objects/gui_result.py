@@ -10,6 +10,7 @@ import numpy as np
 
 REAL_TYPES = ['<i4', '<i8', '<f4', '<f8',
               '|i1', # this is a boolean
+              #'|b1', # this is officially a boolean...
               '>i4', '>i8', '>f4', '>f8']
 #COMPLEX_TYPES = ['<c8']
 INT_TYPES = ['<i4', '<i8', '|i1',
@@ -151,6 +152,8 @@ class GridPointForceResult(GuiResultCommon):
         return None
     def get_title(self, i, name):
         return self.title
+    def get_location(self, i, name):
+        return self.location
     def get_header(self, i, name):
         return self.header
     def get_methods(self, i):
@@ -403,7 +406,11 @@ class GuiResult(GuiResultCommon):
                     self.data_type = self.scalar.dtype.str
                     self.data_format = '%.0f'
                     self.scalar[inan] = np.nan
-                    self.min_default = inan_remaining.min()
+                    try:
+                        self.min_default = inan_remaining.min()
+                    except ValueError:  # pragma: no cover
+                        print('inan_remaining =', inan_remaining)
+                        raise
                     self.max_default = inan_remaining.max()
         else:
             # handling VTK NaN oddinty

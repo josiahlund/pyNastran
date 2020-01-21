@@ -2596,6 +2596,7 @@ class CAERO3(BaseCard):
         self.list_w = list_w
         self.list_c1 = list_c1
         self.list_c2 = list_c2
+
         self.p1 = p1
         self.x12 = x12
         self.p4 = p4

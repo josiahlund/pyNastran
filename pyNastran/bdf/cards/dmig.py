@@ -17,7 +17,7 @@ from pyNastran.bdf.field_writer_double import print_card_double
 
 from pyNastran.bdf.bdf_interface.assign_type import (
     integer, integer_or_blank, double, string, string_or_blank,
-    parse_components, interpret_value)
+    parse_components, interpret_value, integer_double_string_or_blank)
 
 
 class DTI(BaseCard):
@@ -77,6 +77,7 @@ class DTI(BaseCard):
             self.comment = comment
         self.name = name
         self.fields = fields
+        assert len(fields) > 0, fields
 
     @classmethod
     def add_card(cls, card, comment):
@@ -475,9 +476,9 @@ class NastranMatrix(BaseCard):
         """
         if self.polar == 0: # real, imag
             return False
-        if self.polar == 1: # mag, phase
+        elif self.polar == 1: # mag, phase
             return True
-        if self.polar is None:
+        elif self.polar is None:
             return False
         msg = ('Matrix %r must have a value of POLAR = [0, 1].\n'
                'POLAR defines the type (real/imag or mag/phase) complex) '

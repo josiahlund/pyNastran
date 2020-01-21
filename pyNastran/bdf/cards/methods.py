@@ -359,13 +359,14 @@ class EIGC(Method):
 
     def validate(self):
         assert self.norm in ['MAX', 'POINT'], 'norm=%r' % self.norm
-        assert len(self.alphaAjs) == len(self.omegaAjs), 'alphaAjs=%s omegaAj=%s' % (self.alphaAjs, self.omegaAjs)
+        nalpha_a = len(self.alphaAjs)
+        assert nalpha_a == len(self.omegaAjs), 'alphaAjs=%s omegaAj=%s' % (self.alphaAjs, self.omegaAjs)
         if self.method in ['HESS', 'INV']:
-            assert len(self.alphaAjs) == len(self.alphaBjs), 'alphaAjs=%s alphaBj=%s' % (self.alphaAjs, self.alphaBjs)
-            #assert len(self.alphaAjs) == len(self.omegaBjs), 'alphaAjs=%s omegaBjs=%s' % (self.alphaAjs, self.omegaBjs)
-            assert len(self.alphaAjs) == len(self.LJs), 'alphaAjs=%s LJs=%s' % (self.alphaAjs, self.LJs)
-            assert len(self.alphaAjs) == len(self.NEJs), 'alphaAjs=%s NEJs=%s' % (self.alphaAjs, self.NEJs)
-            assert len(self.alphaAjs) == len(self.NDJs), 'alphaAjs=%s NDJs=%s' % (self.alphaAjs, self.NDJs)
+            assert nalpha_a == len(self.alphaBjs), 'alphaAjs=%s alphaBj=%s' % (self.alphaAjs, self.alphaBjs)
+            #assert nalpha_a == len(self.omegaBjs), 'alphaAjs=%s omegaBjs=%s' % (self.alphaAjs, self.omegaBjs)
+            assert nalpha_a == len(self.LJs), 'alphaAjs=%s LJs=%s' % (self.alphaAjs, self.LJs)
+            assert nalpha_a == len(self.NEJs), 'alphaAjs=%s NEJs=%s' % (self.alphaAjs, self.NEJs)
+            assert nalpha_a == len(self.NDJs), 'alphaAjs=%s NDJs=%s' % (self.alphaAjs, self.NDJs)
         elif self.method == 'CLAN':
             assert len(self.alphaAjs) == len(self.omegaAjs)
             assert len(self.alphaAjs) == len(self.mblkszs), 'alphaAjs=%s mblkszs=%s' % (self.alphaAjs, self.mblkszs)

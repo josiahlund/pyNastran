@@ -938,6 +938,7 @@ class WriteMesh(BDFAttributes):
         is_properties = self.properties or self.pelast or self.pdampt or self.pbusht
         if not is_properties:
             return
+
         out = self._get_properties_by_element_type()
         propertys_class_to_property_types, property_type_to_property_class, properties_by_class = out
 

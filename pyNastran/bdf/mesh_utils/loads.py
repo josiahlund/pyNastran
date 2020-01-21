@@ -160,12 +160,12 @@ def sum_forces_moments(model, p0, loadcase_id, include_grav=False, xyz_cid0=None
 
         elif load.type == 'GRAV':
             if include_grav:  # this will be super slow
-                g = load.GravityVector() * scale
+                gravity = load.GravityVector() * scale
                 for eid, elem in model.elements.items():
                     centroid = elem.Centroid()
                     mass = elem.Mass()
                     r = centroid - p
-                    f = mass * g
+                    f = mass * gravity
                     m = cross(r, f)
                     F += f
                     M += m
@@ -174,7 +174,7 @@ def sum_forces_moments(model, p0, loadcase_id, include_grav=False, xyz_cid0=None
             unsupported_types.add(load.type)
 
     for load_type in unsupported_types:
-        model.log.debug('case=%s loadtype=%r not supported' % (loadcase_id, load_type))
+        model.log.warning('case=%s loadtype=%r not supported' % (loadcase_id, load_type))
     return (F, M)
 
 def _pload1_total(model, loadcase_id, load, scale, xyz, F, M, p):
@@ -557,7 +557,7 @@ def sum_forces_moments_elements(model, p0, loadcase_id, eids, nids,
                     #model.log.warning('case=%s etype=%r loadtype=%r not supported' % (
                         #loadcase_id, elem.type, loadtype))
                     raise NotImplementedError('case=%s etype=%r loadtype=%r not supported' % (
-                        loadcase_id, elem.type, load.type))
+                        loadcase_id, elem.type, loadtype))
         elif loadtype == 'PLOAD4':
             _pload4_elements(loadcase_id, load, scale, eids, xyz, F, M, p)
 
