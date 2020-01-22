@@ -556,6 +556,9 @@ class OP2(OP2_Scalar):
     def _finalize(self):
         # type: () -> None
         """internal method"""
+        if hasattr(self, 'subcase'):
+            del self.subcase
+
         result_types = self.get_table_types()
         for result_type in result_types:
             if result_type in ['params', 'gpdt', 'eqexin']:
@@ -845,7 +848,7 @@ class OP2(OP2_Scalar):
                     #print('key0 =', result_type, key0)
                     # res0 = result[key0]
 
-                    isubcase, analysis_code, sort_code, count, isuperelmemnt_adaptivity_index = key0
+                    isubcase, analysis_code, unused_sort_code, count, isuperelmemnt_adaptivity_index = key0
                     #isubcase, analysis_code, sort_code, count, isuperelmemnt_adaptivity_index, table_name = key0
                     if not (key1 in result and key2 in result):
                         if key1 in result:
@@ -1004,7 +1007,7 @@ class OP2(OP2_Scalar):
         superelement_adaptivity_index_list.sort()
         pval_step_list.sort()
 
-        keys3 = []
+        keys3 = []  # type: List[Tuple[int, int, int, int, int, int, str]]
         for isubcase in isubcase_list:
             for count in count_list:
                 for analysis_code in analysis_code_list:

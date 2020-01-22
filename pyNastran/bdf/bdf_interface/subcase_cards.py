@@ -398,10 +398,11 @@ INT_CARD_NAMES = tuple([card.type for card in INT_CARDS])
 class StringCard(CaseControlCard):
     type = 'StringCard'
     allowed_values = [] # type: List[str]
-    def __init__(self, value):
+    def __init__(self, value, validate=True):
         super(StringCard, self).__init__()
         self.value = value.strip()
-        self.validate()
+        if validate:
+            self.validate()
 
     @classmethod
     def add_from_case_control(cls, line, line_upper, lines, i):
@@ -411,7 +412,8 @@ class StringCard(CaseControlCard):
 
     def validate(self):
         if self.value not in self.allowed_values:
-            msg = 'value=%r not in [%s]' % (self.value, ', '.join(self.allowed_values))
+            msg = '%s: value=%r not in [%s]' % (
+                self.type, self.value, ', '.join(self.allowed_values))
             raise ValueError(msg)
 
     def __repr__(self):
@@ -493,7 +495,7 @@ class SET(CaseControlCard):
             raise RuntimeError(key)
 
         assert key.upper() == key, key
-        uused_options = int(set_id)
+        unused_options = int(set_id)
 
         #if self.debug:
             #self.log.debug('SET-type key=%r set_id=%r' % (key, set_id))
@@ -565,8 +567,14 @@ class CheckCard(CaseControlCard):
 
     # key:(type, allowed_values)
     allowed_values = {}  # type: Dict[str, Union[float, str]]
+
+    # the allowed value for the key, options, value approach
     allowed_strings = set([]) # type: Set[str]
+
+    # maps something like INIT to INITIAL
     duplicate_names = {} # type: Dict[Any, Any]
+
+    # enables values as integers instead of just strings
     allow_ints = False
 
     def export_to_hdf5(self, hdf5_file, encoding):

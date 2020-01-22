@@ -2984,7 +2984,6 @@ class OP2Reader(object):
         """
         op2 = self.op2
         ni = op2.n
-        #markers = []
         data = self.read_block()
         marker, = op2.struct_i.unpack(data)
         if rewind:
@@ -3332,6 +3331,9 @@ class OP2Reader(object):
         if ndata == 8:
             subtable_name, = self.op2.struct_8s.unpack(data)
         elif ndata == 28:
+            # date = august 2, 2019
+            #(b'OGPFB1  ', 8, 2, 19, 0, 1)
+            #(b'OGPFB1  ', 8, 2, 19, 1, 1)
             fmt = self._endian + b'8s 3i 2i'
             subtable_name, month, day, year, zero, one = Struct(fmt).unpack(data)
             if zero != 0 or one != 1:  # pragma: no cover
@@ -3557,6 +3559,7 @@ class OP2Reader(object):
         .. warning:: 's' is apparently not Python 3 friendly
 
         """
+        #ifsdqlILQ
         return self._write_data(sys.stdout, data, types=types, endian=endian)
 
     def _write_data(self, f, data, types='ifs', endian=None):  # pragma: no cover
@@ -3596,33 +3599,37 @@ class OP2Reader(object):
 
         f.write('\nndata = %s:\n' % n)
         for typei in types:
-            assert typei in 'sifdq lIL', 'type=%r is invalid' % typei
+            assert typei in 'sifdq lILQ', 'type=%r is invalid' % typei
 
+        data4 = data[:nints * 4]
         if 's' in types:
             strings = unpack('%s%is' % (endian, n), data)
             f.write("  strings = %s\n" % str(strings))
         if 'i' in types:
-            ints = unpack('%s%ii' % (endian, nints), data)
+            ints = unpack('%s%ii' % (endian, nints), data4)
             f.write("  ints    = %s\n" % str(ints))
         if 'f' in types:
-            floats = unpack('%s%if' % (endian, nints), data)
+            floats = unpack('%s%if' % (endian, nints), data4)
             f.write("  floats  = %s\n" % str(floats))
         if 'd' in types:
             doubles = unpack('%s%id' % (endian, ndoubles), data[:ndoubles*8])
             f.write("  doubles (float64) = %s\n" % str(doubles))
 
         if 'l' in types:
-            longs = unpack('%s%il' % (endian, nints), data)
+            longs = unpack('%s%il' % (endian, nints), data4)
             f.write("  long  = %s\n" % str(longs))
         if 'I' in types:
-            ints2 = unpack('%s%iI' % (endian, nints), data)
+            ints2 = unpack('%s%iI' % (endian, nints), data4)
             f.write("  unsigned int = %s\n" % str(ints2))
         if 'L' in types:
-            longs2 = unpack('%s%iL' % (endian, nints), data)
+            longs2 = unpack('%s%iL' % (endian, nints), data4)
             f.write("  unsigned long = %s\n" % str(longs2))
         if 'q' in types:
             longs = unpack('%s%iq' % (endian, ndoubles), data[:ndoubles*8])
             f.write("  long long (int64) = %s\n" % str(longs))
+        if 'Q' in types:
+            longs = unpack('%s%iq' % (endian, ndoubles), data[:ndoubles*8])
+            f.write("  unsigned long long (int64) = %s\n" % str(longs))
         f.write('\n')
         return strings, ints, floats
 

@@ -559,15 +559,15 @@ TABLE_OBJ_MAP = {
 
     'ctriax_stress' : (RealTriaxStressArray, ComplexTriaxStressArray,),
 
-    'cquad4_composite_stress' : (RealCompositePlateStressArray, None),
-    'ctria3_composite_stress' : (RealCompositePlateStressArray, None),
-    'ctria6_composite_stress' : (RealCompositePlateStressArray, None),
-    'cquad8_composite_stress' : (RealCompositePlateStressArray, None),
+    'cquad4_composite_stress' : (RealCompositePlateStressArray, ),
+    'ctria3_composite_stress' : (RealCompositePlateStressArray, ),
+    'ctria6_composite_stress' : (RealCompositePlateStressArray, ),
+    'cquad8_composite_stress' : (RealCompositePlateStressArray, ),
 
-    'cquad4_composite_strain' : (RealCompositePlateStrainArray, None),
-    'ctria3_composite_strain' : (RealCompositePlateStrainArray, None),
-    'ctria6_composite_strain' : (RealCompositePlateStrainArray, None),
-    'cquad8_composite_strain' : (RealCompositePlateStrainArray, None),
+    'cquad4_composite_strain' : (RealCompositePlateStrainArray, ),
+    'ctria3_composite_strain' : (RealCompositePlateStrainArray, ),
+    'ctria6_composite_strain' : (RealCompositePlateStrainArray, ),
+    'cquad8_composite_strain' : (RealCompositePlateStrainArray, ),
 
     'RAPCONS.cquad4_composite_stress' : (RealCompositePlateStressArray, ),
     'RAPCONS.ctria3_composite_stress' : (RealCompositePlateStressArray, ),
@@ -868,6 +868,8 @@ TABLE_OBJ_MAP = {
     'grid_point_stresses_volume_principal' : (GridPointStressesVolumePrincipalArray, ),
 
     # ----------------------------------------------------------
+    'conv_thermal_load' : (RealConvHeatFluxArray,),
+
     'crod_thermal_load' :  (Real1DHeatFluxArray, ),
     'ctube_thermal_load' :  (Real1DHeatFluxArray, ),
     'conrod_thermal_load' : (Real1DHeatFluxArray, ),
@@ -922,7 +924,6 @@ TABLE_OBJ_MAP = {
     'temperatures' : (RealTemperatureArray, ),
     'thermal_gradient_and_flux' : (RealTemperatureGradientAndFluxArray, ),
     'thermal_load_vectors' : (RealTemperatureVectorArray, ),
-    'conv_thermal_load' : (RealConvHeatFluxArray,),
 }
 
 TABLE_OBJ_KEYS = list(TABLE_OBJ_MAP.keys())
@@ -1007,6 +1008,10 @@ def _load_table(result_name, h5_result, objs, log, debug=False):# real_obj, comp
     dt = nonlinear_factor
 
     class_name = _cast(h5_result.get('class_name'))
+    if isinstance(class_name, bytes):
+        class_name = class_name.decode('latin1')
+
+
     obj_class = _get_obj_class(objs, class_name, result_name, is_real, log)
     if obj_class is None:
         log.warning('  unhandled result_name=%r class_name=%r...' % (

@@ -155,7 +155,7 @@ def _eq_nodes_setup(bdf_filename, unused_tol,
 def _get_xyz_cid0(model, nids):
     """gets xyz_cid0"""
     coord_ids = model.coord_ids
-    needs_get_position = True if coord_ids == [0] else False
+    needs_get_position = (coord_ids == [0])
 
     if needs_get_position:
         nodes_xyz = array([model.nodes[nid].get_position()
@@ -285,7 +285,7 @@ def _eq_nodes_find_pairs(nids, slots, ieq, node_set=None):
     return nid_pairs
 
 
-def _eq_nodes_final(nid_pairs, model, tol, node_set=None):
+def _eq_nodes_final(nid_pairs, model, tol, node_set=None, debug=False):
     """apply nodal equivalencing to model"""
     for (nid1, nid2) in nid_pairs:
         node1 = model.nodes[nid1]
@@ -327,9 +327,10 @@ def _nodes_xyz_nids_to_nid_pairs(nodes_xyz, nids, tol, log, inew,
                                  node_set=None, neq_max=4,
                                  debug=False):
     """helper for equivalencing"""
-    kdt, ieq, slots = _eq_nodes_build_tree(nodes_xyz, nids, tol,
-                                      inew=inew, node_set=node_set,
-                                      neq_max=neq_max)
+    unused_kdt, ieq, slots = _eq_nodes_build_tree(
+        nodes_xyz, nids, tol,
+        inew=inew, node_set=node_set,
+        neq_max=neq_max)
 
     nid_pairs = _eq_nodes_find_pairs(nids, slots, ieq, node_set=node_set)
     return nid_pairs

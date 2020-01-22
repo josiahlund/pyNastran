@@ -645,11 +645,16 @@ NX_ELEMENTS = {
     257 : 'CPYRAMFD',
     258 : 'CPYRAMFD',
     259 : 'CTRAX3FD',
+
     261 : 'CTRAX3FD',
     262 : 'CQUADX4FD',
     263 : 'CTRAX6FD',
     264 : 'QUADX3FD',
+
     266 : 'QUADX8FD',
+
+    269 : 'CHEXAL',
+    270 : 'CPENTAL',
     271 : 'CPLSTN3',
     272 : 'CPLSTN4',
     273 : 'CPLSTN6',
@@ -658,6 +663,8 @@ NX_ELEMENTS = {
     276 : 'CPLSTS4',
     277 : 'CPLSTS6',
     278 : 'CPLSTS8',
+    # 279
+    280 : 'CBEAR',
     281 : 'CPLSTN3',
     282 : 'CPLSTN4',
     283 : 'CPLSTN6',
@@ -675,6 +682,72 @@ NX_ELEMENTS = {
     296 : 'CPLSTS4',
     297 : 'CPLSTS6',
     298 : 'CPLSTS8',
+
+    300 : 'HEXA',
+    301 : 'PENTA',
+    302 : 'TETRA',
+    303 : 'PYRAM',
+
+    304 : 'HEXAL',
+    305 : 'PENTAL',
+    306 : 'HEXALN',
+    307 : 'CPENTALN',
+
+    312 : 'TRAX3',
+    313 : 'QUADX4',
+    314 : 'TRAX6',
+    315 : 'QUADX8',
+
+    316 : 'PLSTN3',
+    317 : 'PLSTN4',
+    318 : 'PLSTN6',
+    319 : 'PLSTN8',
+
+    320 : 'PLSTS3',
+    321 : 'PLSTS4',
+    322 : 'PLSTS6',
+    323 : 'PLSTS8',
+
+    328 : 'GPLSTN3',
+    329 : 'GPLSTN4',
+    330 : 'GPLSTN6',
+    331 : 'GPLSTN8',
+
+    337 : 'CHOCK3',
+    338 : 'CHOCK4',
+    339 : 'CHOCK6',
+    340 : 'CHOCK8',
+    # SOL 401
+    341 : 'CTRIA3 SOL 401',
+    342 : 'CQUAD4 SOL 401',
+    343 : 'CTRIA6 SOL 401',
+    344 : 'CQUAD8 SOL 401',
+    345 : 'CTRIAR SOL 401',
+    346 : 'CQUADR SOL 401',
+    347 : 'CBAR SOL 401',
+    348 : 'CBEAM SOL 401',
+    349 : 'CBUSH1D SOL 401',
+    350 : 'CELAS1 SOL 401',
+    351 : 'CELAS2 SOL 401',
+    352 : 'CBUSH SOL 401',
+
+    #ELTYPE=267 - Composite HEXA element (CHEXAL)
+    #ELTYPE=268 - Composite PENTA element (CPENTAL)
+    355 : 'Composite triangular shell element (CTRIA6); SOL 402?',
+    356 : 'Composite quadrilateral shell element (CQUAD8); SOL 402?',
+    357 : 'Composite triangular shell element (CTRIAR); SOL 402?',
+    358 : 'Composite quadrilateral shell element (CQUADR); SOL 402?',
+
+    # SOL 402
+    363 : 'CROD SOL 402',
+
+    400 : 'CELAS1 - Basic System',
+    401 : 'CELAS2 - Basic System',
+    402 : 'CDAMP1 - Basic System',
+    403 : 'CDAMP2 - Basic System',
+    404 : 'CBUSH1D - Basic System',
+    405 : 'CBUSH - Basic System',
+    406 : 'CVISC - Basic System',
 }
 
 ANALYSIS_CODE_MAP = {
@@ -773,6 +846,7 @@ class Op2Codes(object):
         return msg
 
     def approach_code_str(self, approach_code):
+        """TODO: not done"""
         return ''
 
     def code_information(self, include_time=True):
