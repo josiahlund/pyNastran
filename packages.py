@@ -269,11 +269,22 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
                 all_reqs['pillow'] = 'pillow >=1.4.0'
                 install_requires.append('pillow >= 1.4.0')
         except ImportError:
-            print('missing pillow...')
+            #print('missing pillow...')
             if PY2:
                 install_requires.append('pillow >= 1.4.0, < 7.0')  # 1.5.0 used
             else:
                 install_requires.append('pillow >= 1.4.0')  # 1.5.0 used
+
+        try:
+            import imageio
+            if imageio.__version__ < '2.2.0':
+                print("imageio.version = %r < '2.2.0'" % imageio.__version__)
+                all_reqs['imageio'] = '>= 2.2.0'
+                install_requires.append('imageio >= 2.2.0')
+            else:
+                all_reqs['imageio'] = imageio.__version__
+        except ImportError:
+            install_requires.append('imageio >= 2.2.0')  # 2.6.1 used
 
     if PY2:
         try:
@@ -300,19 +311,6 @@ def get_package_requirements(is_gui=True, add_vtk_qt=True, python_version=None):
         #except ImportError:
             #install_requires.append('scandir >= 1.7.0')  # 1.9.0 used
 
-    if is_rtd:
-        pass
-    elif is_gui:
-        try:
-            import imageio
-            if imageio.__version__ < '2.2.0':
-                print("imageio.version = %r < '2.2.0'" % imageio.__version__)
-                all_reqs['imageio'] = '>= 2.2.0'
-                install_requires.append('imageio >= 2.2.0')
-            else:
-                all_reqs['imageio'] = imageio.__version__
-        except ImportError:
-            install_requires.append('imageio >= 2.2.0')
 
 
     #is_windows = 'nt' in os.name

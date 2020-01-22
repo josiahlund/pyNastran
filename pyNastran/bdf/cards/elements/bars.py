@@ -1393,7 +1393,7 @@ class CBEND(LineElement):
         eid = 1
         pid = 1
         nids = [1, 2]
-        g0 = [4]
+        g0 = 4
         x = None
         geom = 1
         return CBEND(eid, pid, nids, g0, x, geom, comment='')

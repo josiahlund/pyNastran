@@ -445,7 +445,7 @@ class GetCard(GetMethods):
             stop_on_failure=stop_on_failure)
         return lines
 
-    def get_MPCx_node_ids(self, mpc_id, consider_mpcadd=True, stop_on_failure=True):
+    def get_MPCx_node_ids_c1(self, mpc_id, consider_mpcadd=True, stop_on_failure=True):
         # type: (int, bool, bool) -> Tuple[Dict[str, List[int]], Dict[str, List[int]]]
         """see ``pyNastran.bdf.mesh_utils.mpc_dependency.get_mpc_node_ids_c1(...)``"""
         independent_node_ids_c1, dependent_node_ids_c1 = get_mpc_node_ids_c1(

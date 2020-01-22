@@ -101,7 +101,7 @@ def bdf_equivalence_nodes(bdf_filename, bdf_filename_out, tol,
 
     nid_pairs = _nodes_xyz_nids_to_nid_pairs(
         nodes_xyz, nids, tol, log, inew,
-        node_set=node_set, neq_max=neq_max, method=method, debug=debug)
+        node_set=node_set, neq_max=neq_max, debug=debug)
     _eq_nodes_final(nid_pairs, model, tol, node_set=node_set, debug=debug)
 
     if bdf_filename_out is not None:

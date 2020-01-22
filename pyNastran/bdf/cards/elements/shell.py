@@ -3042,7 +3042,7 @@ class CPLSTx6(TriShell):
             assert len(card) <= 15, 'len(CPLSTN6 card) = %i\ncard=%s' % (len(card), card)
         else:
             theta = 0.0
-        return CPLSTN6(eid, pid, nids, theta=theta, comment=comment)
+        return cls(eid, pid, nids, theta=theta, comment=comment)
 
     def cross_reference(self, model):
         """
@@ -3216,6 +3216,12 @@ class CPLSTx6(TriShell):
         #msg2 = self.write_card(size)
         #assert msg == msg2, '\n%s---\n%s\n%r\n%r' % (msg, msg2, msg, msg2)
         return msg
+
+class CPLSTS6(CPLSTx6):
+    type = 'CPLSTS6'
+
+class CPLSTN6(CPLSTx6):
+    type = 'CPLSTN6'
 
 
 class CPLSTx8(QuadShell):

@@ -394,11 +394,11 @@ class CMASS2(PointMassElement):
         if g1 == 0:
             g1 = None
         else:
-            assert g1 > 0, f'g1=%r; g2=%r c1=%r c2=%r' % (g1, g2, c1, c2)
+            assert g1 > 0, 'g1=%r; g2=%r c1=%r c2=%r' % (g1, g2, c1, c2)
         if g2 == 0:
             g2 = None
         else:
-            assert g2 > 0, f'g1=%r; g2=%r c1=%r c2=%r' % (g1, g2, c1, c2)
+            assert g2 > 0, 'g1=%r; g2=%r c1=%r c2=%r' % (g1, g2, c1, c2)
 
         assert 0 <= c1 <= 123456, 'c1=%s data=%s' % (c1, data)
         assert 0 <= c2 <= 123456, 'c2=%s data=%s' % (c2, data)
