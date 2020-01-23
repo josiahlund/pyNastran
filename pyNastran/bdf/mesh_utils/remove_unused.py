@@ -148,7 +148,7 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
         'CTETRA', 'CHEXA', 'CPENTA', 'CPYRAM',
         'CROD', 'CRAC2D', 'CRAC3D',
         'CONROD', 'CCONEAX',
-        'CBAR', 'CBEAM', 'CBEND',
+        'CBAR', 'CBEAM', 'CBEND', 'CBEAM3',
 
         # acoustic
         'CHACAB',
@@ -317,16 +317,6 @@ def remove_unused(bdf_filename, remove_nids=True, remove_cids=True,
         elif card_type == 'PBUSHT':
             # tables
             pass
-        elif card_type == 'CBUSH':
-            for eid in ids:
-                elem = model.elements[eid]
-                nids_used.update(elem.node_ids)
-                pids_used.add(elem.Pid())
-                if elem.g0 is not None:
-                    assert isinstance(elem.g0, integer_types), elem.g0
-                    nids_used.add(elem.g0)
-                # TODO: cid
-
         elif card_type == 'AESURF':
             #CID1  | ALID1 | CID2   | ALID2
             for aesurf in model.aesurf.values():
@@ -623,7 +613,7 @@ def _store_elements(card_type, model, ids, nids_used, pids_used, mids_used, cids
             nids_used.update(elem.node_ids)
             pids_used.add(elem.Pid())
             if elem.g0 is not None:
-                assert isinstance(elem.G0(), integer_types), elem.G0()
+                assert isinstance(elem.g0, integer_types), elem.g0
                 nids_used.add(elem.G0())
     elif card_type == 'CBUSH':
         for eid in ids:
@@ -631,11 +621,19 @@ def _store_elements(card_type, model, ids, nids_used, pids_used, mids_used, cids
             elem = model.elements[eid]
             nids_used.update(elem.node_ids)
             if elem.g0 is not None:
-                assert isinstance(elem.G0(), integer_types), elem.G0()
+                assert isinstance(elem.g0, integer_types), elem.g0
                 nids_used.add(elem.G0())
             pids_used.add(elem.Pid())
-            cids_used.add(elem.Cid())
-
+            if elem.cid is not None:
+                cids_used.add(elem.Cid())
+    elif card_type == 'CBEAM3':
+        for eid in ids:
+            elem = model.elements[eid]
+            nids_used.update(elem.node_ids)
+            pids_used.add(elem.Pid())
+            if elem.g0 is not None:
+                assert isinstance(elem.g0, integer_types), elem.g0
+                nids_used.add(elem.g0)
     elif card_type in ['CBUSH1D', 'CBUSH2D']:
         for eid in ids:
             elem = model.elements[eid]
