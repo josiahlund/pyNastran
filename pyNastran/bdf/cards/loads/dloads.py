@@ -513,29 +513,6 @@ class RLOAD1(DynamicLoad):
         assert len(card) <= 8, 'len(RLOAD1 card) = %i\ncard=%s' % (len(card), card)
         return RLOAD1(sid, excite_id, delay, dphase, tc, td, Type, comment=comment)
 
-    #def _cross_reference_excite_id(self, model, msg):
-        #"""not quite done...not sure how to handle the very odd xref"""
-        #case_control = model.case_control_deck
-        #if case_control is not None:
-            ##print('cc = %r' % case_control)
-            ##print('asdf')
-            #for key, subcase in sorted(model.case_control_deck.subcases.items()):
-                #print(subcase, type(subcase))
-                #if 'LOADSET' in subcase:
-                    #lseq_id = subcase['LOADSET'][0]
-                    #lseq = model.Load(lseq_id, consider_load_combinations=False, msg=msg)[0]
-                    #self.excite_id_ref = lseq
-                    ##self.dload_id = lseq.
-                #elif 'DLOAD' in subcase:
-                    ##dload_id = subcase['DLOAD'][0]
-                    #self.excite_id_ref = model.DAREA(self.excite_id, msg=msg)
-                #else:
-                    #msg = ('LOADSET and DLOAD are not found in the case control deck\n%s' %
-                           #str(model.case_control_deck))
-                    #raise RuntimeError(msg)
-        #else:
-            #self.excite_id_ref = model.DAREA(self.excite_id, msg=msg)
-
     def cross_reference(self, model):
         """
         Cross links the card so referenced cards can be extracted directly

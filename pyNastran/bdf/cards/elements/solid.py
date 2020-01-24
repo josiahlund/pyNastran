@@ -375,6 +375,7 @@ class CHEXA8(SolidElement):
         return faces
 
     def material_coordinate_system(self, xyz=None):
+        """http://www.ipes.dk/Files/Ipes/Filer/nastran_2016_doc_release.pdf"""
         #if normal is None:
             #normal = self.Normal() # k = kmat
 
@@ -399,15 +400,15 @@ class CHEXA8(SolidElement):
 
         #CORDM=-2
         centroid = (x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8) / 8.
-        xe = (x2+x3+x6+x7)/4. - (x1+x4+x8+x5)/4.
+        xe = ((x2+x3+x6+x7) - (x1+x4+x8+x5)) / 4.
         xe /= np.linalg.norm(xe)
-        v = ((x3+x7+x8+x4)/4. - (x1+x2+x6+x5))/4
-        z = np.cross(xe, v)
-        z /= np.linalg.norm(z)
-        raise NotImplementedError('material_coordinate_system')
-        #y = np.cross(z, x)
-        #y /= np.linalg.norm(y)
-        #return centroid, xe, y, z
+        v = ((x3+x7+x8+x4) - (x1+x2+x6+x5)) / 4
+        ze = np.cross(xe, v)
+        ze /= np.linalg.norm(ze)
+
+        ye = np.cross(ze, xe)
+        ye /= np.linalg.norm(ye)
+        return centroid, xe, ye, ze
 
     def _verify(self, xref):
         eid = self.eid

@@ -521,7 +521,8 @@ def _convert_properties(model, xyz_scale, time_scale, mass_scale, weight_scale,
         elif prop_type == 'PBEAML':
             prop.dim *= xyz_scale
             prop.nsm *= nsm_bar_scale
-
+        elif prop_type == 'PBEAM3':
+            _convert_pbeam3(prop, xyz_scale, area_scale, area_moi_scale, nsm_bar_scale)
         elif prop_type == 'PSHELL':
             prop.t *= xyz_scale
             prop.nsm *= nsm_plate_scale
@@ -654,6 +655,38 @@ def _convert_pbeam(prop, xyz_scale, area_scale, area_moi_scale, nsm_bar_scale):
     prop.n2a *= xyz_scale
     prop.n1b *= xyz_scale
     prop.n2b *= xyz_scale
+
+def _convert_pbeam3(prop, xyz_scale, area_scale, area_moi_scale, nsm_bar_scale):
+    """converts a PBEAM3"""
+    prop.A = [areai * area_scale for areai in prop.A]
+    # cw
+
+    prop.cy = [ci * xyz_scale for ci in prop.cy]
+    prop.cz = [ci * xyz_scale for ci in prop.cz]
+    prop.dy = [ci * xyz_scale for ci in prop.dy]
+    prop.dz = [ci * xyz_scale for ci in prop.dz]
+    prop.ey = [ci * xyz_scale for ci in prop.ey]
+    prop.ez = [ci * xyz_scale for ci in prop.ez]
+    prop.fy = [ci * xyz_scale for ci in prop.fy]
+    prop.fz = [ci * xyz_scale for ci in prop.fz]
+
+    if prop.i1 is not None:
+        prop.i1 = [i1i * area_moi_scale for i1i in prop.i1]
+    if prop.i2 is not None:
+        prop.i2 = [i2i * area_moi_scale for i2i in prop.i2]
+    if prop.i12 is not None:
+        prop.i12 = [i12i * area_moi_scale for i12i in prop.i12]
+    prop.j = [ji * area_moi_scale for ji in prop.j]
+    prop.nsm = [nsmi * nsm_bar_scale for nsmi in prop.nsm]
+
+    #my
+    #mz
+    #nsiy
+    #nsiyz
+    #nsiz
+    #ny
+    #nz
+    # w
 
 def _convert_pbush(prop, velocity_scale, mass_scale, stiffness_scale):
     # can be length=0

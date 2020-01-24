@@ -34,6 +34,7 @@ np.set_printoptions(edgeitems=3, infstr='inf',
 DIRNAME = os.path.dirname(__file__)
 
 class TestMeshUtils(unittest.TestCase):
+    """various mesh_utils tests"""
 
     def test_structured_cquads(self):
         """tests create_structured_cquad4s"""

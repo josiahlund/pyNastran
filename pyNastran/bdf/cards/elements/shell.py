@@ -3217,6 +3217,7 @@ class CPLSTx6(TriShell):
         #assert msg == msg2, '\n%s---\n%s\n%r\n%r' % (msg, msg2, msg, msg2)
         return msg
 
+
 class CPLSTS6(CPLSTx6):
     type = 'CPLSTS6'
 

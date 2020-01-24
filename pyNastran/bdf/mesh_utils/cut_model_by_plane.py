@@ -59,7 +59,6 @@ def _setup_faces(bdf_filename):
                           #consider_0d=False, consider_0d_rigid=False,
                           #consider_1d=False, consider_2d=True, consider_3d=False)
     #edge_to_eid_map = out['edge_to_eid_map']
-    #faces = iterkeys(edge_to_eid_map)
     return nids, xyz_cid0, faces, face_eids
 
 def cut_face_model_by_coord(bdf_filename, coord, tol,
@@ -147,6 +146,10 @@ def _determine_cord2r(origin, zaxis, xzplane):
     return i, k, origin, zaxis, xzplane
 
 def _project_z_axis(p1, p2, z_global):
+    """
+    p1-p2 defines the x-axis
+    k is defined by the z-axis
+    """
     x = p2 - p1
     iprime = x / np.linalg.norm(x)
     k = z_global / np.linalg.norm(z_global)
@@ -221,6 +224,9 @@ def _cut_face_model_by_coord(nids, xyz_cid0, faces, face_eids, coord, tol,
         ???
     unique_results_array : ???
         ???
+    rods_array : ???
+        ???
+
     """
     xyz_cid = coord.transform_node_to_local_array(xyz_cid0)
     #face_eids = np.asarray(face_eids)
@@ -448,7 +454,6 @@ def _unique_face_rows(geometry_array, results_array, nodes, skip_cleanup=True):
     #print(geometry_array)
     #iedges = geometry_array[:, 1:]
     #geometry_array[:, 1:] = nodes[iedges.flatten()].reshape(iedges.shape)
-    #aaa
     #myrow = None
 
     # eid, nid, inid1, inid2
