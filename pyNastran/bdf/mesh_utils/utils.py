@@ -26,45 +26,9 @@ from pyNastran.bdf.mesh_utils.mirror_mesh import write_bdf_symmetric
 from pyNastran.bdf.mesh_utils.collapse_bad_quads import convert_bad_quads_to_tris
 from pyNastran.bdf.mesh_utils.delete_bad_elements import delete_bad_shells, get_bad_shells
 from pyNastran.bdf.mesh_utils.split_cbars_by_pin_flag import split_cbars_by_pin_flag
-from pyNastran.bdf.mesh_utils.dev.create_vectorized_numbered import create_vectorized_numbered
 from pyNastran.bdf.mesh_utils.remove_unused import remove_unused
 from pyNastran.bdf.mesh_utils.free_faces import write_skin_solid_faces
 from pyNastran.bdf.mesh_utils.get_oml import get_oml_eids
-
-
-def cmd_line_create_vectorized_numbered(argv=None, quiet=False):  # pragma: no cover
-    if argv is None:
-        argv = sys.argv
-
-    msg = (
-        'Usage:\n'
-        '  bdf create_vectorized_numbered IN_BDF_FILENAME [OUT_BDF_FILENAME]\n'
-        '  bdf create_vectorized_numbered -h | --help\n'
-        '  bdf create_vectorized_numbered -v | --version\n'
-        '\n'
-        'Positional Arguments:\n'
-        '  IN_BDF_FILENAME   the model to convert\n'
-        "  OUT_BDF_FILENAME  the converted model name (default=IN_BDF_FILENAME + '_convert.bdf')"
-        '\n'
-        'Info:\n'
-        '  -h, --help      show this help message and exit\n'
-        "  -v, --version   show program's version number and exit\n"
-    )
-    if len(argv) == 1:
-        sys.exit(msg)
-
-    from docopt import docopt
-    ver = str(pyNastran.__version__)
-    data = docopt(msg, version=ver, argv=argv[1:])
-    if not quiet:  # pragma: no cover
-        print(data)
-    bdf_filename_in = data['IN_BDF_FILENAME']
-    if data['OUT_BDF_FILENAME']:
-        bdf_filename_out = data['OUT_BDF_FILENAME']
-    else:
-        base, ext = os.path.splitext(bdf_filename_in)
-        bdf_filename_out = base + '_convert' + ext
-    create_vectorized_numbered(bdf_filename_in, bdf_filename_out)
 
 
 def cmd_line_equivalence(argv=None, quiet=False):
@@ -1157,12 +1121,6 @@ def cmd_line(argv=None, quiet=False):
         '  bdf export_caero_mesh  -h | --help\n'
         '  bdf split_cbars_by_pin_flags  -h | --help\n'
     )
-
-    if dev:
-        msg += (
-            '  bdf create_vectorized_numbered  -h | --help\n'
-            '  bdf bin                         -h | --help\n'
-        )
     msg += '  bdf -v | --version\n'
     msg += '\n'
 
@@ -1194,10 +1152,6 @@ def cmd_line(argv=None, quiet=False):
         cmd_line_filter(argv, quiet=quiet)
     elif argv[1] == 'free_faces':
         cmd_line_free_faces(argv, quiet=quiet)
-    elif argv[1] == 'bin' and dev:
-        cmd_line_bin(argv, quiet=quiet)
-    elif argv[1] == 'create_vectorized_numbered' and dev:
-        cmd_line_create_vectorized_numbered(argv, quiet=quiet)
     elif argv[1] in ['-v', '--version']:
         print(pyNastran.__version__)
     else:

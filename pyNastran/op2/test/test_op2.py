@@ -620,6 +620,7 @@ def main(argv=None, show_args: bool=True) -> None:
 
     time0 = time.time()
 
+    data['--test'] = False
     if data['--profile']:
         import pstats
         import cProfile
