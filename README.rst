@@ -1,51 +1,7 @@
-+--------------+-----------------------------------------------------------------------+-------------+--------------+
-| **Version**  | **Docs**                                                              | **Status**  | **Coverage** |
-+--------------+-----------------------------------------------------------------------+-------------+--------------+
-| |PyPi13|_    | `Docs <https://pynastran-git.readthedocs.io/en/1.3/>`_                | |Travis13|_ | |Codecov13|_ |
-+--------------+-----------------------------------------------------------------------+-------------+--------------+
-| Master       | `Docs <http://pynastran-git.readthedocs.io/en/latest/?badge=latest>`_ | |TravisMa|_ | |CodecovMa|_ |
-+--------------+-----------------------------------------------------------------------+-------------+--------------+
-
-.. |PyPi13| image:: https://img.shields.io/pypi/v/pynastran.svg
-.. _PyPi13: https://pypi.python.org/pypi/pyNastran
-
-.. comments
-   #-----------------------------------------------------------------
-
-.. |Travis11| image:: https://img.shields.io/travis/SteveDoyle2/pyNastran/v1.1.svg
-.. _Travis13: https://travis-ci.org/SteveDoyle2/pyNastran
-
-.. |Travis12| image:: https://img.shields.io/travis/SteveDoyle2/pyNastran/1.2.svg
-.. _Travis12: https://travis-ci.org/SteveDoyle2/pyNastran
-
-.. |Travis13| image:: https://img.shields.io/travis/SteveDoyle2/pyNastran/1.3.svg
-.. _Travis13: https://travis-ci.org/SteveDoyle2/pyNastran
-
-.. |TravisMa| image:: https://img.shields.io/travis/SteveDoyle2/pyNastran/master.svg
-.. _TravisMa: https://travis-ci.org/SteveDoyle2/pyNastran
-
-.. comments
-   #-----------------------------------------------------------------
-   
-.. |Codecov11| image:: https://img.shields.io/coveralls/SteveDoyle2/pyNastran/1.1.svg
-.. _Codecov11: https://coveralls.io/github/SteveDoyle2/pyNastran?branch=1.2
-
-.. |Codecov12| image:: https://img.shields.io/coveralls/SteveDoyle2/pyNastran/1.2.svg
-.. _Codecov12: https://coveralls.io/github/SteveDoyle2/pyNastran?branch=1.2
-
-.. |Codecov13| image:: https://codecov.io/gh/SteveDoyle2/pyNastran/branch/1.3/graph/badge.svg
-.. _Codecov13: https://codecov.io/gh/SteveDoyle2/pyNastran/branch/1.3
-
-.. |CodecovMa| image:: https://codecov.io/gh/SteveDoyle2/pyNastran/branch/master/graph/badge.svg
-.. _CodecovMa: https://codecov.io/gh/SteveDoyle2/pyNastran/branch/master
-
-.. comments
-   #-----------------------------------------------------------------
-
-v1.3.3
+v1.4.0
 ------
 
-`Download GUI <https://sourceforge.net/projects/pynastran/files/?source=navbar>`_ (latest is from 2020/6/28)
+`Download GUI <https://sourceforge.net/projects/pynastran/files/?source=navbar>`_ (latest is from 2021/4/15)
 
 Also, check out the:
 
@@ -78,13 +34,62 @@ commercial program.
 News
 ====
 
-Check out this blog post covering `Flutter Analysis in pyNastran <https://www.m4-engineering.com/flutter-analysis-with-pynastran/>`_
+Check out the pyNastran blog posts:
+
+ - `Flutter Analysis in pyNastran <https://www.m4-engineering.com/flutter-analysis-with-pynastran/>`_
+ - `Flutter Analysis in pyNastran <https://www.m4-engineering.com/flutter-analysis-with-pynastran/>`_
 
 Release Notes
 =============
 
-pyNastran v1.3.3 has been released (2020/6/28)
-----------------------------------------------
+pyNastran v1.4.0 has been released
+----------------------------------
+
+v1.4.0 (2021/4/15)
+------------------
+
+Last year MSC provided a copy of MSC Nastran free of charge to help support the project.  
+Since then, modern MSC Nastran support has been added.  
+In addition, NX 64-bit and Optisruct support has been improved.
+
+The biggest new features are:
+ * MSC 2020 support (including contact)
+ 
+ * much improved 64 bit support
+ 
+ * improved op2 support
+
+Programmatics:
+
+ * Supports Python 3.7 - 3.9
+ 
+ * GUI is compatible with PyQt5 and PySide2 and VTK 7-9
+ 
+ * improved testing of old versions of packages
+ 
+ * updated nptyping requirements
+
+BDF:
+
+ * fixed CAERO1 paneling bug
+ 
+ * 8 new cards: BGSET, BGADD, BCTPARM, BCBODY, TOPVAR, MATEV, PCOMPLS, TABDMP1
+ 
+ * bdf_mirror supports solid elements
+
+OP2:
+
+ * 20 new results
+ 
+ * vectorized op2 writing
+
+GUI:
+
+ * transient/complex fringe only animations now supported
+ 
+ * locale support (e.g., most of Europe and South America) to allow 3,14 instead of 3.14
+
+See pyNastran `v1.4.0 release notes <https://github.com/SteveDoyle2/pyNastran/releases/tag/v1.4.0>`_ for details on the other changes.
 
 v1.3.3 (2020/6/28)
 ------------------
@@ -112,8 +117,8 @@ Programmatics:
 See pyNastran `v1.3.3 release notes <https://github.com/SteveDoyle2/pyNastran/releases/tag/v1.3.3>`_ for details on the 54 bug fixes.  Not too bad for 2.5 months!
 
 
-pyNastran v1.3.2 has been released (2020/4/8)
----------------------------------------------
+v1.3.2 (2020/4/8)
+-----------------
 
 With Python 2 now officially dead, it's time for a new killer feature to get the last few people to switch.
 
@@ -272,12 +277,13 @@ F06:
 Many bug fixes and a few more details on features, can be found in the `Release Notes <https://github.com/SteveDoyle2/pyNastran/blob/1.3/releaseNotes.md>`_.
 
 
-pyNastran 1.3.1/1.3.0 has been released (2020/4/8)
---------------------------------------------------
+v1.3.1/v1.3.0 (2020/4/8)
+------------------------
+
 This result has been superseeded by 1.3.2.  The PyPi page was fixed.
 
-pyNastran v1.2.1 has been released (2019/5/24)
-----------------------------------------------
+v1.2.1 (2019/5/24)
+------------------
 
 I keep saying to myself there's not much to add, but Nastran is huge.  Beyond HDF5
 support in the BDF, I'm a huge fan of the new ability to keep track of which include file a
@@ -377,7 +383,6 @@ GUI:
 
 Known issues:
  - Transient Pandas Dataframes will fail for newer versions of numpy/pandas.
-   If anyone knows how to use a MultiIndex, this is probably pretty easy to fix.
 
 Older Releases
 --------------
