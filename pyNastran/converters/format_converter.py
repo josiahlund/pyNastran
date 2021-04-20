@@ -2,13 +2,14 @@
 import os
 import sys
 import glob
-
+import pyNastran
+IS_DEV = 'dev' in pyNastran.__version__
 # stl_to_plot3d ???
 
 
 def process_nastran(bdf_filename, fmt2, fname2, log, data=None, debug=True, quiet=False):
     """
-    Converts Nastran to STL/Cart3d/Tecplot/UGRID3d
+    Converts Nastran to STL/Cart3d/Tecplot/UGRID3D
     """
     assert fmt2 in ['stl', 'cart3d', 'tecplot', 'ugrid', 'nastran', 'abaqus'], 'format2=%s' % fmt2
     from pyNastran.bdf.bdf import BDF
@@ -245,10 +246,13 @@ def run_format_converter(fmt1, fname1, fmt2, fname2, data, log, quiet=False):
         process_tecplot(fname1, fmt2, fname2, log, data=data, quiet=quiet)
     elif fmt1 == 'ugrid':
         process_ugrid(fname1, fmt2, fname2, log, data=data, quiet=quiet)
-    elif fmt1 == 'vrml':
+    elif fmt1 == 'vrml' and IS_DEV:
         process_vrml(fname1, fmt2, fname2, log, data=data, quiet=quiet)
     else:
-        format1s = ['nastran', 'cart3d', 'stl', 'tecplot', 'ugrid', 'vrml']
+        format1s = ['nastran', 'cart3d', 'stl', 'tecplot', 'ugrid']
+        if IS_DEV:
+            format1s.append('vrml')
+
         #format2s = ['nastran', 'cart3d', 'stl', 'ugrid', 'tecplot']
         raise NotImplementedError(f'fmt1={fmt1} is not supported by run; '
                                   f'use {", ".join(format1s)}')
@@ -272,7 +276,8 @@ def cmd_line_format_converter(argv=None, quiet=False):
     msg += '  format_converter -v | --version\n'
     msg += "\n"
     msg += "Required Arguments:\n"
-    msg += "  format1        format type (nastran, cart3d, stl, ugrid, tecplot, vrml)\n"
+    format1_dev = ', vrml' if IS_DEV else ''
+    msg += f"  format1        format type (nastran, cart3d, stl, ugrid, tecplot{format1_dev})\n"
     msg += "  format2        format type (nastran, cart3d, stl, ugrid, tecplot, abaqus)\n"
     msg += "  INPUT          path to input file\n"
     msg += "  OUTPUT         path to output file\n"

@@ -17,8 +17,8 @@ else:
 
     __version_release__ = '1.4.0'
     __version__ =__version_release__
-    __releaseDate__ = '2021/4/15'
-    __releaseDate2__ = 'APRIL 15, 2021'
+    __releaseDate__ = '2021/4/21'
+    __releaseDate2__ = 'APRIL 21, 2021'
 
 __author__ = 'Steven Doyle'
 __email__ = 'mesheb82@gmail.com'
