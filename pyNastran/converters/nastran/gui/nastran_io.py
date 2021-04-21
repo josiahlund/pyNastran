@@ -108,7 +108,6 @@ from .utils import (
     get_nastran_gui_layer_word, check_for_missing_control_surface_boxes,
     get_elements_nelements_unvectorized, get_shell_material_coord,
     make_nid_map, store_warning)
-from .menus.setup_model_sidebar import ModelSidebar
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -903,15 +902,6 @@ class NastranIO(NastranGuiResults, NastranGeometryHelper):
         #self.grid_mapper.SetResolveCoincidentTopologyToPolygonOffset()
         stop_on_failure = IS_TESTING
         build_map_centroidal_result(model, nid_map, stop_on_failure=stop_on_failure)
-
-        if not IS_TESTING and 'dev' in __version__:
-            self.sidebar_nastran = ModelSidebar(self.gui, nastran_io=self)
-            self.sidebar_nastran.set_model(model)
-
-            self.res_dock_nastran = QDockWidget("Nastran Model", self)
-            self.res_dock_nastran.setObjectName("nastran_model")
-            self.res_dock_nastran.setWidget(self.sidebar_nastran)
-            self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.res_dock_nastran)
 
         #self.res_dock.setWidget(self.res_widget)
         if plot:
