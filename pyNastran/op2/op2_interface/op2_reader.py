@@ -2443,6 +2443,8 @@ class OP2Reader:
                 #floats = floats[2:].reshape(nrows, 7)
                 #for inti, floati in zip(ints, floats):
                     #print(inti[:-3], floats[-3:])
+                self.log.warning('skipping BGPDT 64-bit')
+                #op2.op2_results.bgpdt = BGPDT(cd, xyz)
             #print('cd = %s' % cd.tolist())
             #print('xyz:\n%s' % xyz)
 
