@@ -47,7 +47,7 @@ import sys
 from copy import deepcopy
 from itertools import count
 from struct import unpack, Struct # , error as struct_error
-from typing import Tuple, Optional, TYPE_CHECKING
+from typing import Tuple, Optional, Callable, TYPE_CHECKING
 
 import numpy as np
 import scipy  # type: ignore
@@ -60,7 +60,9 @@ from pyNastran.op2.result_objects.gpdt import GPDT, BGPDT
 from pyNastran.op2.result_objects.eqexin import EQEXIN
 from pyNastran.op2.result_objects.matrix import Matrix, MatrixDict
 from pyNastran.op2.result_objects.design_response import DSCMCOL
-from pyNastran.op2.op2_interface.nx_tables import NX_VERSIONS
+from pyNastran.op2.op2_interface.msc_tables import MSC_GEOM_TABLES
+from pyNastran.op2.op2_interface.nx_tables import NX_VERSIONS, NX_GEOM_TABLES
+
 from pyNastran.op2.op2_interface.utils import (
     mapfmt, reshape_bytes_block,
     reshape_bytes_block_size)
@@ -80,6 +82,19 @@ if TYPE_CHECKING:  # pragma: no cover
 
 class SubTableReadError(Exception):
     pass
+
+GEOM_TABLES = MSC_GEOM_TABLES + NX_GEOM_TABLES
+MSC_LONG_VERSION = [
+    b'XXXXXXXX20140', b'XXXXXXXX20141', b'XXXXXXXX20142',
+    b'XXXXXXXX20150', b'XXXXXXXX20151', b'XXXXXXXX20152',
+    b'XXXXXXXX20160', b'XXXXXXXX20161', b'XXXXXXXX20162',
+    b'XXXXXXXX20170', b'XXXXXXXX20171', b'XXXXXXXX20172',
+    b'XXXXXXXX20180', b'XXXXXXXX20181', b'XXXXXXXX20182',
+    b'XXXXXXXX20190', b'XXXXXXXX20191', b'XXXXXXXX20192',
+    b'XXXXXXXX20200', b'XXXXXXXX20201', b'XXXXXXXX20202',
+    b'XXXXXXXX20210', b'XXXXXXXX20211', b'XXXXXXXX20212',
+    b'XXXXXXXX20220', b'XXXXXXXX20221', b'XXXXXXXX20222',
+]
 
 DENSE_MATRICES = [
     b'KELM', b'MELM', b'BELM',
@@ -2244,7 +2259,6 @@ class OP2Reader:
         header_data = self._read_record()  # (103, 117, 0, 0, 0, 0, 0)
         header_ints = np.frombuffer(header_data, op2.idtype8)
         header_floats = np.frombuffer(header_data, op2.fdtype8)
-        unused_table_id, nnodes_nbytes, nwords, *other = header_ints
 
         # what a mess...
         # there are 3 ways to define the header...
@@ -2274,126 +2288,20 @@ class OP2Reader:
             i = 0
             data = read_record() # nid,cp,x,y,z,cd,ps
             ndata = len(data)
-            nvalues = ndata // 4
-            #nnodes_nbytes,
-            if nwords == 0:
-                # C:\MSC.Software\simcenter_nastran_2019.2\tpl_post2\c402pen12f.op2
-                # size=8 ndata=1568 nnodes=28
-                #    1568 = 2* 4^2 * 7^2
-                #
-                # [102  18   0   0   0   0   0]
-                # C:\MSC.Software\simcenter_nastran_2019.2\tpl_post2\rbarthm1.op2
-                # size=4; ndata=168
-                #   168 = 4 * 2 * 3*7
-                #if self.op2.table_name in [b'GPDT', b'GPDTS']:
-                    #is_nodes = True
-                    ##self.size = 4 168
-                    #self.log.warning(f'size={self.size} ndata={ndata}')
-                #else:  # pragma: no cover
-                is_nodes, numwide = _get_gpdt_numwide_from_nodes(self.size, nnodes_nbytes, ndata)
 
-                self.log.debug(f'is_nodes = {is_nodes}')
 
-                if is_nodes:
-                    nnodes = nnodes_nbytes
-                    #nnodes = ndata // nwords // 4
-                    #assert nnodes == 3, nnodes
-                    numwide = nvalues // nnodes
-                if numwide not in [7, 10, 14]:
-                    if self.size == 8:
-                        numwide = 14
-                    else:
-                        numwide = 7
-                    nnodes = ndata // (4 * numwide)
-                    assert ndata % (4 * numwide) == 0
-                    if numwide not in [7, 10, 14]:
-                        self.show_data(data, types='ifqd')
-                        raise RuntimeError(f'numwide={numwide} must be 7, 10, or 14')
-            else:
-                nnodes = nnodes_nbytes
-                numwide = nvalues // nnodes
-                assert ndata % 4 == 0
-            #print(f'nnodes={nnodes} numwide={numwide} error={nvalues % nnodes}')
 
-            if (self.size, numwide) == (8, 14):  # C:\MSC.Software\simcenter_nastran_2019.2\tpl_post2\z402cdamp1_04.op2
-                ntotal = 7 * 8  #  6 ints, 3 floats
-                # (nid, cp, x, y, z, cd, 0)
-                structi = Struct(self._endian + b'qq 3d qq')
+            # assume nodes
+            #_get_gpdt_nnodes(self.size, ndata, header_ints, self.log)
+            nnodes, numwide = _get_gpdt_nnodes2(ndata, header_ints, self.size)
 
-                for j in range(nnodes):
-                    edata = data[i:i+ntotal]
-                    out = structi.unpack(edata)
-                    #print(out)
-                    i += ntotal
-
-                #   0   1  2  3  4  5   6
-                # nid, cp, x, y, z, cd, ps
-                iints = [0, 1, 5, 6]
-                ifloats = [2, 3, 4]
-
-                ints = np.frombuffer(data, op2.idtype8).reshape(nnodes, 7).copy()[:, iints]
-                floats = np.frombuffer(data, op2.idtype8).reshape(nnodes, 7).copy()[:, ifloats]
-                nid_cp_cd_ps = ints
-                xyz = floats
-
+            if (self.size, numwide) == (8, 14):
+                # C:\MSC.Software\simcenter_nastran_2019.2\tpl_post2\z402cdamp1_04.op2
+                nid_cp_cd_ps, xyz = _read_gpdt_8_14(op2, data, nnodes)
             elif (self.size, numwide) == (4, 7):
-                ntotal = 7 * 4  #  6 ints, 3 floats
-                # (nid, cp, x, y, z, cd, 0)
-                structi = Struct(self._endian + b'ii 3f ii')
-
-                #ntotal = 16
-                #structi = Struct(self._endian + b'')
-                #self.show_data(data, types='if')
-                for j in range(nnodes):
-                    edata = data[i:i+ntotal]
-                    #self.show_data(edata, types='if')
-                    out = structi.unpack(edata)
-                    #print(out)
-                    nid, zero_a, x, y, z, cd, zero_b = out
-                    outs = f'nid={nid} zero_a={zero_a} xyz=({x},{y},{z}) cd={cd} zero_b={zero_b}'
-                    assert nid > 0, outs
-                    #assert zero_a == 0, (nid, zero_a, x, y, z, cd, zero_b)
-                    #assert zero_b == 0, (nid, zero_a, x, y, z, cd, zero_b)
-                    i += ntotal
-
-                #   0   1  2  3  4  5   6
-                # nid, cp, x, y, z, cd, ps
-                iints = [0, 1, 5, 6]
-                ifloats = [2, 3, 4]
-
-                ints = np.frombuffer(data, op2.idtype).reshape(nnodes, 7).copy()[:, iints]
-                floats = np.frombuffer(data, op2.idtype).reshape(nnodes, 7).copy()[:, ifloats]
-                nid_cp_cd_ps = ints
-                xyz = floats
-
+                nid_cp_cd_ps, xyz = _read_gpdt_4_7(op2, data, nnodes)
             elif (self.size, numwide) == (4, 10):
-                ntotal = 40  #  6 ints, 3 floats
-                # (nid, 0, x, y, z, cd, 0)
-                structi = Struct(self._endian + b'2i 3d 2i')
-                for j in range(nnodes):
-                    edata = data[i:i+ntotal]
-                    #self.show_data(edata, types='ifqd')
-                    out = structi.unpack(edata)
-                    nid, zero_a, x, y, z, cd, zero_b = out
-                    outs = f'nid={nid} zero_a={zero_a} xyz=({x},{y},{z}) cd={cd} zero_b={zero_b}'
-                    #assert zero_a == 0, (nid, zero_a, x, y, z, cd, zero_b)
-                    #assert zero_b == 0, (nid, zero_a, x, y, z, cd, zero_b)
-                    i += ntotal
-                    #print(outs)
-                    assert nid > 0, outs
-
-                #   0   1    2  3  4  5  6  7  8   9
-                # nid, zero, x, _, y, _, z, _, cd, zero
-                iints = [0, 1, 8, 9]
-
-                # 0  1  2  3  4
-                # a, x, y, z, b
-                ifloats = [1, 2, 3]
-
-                ints = np.frombuffer(data, op2.idtype).reshape(nnodes, 10).copy()[:, iints]
-                floats = np.frombuffer(data, 'float64').reshape(nnodes, 5).copy()[:, ifloats]
-                nid_cp_cd_ps = ints
-                xyz = floats
+                nid_cp_cd_ps, xyz = _read_gpdt_4_10(op2, data, nnodes)
             else:
                 self.show_data(data, types='if')
                 #ndata = 84:
@@ -5885,16 +5793,16 @@ class OP2Reader:
         # back at table 3 (with isubtable=-5), which will occur in the case of multiple
         # times/element types/results in a single macro table (e.g. OUG, OES).
         table_mapper = op2._get_table_mapper()
-        if op2.table_name in table_mapper:
+        table_name = op2.table_name
+        if table_name in table_mapper:
             #if self.read_mode == 2:
-                #self.log.debug("table_name = %r" % op2.table_name)
-
-            table3_parser, table4_parser = table_mapper[op2.table_name]
+                #self.log.debug("table_name = %r" % table_name)
+            table3_parser, table4_parser = table_mapper[table_name]
             passer = False
         else:
             if self.read_mode == 2:
-                self.log.info(f'skipping table_name = {op2.table_name!r}')
-                    #raise NotImplementedError(op2.table_name)
+                self.log.info(f'skipping table_name = {table_name!r}')
+                    #raise NotImplementedError(table_name)
             table3_parser = None
             table4_parser = None
             passer = True
@@ -5934,7 +5842,7 @@ class OP2Reader:
                     continue
                 break
             except:  # pragma: no cover
-                print(f'failed reading {op2.table_name} isubtable={op2.isubtable:d}')
+                print(f'failed reading {table_name} isubtable={op2.isubtable:d}')
                 raise
             #force_table4 = self._read_subtable_3_4(table3_parser, table4_parser, passer)
             op2.isubtable -= 1
@@ -5971,7 +5879,10 @@ class OP2Reader:
         assert marker == 0, marker
         op2._finish()
 
-    def _read_subtable_3_4(self, table3_parser, table4_parser, passer) -> Optional[bool]:
+    def _read_subtable_3_4(self,
+                           table3_parser: Optional[Callable],
+                           table4_parser: Optional[Callable],
+                           passer: Optional[Callable]) -> Optional[bool]:
         """
         Reads a series of subtable 3/4
 
@@ -6006,8 +5917,9 @@ class OP2Reader:
         oes_nl = [b'OESNLXD', b'OESNL1X', b'OESNLXR'] # 'OESCP'?
         factor = self.factor
         #print('record_len =', record_len)
+        table_name = op2.table_name
         if record_len == 584 * factor:  # table3 has a length of 584
-            if op2.table_name in oes_nl and hasattr(op2, 'num_wide') and op2.num_wide == 146:
+            if table_name in oes_nl and hasattr(op2, 'num_wide') and op2.num_wide == 146:
                 data_code_old = deepcopy(op2.data_code)
 
             if self.load_as_h5:
@@ -6026,7 +5938,7 @@ class OP2Reader:
                 except SortCodeError:
                     if self.is_debug_file:
                         self.binary_debug.write('except SortCodeError!\n')
-                    if op2.table_name in oes_nl:
+                    if table_name in oes_nl:
                         update_op2_datacode(op2, data_code_old)
 
                         n = table4_parser(data, ndata)
@@ -6054,7 +5966,14 @@ class OP2Reader:
                 #if hasattr(op2, 'isubcase'):
                     #print("code = ", op2._get_code())
         else:
-            if passer or not self.is_valid_subcase():
+            if table_name in GEOM_TABLES:
+                if passer:
+                    data = self._skip_record()
+                else:
+                    data, ndata = self._read_record_ndata()
+                    unused_n = table4_parser(data, ndata)
+
+            elif passer or not self.is_valid_subcase():
                 data = self._skip_record()
             else:
                 if hasattr(op2, 'num_wide'):
@@ -6693,15 +6612,6 @@ def _parse_nastran_version(data: bytes, version: bytes, encoding: bytes,
                            log: SimpleLogger) -> str:
     """parses a Nastran version string"""
     if len(data) == 32:
-        MSC_LONG_VERSION = [
-            b'XXXXXXXX20140', b'XXXXXXXX20141',
-            b'XXXXXXXX20150',
-            b'XXXXXXXX20160',
-            b'XXXXXXXX20170',
-            b'XXXXXXXX20180', b'XXXXXXXX20181', b'XXXXXXXX20182',
-            b'XXXXXXXX20190',
-            b'XXXXXXXX20200',
-        ]
         #self.show_data(data[:16], types='ifsdqlILQ', endian=None)
         #self.show_data(data[16:], types='ifsdqlILQ', endian=None)
         if data[:16].strip() in MSC_LONG_VERSION:
@@ -7192,30 +7102,204 @@ def _read_extdb_phip(self, marker: int,
         aaa
     return
 
+def _get_gpdt_nnodes_numwide(size: int, ndata: int,
+                             header_ints,
+                             log: SimpleLogger) -> Tuple[int, int]:  # pragma: no cover
+    """
+    size=4; ndata=1120 [102  40   0   0   0   0   0] -> nnodes=40
+      1120=(7*4)*4*10 -> 7 words; nnodes=40
+      1120=28*40
+    """
+    unused_table_id, nnodes_nbytes, nwords, *other = header_ints
+    #print("header_ints =", header_ints)
+    nvalues = ndata // 4
+    #nnodes_nbytes,
+    if nwords == 0:
+        # C:\MSC.Software\simcenter_nastran_2019.2\tpl_post2\c402pen12f.op2
+        # size=8 ndata=1568 nnodes=28
+        #    1568 = 2* 4^2 * 7^2
+        #
+        # [102  18   0   0   0   0   0]
+        # C:\MSC.Software\simcenter_nastran_2019.2\tpl_post2\rbarthm1.op2
+        # size=4; ndata=168
+        #   168 = 4 * 2 * 3*7
+        #if self.op2.table_name in [b'GPDT', b'GPDTS']:
+            #is_nodes = True
+            ##self.size = 4 168
+            #self.log.warning(f'size={self.size} ndata={ndata}')
+        #else:  # pragma: no cover
+        try:
+            is_nodes, numwide, nnodes = _get_gpdt_numwide_from_nodes_null_nwords(size, nnodes_nbytes, ndata)
+        except:
+            is_nodes = True
+            numwide = 0
+            raise
+        log.debug(f'ndata={ndata} numwide={numwide} nnodes={nnodes}; is_nodes={is_nodes}')
 
-def _get_gpdt_numwide_from_nodes(size, nbytes, ndata):
+        if is_nodes:
+            nnodes = nnodes_nbytes
+            #nnodes = ndata // nwords // 4
+            #assert nnodes == 3, nnodes
+            numwide = nvalues // nnodes
+        if numwide not in [7, 10, 14]:
+            if size == 8:
+                numwide = 14
+            else:
+                numwide = 7
+            nnodes = ndata // (4 * numwide)
+            assert ndata % (4 * numwide) == 0
+            if numwide not in [7, 10, 14]:
+                raise RuntimeError(f'numwide={numwide} must be 7, 10, or 14')
+    else:
+        nnodes = nnodes_nbytes
+        numwide = nvalues // nnodes
+        assert ndata % 4 == 0
+
+    #print(f'nnodes={nnodes} numwide={numwide} error={nvalues % nnodes}')
+    return nnodes, numwide
+
+def _get_gpdt_numwide_from_nodes_null_nwords(size: bool, nbytes: int,  # pragma: no cover
+                                             ndata: int) -> Tuple[bool, int]:
+    """
+    size=4 ndata=392 nnodes_nbytes=28
+      392 = 4 * 2. * 7^2
+    """
     is_nodes = False
     if nbytes % 2: # or (size == 4 and nnodes_nbytes not in [28, 40]):
         is_nodes = True
         #self.log.warning('is_nodes = True')
-        return
+        numwide = 0
+        nnodes = 0
+        return is_nodes, numwide, nnodes
 
     nnodes = ndata // nbytes
-    print('size =', size, ndata, nbytes)
+    #print('size =', size, ndata, nbytes)
     assert ndata % nbytes == 0
 
     nvalues = ndata // 4
     assert ndata % 4 == 0
     numwide = nvalues // nnodes
-    assert nvalues % nnodes == 0
+    assert nvalues % nnodes == 0, f'size={size} ndata={ndata} nvalues={nvalues} nnodes={nnodes}'
     #if (self.size == 4 and nnodes_nbytes in [28, 40]):
     if size == 4:
-        assert ndata == numwide * nnodes * 4
+        assert ndata == numwide * nnodes * 4, f'size=4 ndata={ndata} numwide={numwide} nnodes={nnodes}'
         if numwide not in [7, 10]:
             is_nodes = True
     elif size == 8:
-        assert ndata == numwide * nnodes * 4
+        assert ndata == numwide * nnodes * 4, f'size=8 ndata={ndata} numwide={numwide} nnodes={nnodes}'
         assert numwide == 14, numwide
         #if numwide not in [7, 10]:
             #is_nodes = True
-    return is_nodes, numwide
+    return is_nodes, numwide, nnodes
+
+def _read_gpdt_8_14(op2, data, nnodes):
+    i = 0
+    ntotal = 7 * 8  #  6 ints, 3 floats
+    # (nid, cp, x, y, z, cd, 0)
+    structi = Struct(op2._endian + b'qq 3d qq')
+
+    for j in range(nnodes):
+        edata = data[i:i+ntotal]
+        out = structi.unpack(edata)
+        #print(out)
+        i += ntotal
+
+    #   0   1  2  3  4  5   6
+    # nid, cp, x, y, z, cd, ps
+    iints = [0, 1, 5, 6]
+    ifloats = [2, 3, 4]
+
+    ints = np.frombuffer(data, op2.idtype8).reshape(nnodes, 7).copy()[:, iints]
+    floats = np.frombuffer(data, op2.idtype8).reshape(nnodes, 7).copy()[:, ifloats]
+    nid_cp_cd_ps = ints
+    xyz = floats
+    return nid_cp_cd_ps, xyz
+
+
+def _read_gpdt_4_7(op2, data, nnodes):
+    i = 0
+    ntotal = 7 * 4  #  6 ints, 3 floats
+    # (nid, cp, x, y, z, cd, 0)
+    structi = Struct(op2._endian + b'ii 3f ii')
+
+    #ntotal = 16
+    #structi = Struct(self._endian + b'')
+    #self.show_data(data, types='if')
+    for j in range(nnodes):
+        edata = data[i:i+ntotal]
+        #self.show_data(edata, types='if')
+        out = structi.unpack(edata)
+        #print(out)
+        nid, zero_a, x, y, z, cd, zero_b = out
+        outs = f'nid={nid} zero_a={zero_a} xyz=({x},{y},{z}) cd={cd} zero_b={zero_b}'
+        assert nid > 0, outs
+        #assert zero_a == 0, (nid, zero_a, x, y, z, cd, zero_b)
+        #assert zero_b == 0, (nid, zero_a, x, y, z, cd, zero_b)
+        i += ntotal
+
+    #   0   1  2  3  4  5   6
+    # nid, cp, x, y, z, cd, ps
+    iints = [0, 1, 5, 6]
+    ifloats = [2, 3, 4]
+
+    ints = np.frombuffer(data, op2.idtype).reshape(nnodes, 7).copy()[:, iints]
+    floats = np.frombuffer(data, op2.idtype).reshape(nnodes, 7).copy()[:, ifloats]
+    nid_cp_cd_ps = ints
+    xyz = floats
+    return nid_cp_cd_ps, xyz
+
+def _read_gpdt_4_10(op2, data, nnodes):
+    i = 0
+    ntotal = 40  #  6 ints, 3 floats
+    # (nid, 0, x, y, z, cd, 0)
+    structi = Struct(op2._endian + b'2i 3d 2i')
+    for j in range(nnodes):
+        edata = data[i:i+ntotal]
+        #self.show_data(edata, types='ifqd')
+        out = structi.unpack(edata)
+        nid, zero_a, x, y, z, cd, zero_b = out
+        outs = f'nid={nid} zero_a={zero_a} xyz=({x},{y},{z}) cd={cd} zero_b={zero_b}'
+        #assert zero_a == 0, (nid, zero_a, x, y, z, cd, zero_b)
+        #assert zero_b == 0, (nid, zero_a, x, y, z, cd, zero_b)
+        i += ntotal
+        #print(outs)
+        assert nid > 0, outs
+
+    #   0   1    2  3  4  5  6  7  8   9
+    # nid, zero, x, _, y, _, z, _, cd, zero
+    iints = [0, 1, 8, 9]
+
+    # 0  1  2  3  4
+    # a, x, y, z, b
+    ifloats = [1, 2, 3]
+
+    ints = np.frombuffer(data, op2.idtype).reshape(nnodes, 10).copy()[:, iints]
+    floats = np.frombuffer(data, 'float64').reshape(nnodes, 5).copy()[:, ifloats]
+    nid_cp_cd_ps = ints
+    xyz = floats
+    return nid_cp_cd_ps, xyz
+
+
+def _get_gpdt_nnodes2(ndata, header_ints, size):
+    unused_table_id, nnodes_nbytes, nwords, *other = header_ints
+    nvalues = ndata // 4
+    assert nvalues > 0
+    assert ndata % 4 == 0
+    try:
+        # assume nodes
+        nnodes = nnodes_nbytes
+        numwide = nvalues // nnodes
+        assert nvalues % nnodes == 0
+        if size == 4:
+            assert numwide in [7, 10], numwide
+        else:
+            assert numwide == 14, numwide
+    except AssertionError:
+        # calculate the bytes
+        if size == 4:
+            numwide = 7
+        elif numwide == 8:
+            numwide = 14
+        nnodes = nvalues // numwide
+    assert ndata == nnodes * numwide * 4
+    return nnodes, numwide
