@@ -19,28 +19,6 @@ Install additional python packages
   pip install numpydoc
 
 
-Installation From Source
-========================
-
-pyNastran is meant to an easy package to install once you have the required Python modules.
-It's a pure Python package so you shouldn't have too many problems.
-
-Installing from source is recommened if:
- - You want the most recent version (see installation.rst-master)
- - You want easier access to the source
- - You're on an air-gapped machine
-
-Overview
---------
- * Install Python (see :doc:`installation_release`)
-
-   * skip the ``pip install pyNastran`` step
- * Install Sphinx, GraphViz, alabaster **(for documentation)**
-
- * Install Git
- * Clone pyNastran-master from Github
- * Install pyNastran
-
 
 
 Install Git
