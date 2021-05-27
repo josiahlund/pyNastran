@@ -19,9 +19,9 @@ For additional optional features:
 * ``pip install h5py``       **(HDF5 support)**
 * ``pip install colorama``   **(colored logging)**
 
-*****************************************
-Installation From Source (Advanced Users)
-*****************************************
+************************
+Installation From Source
+************************
 
 Installing from source is recommend only for developers and users with air gapped machines which lack the ability to pip
 install PyNastran.
