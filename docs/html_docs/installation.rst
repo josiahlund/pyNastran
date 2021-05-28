@@ -10,25 +10,39 @@ Installation from release is recommended for most users.
 
 For Base functionality:
 
-* ``pip install pyNastran``
+.. code-block:: console
+
+  pip install pyNastran
 
 For optional GUI support:
 
-* ``pip install PyQt5``
-* ``pip install tvk``
+.. code-block:: console
+
+  pip install PyQt5
+  pip install tvk
 
 For additional optional features:
 
-* ``pip install pandas``     **(What does this provide?)**
-* ``pip install h5py``       **(HDF5 support)**
-* ``pip install colorama``   **(colored logging)**
+.. code-block:: console
+
+  pip install pandas     (for ?)
+  pip install h5py       (for HDF5 support)
+  pip install colorama   (for colored logging)
 
 ************************
 Installation From Source
 ************************
 
-Installing from source is recommend only for developers and users with air gapped machines which lack the ability to pip
-install PyNastran.
+Installing from source is only recommend for developers or users with air gapped machines.
 
-* Clone or download pyNastran from Github
-* ``python setup.py install`` **OR** ``python setup_no_gui.py install``
+1. Obtain source code by either cloning or download from Github
+2. Use python to install
+  .. code-block:: console
+
+    python setup.py install
+
+  **OR**
+
+  .. code-block:: console
+
+    python setup_no_gui.py install
