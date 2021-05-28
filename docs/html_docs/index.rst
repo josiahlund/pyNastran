@@ -34,7 +34,8 @@ included for use.
 .. toctree::
 
    features
-   installation/index
+   installation
+   building_docs
    quick_start/index
    how_to/index
    reference/pyNastran
